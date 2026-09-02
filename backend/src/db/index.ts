@@ -1,15 +1,15 @@
-import { Database } from "bun:sqlite";
+import Database, { type Database as DatabaseType } from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
 
-let dbInstance: Database | null = null;
+let dbInstance: DatabaseType | null = null;
 
-export function getDB(): Database {
-  if (dbInstance) {
+export function getDB(customPath?: string): DatabaseType {
+  if (dbInstance && !customPath) {
     return dbInstance;
   }
 
-  const dbPath = process.env.DB_PATH || "./data/mermaid.db";
+  const dbPath = customPath || process.env.DB_PATH || "./data/mermaid.db";
   const absoluteDbPath = path.isAbsolute(dbPath)
     ? dbPath
     : path.resolve(process.cwd(), dbPath);
@@ -19,15 +19,27 @@ export function getDB(): Database {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  dbInstance = new Database(absoluteDbPath, { create: true });
+  const db = new Database(absoluteDbPath);
+  db.pragma("journal_mode = WAL");
 
   // Run initial migration
   const migrationPath = path.resolve(process.cwd(), "migrations/001_init.sql");
   if (fs.existsSync(migrationPath)) {
     const migrationSql = fs.readFileSync(migrationPath, "utf-8");
-    dbInstance.run(migrationSql);
+    db.exec(migrationSql);
   }
 
-  return dbInstance;
+  if (!customPath) {
+    dbInstance = db;
+  }
+  return db;
 }
+
+export function closeDB(): void {
+  if (dbInstance) {
+    dbInstance.close();
+    dbInstance = null;
+  }
+}
+
 

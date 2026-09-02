@@ -1,17 +1,17 @@
-# Mermaid Live Editor - Bun & SQLite Backend
+# Mermaid Live Editor - Node.js & SQLite Backend
 
 [简体中文](README.zh.md) | English
 
-Persistent storage backend for Mermaid Live Editor, built with **Bun.js** and native **SQLite (`bun:sqlite`)**, providing lightweight, ultra-fast chart persistence across devices.
+Persistent storage backend for Mermaid Live Editor, built with **Node.js**, **Express**, and **`better-sqlite3`**, providing lightweight, robust chart persistence across devices.
 
 ---
 
 ## Features
 
-- **RESTful API**: Standard CRUD operations for Mermaid chart projects.
+- **RESTful API**: Standard CRUD operations for Mermaid chart projects with Express.
 - **Embedded SQLite Storage**: Automatic database migrations (`migrations/001_init.sql`), zero external database dependencies.
 - **Cross-Origin Resource Sharing (CORS)**: Built-in support for preflight `OPTIONS` requests and configurable origins.
-- **Strict Type Safety**: Fully typed with TypeScript strict mode.
+- **Strict Type Safety**: Fully typed with TypeScript strict mode and automated Vitest test suite.
 - **Container Ready**: Multi-stage `Dockerfile` with health check and persistent volume.
 
 ---
@@ -40,18 +40,29 @@ NODE_ENV=production
 
 1. **Install dependencies**:
    ```bash
-   bun install
+   pnpm install
    ```
 
 2. **Run in development mode (with watch)**:
    ```bash
-   bun run dev
+   pnpm dev
    ```
 
-3. **Start in production mode**:
+3. **Build TypeScript for production**:
    ```bash
-   bun run start
+   pnpm build
    ```
+
+4. **Start in production mode**:
+   ```bash
+   pnpm start
+   ```
+
+5. **Run test suite**:
+   ```bash
+   pnpm test
+   ```
+
 
 ---
 

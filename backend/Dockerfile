@@ -1,45 +1,59 @@
-# Stage 1: Dependency installation
-FROM oven/bun:1-slim AS builder
+# Stage 1: Build application and compile TypeScript
+FROM node:20-alpine AS builder
+
+RUN apk add --no-cache python3 make g++
+
+RUN corepack enable pnpm
+
 WORKDIR /app
 
-# Copy package descriptors
-COPY package.json bun.lock tsconfig.json ./
+# Copy dependency manifests
+COPY package.json pnpm-lock.yaml tsconfig.json ./
 
-# Install production dependencies
-RUN bun install --frozen-lockfile --production
+# Install all dependencies including devDependencies for compilation
+RUN pnpm install --frozen-lockfile
 
-# Stage 2: Runtime image
-FROM oven/bun:1-slim AS runner
+# Copy source code and migrations
+COPY src ./src
+COPY migrations ./migrations
+
+# Build TypeScript to dist/
+RUN pnpm build
+
+# Stage 2: Production runtime image
+FROM node:20-alpine AS runner
+
 WORKDIR /app
 
 # Install curl for healthcheck
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 
 # Set runtime environment variables
 ENV NODE_ENV=production
 ENV PORT=8080
 ENV DB_PATH=/app/data/mermaid.db
 
-# Create data directory for SQLite persistence
+# Create directory for persistent SQLite data
 RUN mkdir -p /app/data
 
-# Copy installed dependencies and source code
+# Copy built artifacts and runtime dependencies
+COPY package.json ./
 COPY --from=builder /app/node_modules ./node_modules
-COPY package.json tsconfig.json ./
-COPY src ./src
-COPY migrations ./migrations
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/migrations ./migrations
 
-# Expose default API port
+# Expose backend API port
 EXPOSE 8080
 
-# Declare persistent volume for SQLite database
+# Declare persistent SQLite volume
 VOLUME ["/app/data"]
 
 # Health check against backend /health endpoint
 HEALTHCHECK --interval=15s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:${PORT}/health || exit 1
 
-# Start the Bun HTTP server
-CMD ["bun", "run", "src/index.ts"]
+# Start the Express server
+CMD ["node", "dist/index.js"]
+
 
 

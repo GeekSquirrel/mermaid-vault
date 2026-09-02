@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { getDB } from "../db/index.js";
 import type { Project } from "../types/index.js";
 
@@ -11,7 +12,7 @@ export class ProjectModel {
   static getById(id: string): Project | null {
     const db = getDB();
     const stmt = db.prepare("SELECT * FROM projects WHERE id = ?");
-    const result = stmt.get(id) as Project | null;
+    const result = stmt.get(id) as Project | undefined;
     return result || null;
   }
 
@@ -77,4 +78,5 @@ export class ProjectModel {
     return result.changes > 0;
   }
 }
+
 

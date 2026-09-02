@@ -1,17 +1,17 @@
-# Mermaid Live Editor - Bun & SQLite 后端服务
+# Mermaid Live Editor - Node.js & SQLite 后端服务
 
 [English](README.md) | 简体中文
 
-Mermaid Live Editor 的持久化存储后端服务，基于 **Bun.js** 与内置的原生 **SQLite (`bun:sqlite`)** 构建，提供极轻量、超快速的图表持久化与多端同步能力。
+Mermaid Live Editor 的持久化存储后端服务，基于 **Node.js**、**Express** 与 **`better-sqlite3`** 构建，提供轻量、稳健的图表持久化与多端同步能力。
 
 ---
 
 ## 功能特性
 
-- **RESTful API**：标准的 Mermaid 图表项目增删改查 (CRUD) 接口。
+- **RESTful API**：基于 Express 的标准 Mermaid 图表项目增删改查 (CRUD) 接口。
 - **内置 SQLite 存储**：全自动数据库迁移与表初始化 (`migrations/001_init.sql`)，单文件零额外数据库依赖。
 - **跨域资源共享 (CORS)**：原生支持预检 `OPTIONS` 请求及自定义跨域来源。
-- **严格类型安全**：基于 TypeScript 严格模式 (`strict: true`)。
+- **严格类型安全**：基于 TypeScript 严格模式 (`strict: true`)，并配备完整的 Vitest 自动化测试套件。
 - **生产级容器化**：多阶段构建的 `Dockerfile`，内置健康检查 (`HEALTHCHECK`) 与数据卷持久化。
 
 ---
@@ -40,18 +40,29 @@ NODE_ENV=production
 
 1. **安装依赖**：
    ```bash
-   bun install
+   pnpm install
    ```
 
 2. **开发模式启动（支持热重载）**：
    ```bash
-   bun run dev
+   pnpm dev
    ```
 
-3. **生产模式启动**：
+3. **构建生产版本**：
    ```bash
-   bun run start
+   pnpm build
    ```
+
+4. **生产模式启动**：
+   ```bash
+   pnpm start
+   ```
+
+5. **执行测试套件**：
+   ```bash
+   pnpm test
+   ```
+
 
 ---
 
@@ -209,3 +220,4 @@ CREATE TABLE IF NOT EXISTS projects (
 );
 CREATE INDEX IF NOT EXISTS idx_projects_updated_at ON projects(updated_at DESC);
 ```
+

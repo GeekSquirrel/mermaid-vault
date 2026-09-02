@@ -2,7 +2,7 @@
 
 [简体中文](CONTRIBUTING.zh.md) | English
 
-Thank you for contributing to Mermaid Live Editor with Bun.js backend! Please follow these guidelines to keep code quality and documentation consistent.
+Thank you for contributing to Mermaid Live Editor with Persistent Storage! Please follow these guidelines to keep code quality and documentation consistent.
 
 ---
 
@@ -48,9 +48,11 @@ Whenever you add, modify, or delete sections in any documentation file, you **mu
 
 - **Backend**:
   - TypeScript strict mode (`strict: true`).
-  - Use `bun test` or manually verify all REST API endpoints.
+  - Run `pnpm test` with Vitest and verify all REST API endpoints.
 - **Frontend**:
   - Ensure type checking passes (`pnpm run check` or `svelte-check`).
   - Ensure production build passes (`pnpm build`).
 - **Docker**:
   - Verify that `docker compose build` succeeds without errors.
+
+

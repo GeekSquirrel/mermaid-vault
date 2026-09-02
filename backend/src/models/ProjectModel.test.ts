@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { ProjectModel } from "./ProjectModel.js";
 
 describe("ProjectModel CRUD operations", () => {
@@ -42,3 +42,5 @@ describe("ProjectModel CRUD operations", () => {
     expect(afterDelete).toBeNull();
   });
 });
+
+

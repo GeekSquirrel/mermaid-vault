@@ -283,6 +283,133 @@
 
 **开发执行建议**：按 `M0 → M1 → M2 → M3 → M4 → M5` 顺序推进，每完成一个小节勾选对应 Checkbox。M4 和 M5 可在 M3 完成后作为迭代增强进行，不影响 v1.0 核心功能交付。
 
+
+
+# Plan: Mermaid Live Editor with Persistent Storage (v2)
+
+> **目标**：在 v1 的基础上，将后端运行时从 Bun.js 迁移至 Node.js，统一使用 pnpm 进行依赖管理，并实现前后端 Docker 镜像分离与 Docker Compose 统一编排，进一步提升部署的标准化与可维护性。  
+> **范围**：v2 聚焦于技术栈统一与部署优化，不修改业务功能，确保与 v1 完全兼容。
+
+---
+
+## 里程碑概览
+
+| 阶段 | 描述 | 状态 |
+|------|------|------|
+| **M0** | 环境准备与项目结构搭建 | ✅ 已完成 |
+| **M1** | 后端核心开发（数据库 + CRUD API） | ✅ 已完成 |
+| **M2** | 前端改造（项目浏览界面 + 存储逻辑替换） | ✅ 已完成 |
+| **M3** | 联调、端到端测试与收尾 | ✅ 已完成 |
+| **M4** | v1.1 国际化与文档同步（修正） | ✅ 已完成 |
+| **M5** | v1.2 Docker 化与部署配置（增强） | ✅ 已完成 |
+| **M6** | 后端重构：Bun.js → Node.js + pnpm | ✅ 已完成 |
+| **M7** | 统一 Docker 编排与部署优化 | ✅ 已完成 |
+
+---
+
+## M6 – 后端重构：Bun.js → Node.js + pnpm
+
+> **说明**：弃用 Bun.js 运行时，改用 Node.js（LTS），包管理统一使用 pnpm。需保证所有 API 行为与数据库操作与 v1 完全一致，实现无缝替换。
+
+### 6.1 依赖与工具链迁移
+- [x] **6.1.1** 移除 `backend/` 下所有 Bun 特有依赖（如 `bun:sqlite`），在 `package.json` 中替换为 Node.js 兼容库：
+  - 使用 `better-sqlite3` 替代内置 SQLite。
+  - 使用 `express` 或 `fastify` 替代 `Bun.serve`（推荐 `express` 以简化迁移）。
+- [x] **6.1.2** 将 `backend/` 的包管理器从 `bun` 切换为 `pnpm`：
+  - 删除 `bun.lockb`，生成 `pnpm-lock.yaml`。
+  - 在 `backend/` 下执行 `pnpm init` 确保 `package.json` 正确。
+- [x] **6.1.3** 调整 `backend/tsconfig.json`，设置 `"module": "CommonJS"` 或 `"NodeNext"`，确保与 Node.js 兼容。
+- [x] **6.1.4** 更新 `backend/package.json` 中的脚本：
+  - `"dev": "nodemon --exec node --loader ts-node/esm src/index.ts"`（或使用 `tsx`）
+  - `"start": "node dist/index.js"`（构建后）
+- [x] **6.1.5** 添加构建脚本 `"build": "tsc"`，配置 `outDir` 为 `dist`。
+
+### 6.2 数据库层适配
+- [x] **6.2.1** 修改 `backend/src/db/index.ts`，使用 `better-sqlite3` 的 `Database` 类，保持单例模式。
+- [x] **6.2.2** 迁移脚本不变，但需调整执行方式（读取 SQL 文件并 `exec`）。
+- [x] **6.2.3** 更新所有 Repository 方法（`ProjectModel`），将 `bun:sqlite` 的 `prepare`/`run`/`get`/`all` 替换为 `better-sqlite3` 的对应 API（`prepare`、`run`、`get`、`all` 基本一致，注意参数绑定方式）。
+
+### 6.3 服务器与路由重构
+- [x] **6.3.1** 重写 `backend/src/index.ts`，使用 `express` 创建应用：
+  - 注册 `express.json()` 中间件解析 JSON 请求体。
+  - 使用 `cors` 中间件配置 CORS（保持 v1 的宽松策略）。
+  - 挂载路由（`/api` 前缀）。
+- [x] **6.3.2** 将原有基于 `Bun.serve` 的 `fetch` 路由处理逻辑迁移到 `express.Router` 中，保持路径与控制器调用不变。
+- [x] **6.3.3** 添加健康检查端点 `GET /health` 返回 `{ status: "ok" }`。
+- [x] **6.3.4** 实现错误处理中间件，统一返回 `{ success: false, error: { code, message } }` 格式。
+
+### 6.4 测试与验证
+- [x] **6.4.1** 使用 `bun test` 的测试文件迁移到 `jest` 或 `vitest`（推荐 `vitest`，与 pnpm 兼容），并确保所有原有测试用例通过。
+- [x] **6.4.2** 手动执行 v1 中的所有功能测试用例（参考 ROADMAP v1 3.2 和 3.3），确保 API 行为完全一致。
+- [x] **6.4.3** 使用 Postman/Insomnia 或编写脚本对每个端点进行回归测试，特别关注时间戳处理、错误码等细节。
+
+### 6.5 文档与环境更新
+- [x] **6.5.1** 更新 `backend/README.md` 和 `backend/README.zh.md`，说明新的运行方式（`pnpm install`、`pnpm dev`、`pnpm build`、`pnpm start`）。
+- [x] **6.5.2** 更新根目录 `README.md` 和 `README.zh.md`，修改启动步骤，反映后端使用 Node.js + pnpm。
+- [x] **6.5.3** 更新 `.env.example`，移除 Bun 相关变量，确保 `PORT`、`DB_PATH` 等仍然生效。
+- [x] **6.5.4** 提交代码，并在子模块中保持前端不变（前端仍使用原有构建方式，此阶段不调整前端）。
+
+
+---
+
+## M7 – 统一 Docker 编排与部署优化
+
+> **说明**：在 M5（已有后端 Dockerfile）基础上，扩展为前后端分离镜像，并使用 Docker Compose 统一编排，支持开发与生产环境。
+
+### 7.1 前端 Docker 化
+- [x] **7.1.1** 为 `mermaid-live-editor/` 编写 `Dockerfile`：
+  - 基于 `node:20-alpine` 作为基础镜像。
+  - 使用 `pnpm` 安装依赖，构建生产静态文件（`pnpm build`）。
+  - 使用 `nginx` 或 `serve` 提供静态文件服务（建议使用 `nginx:alpine` 作为最终镜像，复制构建产物）。
+- [x] **7.1.2** 确保前端 Docker 镜像可通过环境变量配置后端 API 地址（如 `VITE_API_BASE_URL`），在构建时传入。
+
+### 7.2 后端 Dockerfile 优化
+- [x] **7.2.1** 修改 `backend/Dockerfile` 以适配 Node.js + pnpm：
+  - 使用 `node:20-alpine`，安装 `pnpm`。
+  - 复制 `package.json` 和 `pnpm-lock.yaml`，运行 `pnpm install --frozen-lockfile`。
+  - 复制源码并执行 `pnpm build`。
+  - 使用 `node dist/index.js` 作为启动命令。
+- [x] **7.2.2** 确保镜像支持通过环境变量覆盖 `PORT`、`DB_PATH` 等。
+
+### 7.3 Docker Compose 统一编排
+- [x] **7.3.1** 在项目根目录创建 `docker-compose.yml`，定义两个服务：
+  - `backend`：构建上下文 `./backend`，映射端口 `${BACKEND_PORT:-8080}:8080`，挂载 `./backend/data:/app/data` 持久化 SQLite。
+  - `frontend`：构建上下文 `./mermaid-live-editor`，映射端口 `${FRONTEND_PORT:-80}:80`（或 5173 等），依赖 `backend`。
+- [x] **7.3.2** 使用 `env_file` 引用根目录的 `.env` 文件，集中管理变量。
+- [x] **7.3.3** 添加 `restart: unless-stopped` 策略，确保服务自动恢复。
+- [x] **7.3.4** 提供 `docker-compose.override.yml` 示例（用于开发时挂载源码实现热重载）。
+
+### 7.4 开发与生产环境配置
+- [x] **7.4.1** 创建 `.env.production` 示例，包含生产环境变量（如 `NODE_ENV=production`）。
+- [x] **7.4.2** 在根目录 `README` 中新增“Docker 快速启动”章节，说明使用 `docker-compose up -d` 一键启动全栈服务。
+- [x] **7.4.3** 验证在 Docker 环境下，前后端通信正常，数据持久化有效。
+
+### 7.5 验收与文档
+- [x] **7.5.1** 执行端到端测试（同 M3 测试用例）于 Docker 环境中，确保功能完整。
+- [x] **7.5.2** 更新根目录 `README` 双语版本，补充 Docker 部署详情。
+- [x] **7.5.3** 更新 `backend/README` 中关于 Docker 构建与运行的说明。
+
+---
+
+## 验收标准（v2）
+- [x] 后端成功迁移至 Node.js + pnpm，所有 API 响应与 v1 完全一致。
+- [x] 前端无需改动，仍可正常与后端通信。
+- [x] 可通过 Docker Compose 一键启动前后端服务，数据持久化。
+- [x] 所有文档中英文同步更新，且无过时信息。
+- [x] 控制台无错误日志，CORS 配置正常。
+
+
+---
+
+## 附录：技术栈变更速查
+- **后端运行时**：Node.js 20 LTS（原 Bun.js）
+- **包管理器**：pnpm（统一前后端）
+- **SQLite 驱动**：`better-sqlite3`（原内置 `bun:sqlite`）
+- **Web 框架**：Express（原 `Bun.serve`）
+- **Docker 基础镜像**：`node:20-alpine` 与 `nginx:alpine`
+
+
+
 ## 后续迭代考虑（v2.0+）
 - 用户认证与多用户隔离
 - 项目共享/公开链接

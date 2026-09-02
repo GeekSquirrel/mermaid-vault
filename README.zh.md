@@ -1,20 +1,20 @@
-# Mermaid Live Editor 与 Bun.js + SQLite 持久化存储后端
+# Mermaid Live Editor 与 Node.js + SQLite 持久化存储后端
 
 [English](README.md) | 简体中文
 
-本项目为官方 [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) 增加了基于 **Bun.js + SQLite** 的云端持久化存储后端，实现个人图表项目的多端同步、持久化管理与实时防抖自动保存。
+本项目为官方 [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) 增加了基于 **Node.js (Express + better-sqlite3)** 的云端持久化存储后端，实现个人图表项目的多端同步、持久化管理与实时防抖自动保存。
 
 ---
 
 ## 架构概览
 
-- **前端 (`mermaid-live-editor/`)**: 基于 SvelteKit 与 TypeScript（官方 Git 子模块）。新增“我的项目”管理面板、1.5 秒防抖自动云端同步、自定义项目标题编辑及可视化保存状态提示。
-- **后端 (`backend/`)**: 基于 **Bun.js** 与内置 **`bun:sqlite`** 构建的轻量极速 REST API 服务，包含启动时自动数据库迁移、CORS 支持及单文件 SQLite 持久化存储。
+- **前端 (`mermaid-live-editor/`)**: 基于 SvelteKit 与 TypeScript（官方 Git 子模块）。包含“我的项目”管理面板、1.5 秒防抖自动云端同步、自定义项目标题编辑及可视化保存状态提示。
+- **后端 (`backend/`)**: 基于 **Node.js (LTS)**、**Express** 与 **`better-sqlite3`** 构建的稳健 REST API 服务，包含启动时自动数据库迁移、CORS 支持、单文件 SQLite 持久化存储及自动化 Vitest 测试套件。
 
 ```
 +--------------------------+       HTTP REST API       +-------------------------+
-|   Mermaid Live Editor    | <-----------------------> |    Bun.js API Server    |
-|   (前端 :3000)           |   (CORS / JSON DTOs)      |     (后端 :8080)        |
+|   Mermaid Live Editor    | <-----------------------> |   Node.js API Server    |
+|   (前端 :80/:3000)       |   (CORS / JSON DTOs)      |     (后端 :8080)        |
 +--------------------------+                           +-------------------------+
                                                                     |
                                                                     v
@@ -36,8 +36,8 @@
   - 编辑代码或修改标题时，防抖 1.5 秒自动同步保存至后端数据库。
   - 顶部保存状态清晰可见：*Saving...*、*Saved* 或 *Save failed (Click to retry)*。
   - 新建项目保存后自动将 `projectId` 同步至浏览器地址栏（无须刷新页面）。
-- **Docker 编排部署**:
-  - 一键式生产环境 Docker Compose 部署，数据目录持久化挂载。
+- **全栈 Docker 编排部署**:
+  - 一键式生产环境 Docker Compose 部署前端与后端，数据目录持久化挂载。
   - 提供开发环境 Compose 配置（支持源码热重载）。
 - **全套双语文档与国际化对齐**:
   - 全套中英文双语文档同步维护。
@@ -47,8 +47,7 @@
 
 ## 环境要求
 
-- **Bun**: `>= 1.0` (推荐 1.3+)
-- **Node.js**: `>= 20`
+- **Node.js**: `>= 20` (推荐 LTS 版本)
 - **pnpm**: `>= 9` (推荐 10+)
 - **Docker & Docker Compose**（可选，用于容器化部署）
 
@@ -61,8 +60,8 @@
 #### 1. 启动后端 API 服务
 ```bash
 cd backend
-bun install
-bun run dev
+pnpm install
+pnpm dev
 ```
 后端服务默认启动于 `http://localhost:8080`，首次启动会自动创建 `./data/mermaid.db` 数据库文件及数据表。
 
@@ -72,15 +71,15 @@ cd mermaid-live-editor
 pnpm install
 pnpm dev
 ```
-前端编辑器默认启动于 `http://localhost:3000`。
+前端编辑器默认启动于 `http://localhost:3000` (或 `:5173`)。
 
 ---
 
 ### 方式二：使用 Docker 部署
 
-#### 生产模式（容器化后端）
+#### 生产模式（全栈一键启动）
 ```bash
-# 启动后端服务（自动持久化数据）
+# 启动前端与后端服务（自动持久化数据）
 docker compose up -d
 
 # 查看容器日志
@@ -91,6 +90,7 @@ docker compose logs -f
 ```bash
 docker compose -f docker-compose.dev.yml up
 ```
+
 
 ---
 
@@ -121,3 +121,4 @@ VITE_API_BASE_URL=http://localhost:8080/api
 ## 许可证
 
 [MIT License](LICENSE)
+

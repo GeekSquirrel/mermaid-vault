@@ -1,20 +1,20 @@
-# Mermaid Live Editor with Bun.js & SQLite Backend
+# Mermaid Live Editor with Node.js & SQLite Backend
 
 [简体中文](README.zh.md) | English
 
-This project extends the official [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) with a lightweight, persistent **Bun.js + SQLite** backend. It enables seamless cloud-persisted storage, cross-device editing, diagram project management, and automated debounced synchronization.
+This project extends the official [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) with a robust, persistent **Node.js (Express + better-sqlite3)** backend. It enables seamless cloud-persisted storage, cross-device editing, diagram project management, and automated debounced synchronization.
 
 ---
 
 ## Architecture Overview
 
-- **Frontend (`mermaid-live-editor/`)**: Built with SvelteKit and TypeScript (official upstream submodule). Features a new "My Projects" dashboard, automatic 1.5s debounced synchronization to backend storage, editable project titles, and visual save status indicators.
-- **Backend (`backend/`)**: Ultra-lightweight REST API powered by **Bun.js** and built-in **`bun:sqlite`**. Includes automatic migration on startup, CORS headers, and single-file SQLite database storage.
+- **Frontend (`mermaid-live-editor/`)**: Built with SvelteKit and TypeScript (official upstream submodule). Features a "My Projects" dashboard, automatic 1.5s debounced synchronization to backend storage, editable project titles, and visual save status indicators.
+- **Backend (`backend/`)**: Robust REST API powered by **Node.js (LTS)**, **Express**, and **`better-sqlite3`**. Includes automatic migration on startup, CORS headers, single-file SQLite database storage, and automated Vitest test suite.
 
 ```
 +--------------------------+       HTTP REST API       +-------------------------+
-|   Mermaid Live Editor    | <-----------------------> |    Bun.js API Server    |
-|   (Frontend :3000)       |   (CORS / JSON DTOs)      |     (Backend :8080)     |
+|   Mermaid Live Editor    | <-----------------------> |   Node.js API Server    |
+|   (Frontend :80/:3000)   |   (CORS / JSON DTOs)      |     (Backend :8080)     |
 +--------------------------+                           +-------------------------+
                                                                     |
                                                                     v
@@ -36,8 +36,8 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
   - Real-time debounced save (1.5s) on diagram code or title edits.
   - Save status indicators: *Saving...*, *Saved*, or *Save failed (Click to retry)*.
   - Dynamic URL synchronization without page reload.
-- **Docker Compose Orchestration**:
-  - One-click production deployment with persistent data volumes.
+- **Full-Stack Docker Compose Orchestration**:
+  - One-click production deployment for both frontend and backend with persistent data volumes.
   - Hot-reloading development compose configuration.
 - **Bilingual Documentation & i18n Aligned**:
   - Fully bilingual documentation (English & Simplified Chinese).
@@ -47,8 +47,7 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 
 ## Prerequisites
 
-- **Bun**: `>= 1.0` (Recommended 1.3+)
-- **Node.js**: `>= 20`
+- **Node.js**: `>= 20` (LTS recommended)
 - **pnpm**: `>= 9` (Recommended 10+)
 - **Docker & Docker Compose** (Optional, for containerized deployment)
 
@@ -61,8 +60,8 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 #### 1. Start the Backend API
 ```bash
 cd backend
-bun install
-bun run dev
+pnpm install
+pnpm dev
 ```
 The backend API server starts at `http://localhost:8080`. On first run, it automatically initializes the SQLite database at `backend/data/mermaid.db`.
 
@@ -72,15 +71,15 @@ cd mermaid-live-editor
 pnpm install
 pnpm dev
 ```
-The frontend editor starts at `http://localhost:3000`.
+The frontend editor starts at `http://localhost:3000` (or `:5173`).
 
 ---
 
 ### Method 2: Docker Deployment
 
-#### Production Mode
+#### Production Mode (Full-Stack)
 ```bash
-# Start backend service with persistent volume
+# Start frontend and backend services with persistent volume
 docker compose up -d
 
 # View service logs
@@ -91,6 +90,7 @@ docker compose logs -f
 ```bash
 docker compose -f docker-compose.dev.yml up
 ```
+
 
 ---
 

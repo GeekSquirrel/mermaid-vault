@@ -6,7 +6,7 @@ services:
     container_name: mermaid-editor-backend
     restart: unless-stopped
     ports:
-      - "${PORT:-8080}:8080"
+      - "${BACKEND_PORT:-${PORT:-8080}}:8080"
     environment:
       - PORT=8080
       - DB_PATH=/app/data/mermaid.db
@@ -16,6 +16,8 @@ services:
         required: false
       - path: ./.env
         required: false
+      - path: ./.env.production
+        required: false
     volumes:
       - ./backend/data:/app/data
     healthcheck:
@@ -24,3 +26,24 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
+
+  frontend:
+    build:
+      context: ./mermaid-live-editor
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080/api}
+    container_name: mermaid-editor-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    env_file:
+      - path: ./.env
+        required: false
+      - path: ./.env.production
+        required: false
+
+

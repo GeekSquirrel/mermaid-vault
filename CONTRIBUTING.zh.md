@@ -2,7 +2,7 @@
 
 [English](CONTRIBUTING.md) | 简体中文
 
-感谢您对带有 Bun.js 后端的 Mermaid Live Editor 项目做出贡献！请遵循以下开发规范以保持代码质量与文档的一致性。
+感谢您对带有持久化存储后端的 Mermaid Live Editor 项目做出贡献！请遵循以下开发规范以保持代码质量与文档的一致性。
 
 ---
 
@@ -48,9 +48,11 @@
 
 - **后端代码**：
   - 启用 TypeScript 严格模式 (`strict: true`)。
-  - 使用 `bun test` 或手动接口调用验证所有 REST API 端点。
+  - 使用 `pnpm test`（基于 Vitest）验证所有 REST API 端点。
 - **前端代码**：
   - 确保类型检查通过（`pnpm run check` 或 `svelte-check`）。
   - 确保生产打包顺利完成（`pnpm build`）。
 - **Docker 容器**：
   - 验证 `docker compose build` 构建成功无报错。
+
+
