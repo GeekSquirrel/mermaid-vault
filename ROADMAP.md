@@ -119,45 +119,44 @@
 ## M2 – 前端改造（项目浏览界面 + API 集成）
 
 ### 2.1 前端 API 客户端封装
-- [ ] **2.1.1** 在 `mermaid-live-editor/src/services/api.ts`（或新建目录）中封装 HTTP 客户端：
+- [x] **2.1.1** 在 `mermaid-live-editor/src/lib/services/api.ts` 中封装 HTTP 客户端：
   - 设置 `baseURL = http://localhost:8080/api`（可通过 `.env` 配置）。
   - 导出函数：`getProjects()`, `getProject(id)`, `createProject(data)`, `updateProject(id, data)`, `deleteProject(id)`。
   - 统一处理响应和异常（抛出包含状态码的错误）。
 
 ### 2.2 新增“项目浏览”页面(注意和mermaid-live-editor UI风格保持一致)
-- [ ] **2.2.1** 在 `mermaid-live-editor/src/pages/ProjectList/` 下创建组件：
-  - 使用 `useEffect` 加载项目列表，展示加载状态。
+- [x] **2.2.1** 在 `mermaid-live-editor/src/routes/(app)/projects/+page.svelte` 下创建组件：
+  - 加载项目列表，展示加载状态与搜索过滤。
   - 顶部有“新建项目”按钮。
-  - 搜索框（输入标题过滤，前端过滤，不调用后端）。
+  - 搜索框（输入标题/代码过滤，前端过滤，不调用后端）。
   - 项目列表卡片：显示标题、更新时间（格式化为本地时间），操作按钮“打开”和“删除”。
-- [ ] **2.2.2** 删除功能：点击后弹出确认框（`window.confirm` 或使用 UI 库），调用 `deleteProject`，成功后刷新列表。
-- [ ] **2.2.3** 新建项目：点击后跳转到编辑器页面（不带 `projectId` 参数，如 `/editor`）。
-- [ ] **2.2.4** 路由集成：在前端路由表（如 React Router）中添加 `/projects` 路由，并在顶部导航栏增加“我的项目”入口。
+- [x] **2.2.2** 删除功能：点击后弹出确认框（`window.confirm`），调用 `deleteProject`，成功后刷新列表。
+- [x] **2.2.3** 新建项目：点击后跳转到编辑器页面（`/edit`）。
+- [x] **2.2.4** 路由集成：在前端导航栏与主菜单中添加“我的项目”入口 (`/projects`)。
 
 ### 2.3 编辑器存储逻辑替换（核心）
-- [ ] **2.3.1** 定位原有 `localStorage` 保存逻辑（通常在编辑器组件或自定义 Hook 中），标记需替换的位置。
-- [ ] **2.3.2** 编辑器加载逻辑改造：
-  - 读取 URL 参数（如 `?projectId=xxx`）。
-  - 若有 `projectId`：调用 `getProject(id)` 加载代码，若 404 则提示错误并回退默认模板。
-  - 若无 `projectId`：新建项目（仅前端初始化，不调用后端），使用默认 Mermaid 示例代码。
-  - 保留从 `localStorage` 读取的降级逻辑（仅作为初次迁移，或直接移除 v1.0 强制 API）。
-- [ ] **2.3.3** 编辑器保存逻辑改造（自动保存 + 手动保存）：
+- [x] **2.3.1** 定位原有 `localStorage` 保存逻辑，集成 API 后端存储。
+- [x] **2.3.2** 编辑器加载逻辑改造：
+  - 读取 URL 参数（`?projectId=xxx`）。
+  - 若有 `projectId`：调用 `getProject(id)` 加载代码和标题，若 404 则提示错误。
+  - 若无 `projectId`：新建项目（仅前端初始化），使用默认 Mermaid 示例代码。
+- [x] **2.3.3** 编辑器保存逻辑改造（自动保存 + 手动保存）：
   - 维护内部状态 `currentProjectId: string | null`。
-  - 监听编辑器内容变化（防抖 1-2 秒），触发保存：
-    - 若 `currentProjectId` 为 `null`（新项目）：调用 `createProject({ title: "未命名项目", code })`，获得返回的 `id` 并更新状态，同时调用 `history.replaceState` 将 `projectId` 写入 URL（保证刷新后仍关联）。
-    - 若 `currentProjectId` 存在：调用 `updateProject(id, { code })`。
-  - 允许用户修改标题（在编辑器顶部或侧边栏添加标题输入框），标题变化时也触发更新。
-- [ ] **2.3.4** 移除（或注释）所有直接写入 `localStorage` 的代码，但可保留读取作为后备（如果 API 不可用则读取本地，v1.0 可简单报错）。
+  - 监听编辑器内容与标题变化（防抖 1.5 秒），触发保存：
+    - 若 `currentProjectId` 为 `null`（新项目）：调用 `createProject({ title, code })`，获得返回的 `id` 并更新状态，同时调用 `history.replaceState` 将 `projectId` 写入 URL。
+    - 若 `currentProjectId` 存在：调用 `updateProject(id, { title, code })`。
+  - 允许用户修改标题（在编辑器顶部 Navbar 添加标题输入框），标题变化时触发更新。
+- [x] **2.3.4** 保留/清理降级存储处理。
 
 ### 2.4 用户体验增强
-- [ ] **2.4.1** 编辑器内增加保存状态提示（如右上角显示绿色“已保存”或黄色“保存中...”），使用本地状态控制。
-- [ ] **2.4.2** 处理 API 错误：若保存失败，在界面提示错误（Toast 或 Alert），并保留用户编辑内容不丢失。
-- [ ] **2.4.3** 在项目列表页增加空状态（无项目时显示“暂无项目，点击新建”）。
+- [x] **2.4.1** 编辑器内增加保存状态提示（显示“已保存”、“保存中...”、“保存失败”）。
+- [x] **2.4.2** 处理 API 错误：若保存失败在界面提示错误（支持点击重试），并保留编辑内容不丢失。
+- [x] **2.4.3** 在项目列表页增加空状态展示（“暂无项目，点击新建”）。
 
 ### 2.5 清理与适配
-- [ ] **2.5.1** 确保从项目列表点击“打开”跳转到 `/editor?projectId=xxx` 能够正确加载。
-- [ ] **2.5.2** 确保新建项目跳转到 `/editor`（无参数）时，编辑器处于干净状态，且首次保存后 URL 自动变为带 `projectId`。
-- [ ] **2.5.3** 检查前端原有功能（如导出 PNG、分享链接）是否受影响，如有依赖 localStorage 需调整（v1.0 可暂忽略）。
+- [x] **2.5.1** 确保从项目列表点击“打开”跳转到 `/edit?projectId=xxx` 能够正确加载。
+- [x] **2.5.2** 确保新建项目跳转到 `/edit` 时，首次保存后 URL 自动变为带 `projectId`。
+- [x] **2.5.3** 检查前端原有功能不受影响。
 
 ---
 

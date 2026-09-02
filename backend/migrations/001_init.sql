@@ -6,3 +6,4 @@ CREATE TABLE IF NOT EXISTS projects (
     updated_at INTEGER NOT NULL           -- Unix 时间戳 (毫秒)
 );
 CREATE INDEX IF NOT EXISTS idx_projects_updated_at ON projects(updated_at DESC);
+

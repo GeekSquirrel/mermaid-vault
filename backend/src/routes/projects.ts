@@ -75,3 +75,4 @@ export async function handleProjectsRoute(
     { status: 404 }
   );
 }
+

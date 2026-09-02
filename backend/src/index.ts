@@ -52,3 +52,4 @@ const server = Bun.serve({
 });
 
 console.log(`Mermaid Editor Backend listening on http://localhost:${server.port}`);
+
