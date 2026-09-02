@@ -1,5 +1,5 @@
 # Stage 1: Build application and compile TypeScript
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 RUN apk add --no-cache python3 make g++
 
@@ -8,7 +8,9 @@ RUN corepack enable pnpm
 WORKDIR /app
 
 # Copy dependency manifests
-COPY package.json pnpm-lock.yaml tsconfig.json ./
+COPY package.json pnpm-lock.yaml tsconfig.json .npmrc* pnpm-workspace.yaml* ./
+
+
 
 # Install all dependencies including devDependencies for compilation
 RUN pnpm install --frozen-lockfile
@@ -21,7 +23,7 @@ COPY migrations ./migrations
 RUN pnpm build
 
 # Stage 2: Production runtime image
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 

@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "type": "module",
   "private": true,
+  "packageManager": "pnpm@11.17.0",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -27,3 +28,5 @@
     "vitest": "^3.0.7"
   }
 }
+
+
