@@ -1,0 +1,3 @@
+[submodule "mermaid-live-editor"]
+	path = mermaid-live-editor
+	url = https://github.com/GeekSquirrel/mermaid-live-editor
