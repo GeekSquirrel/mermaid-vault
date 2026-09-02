@@ -36,7 +36,7 @@ services:
     container_name: mermaid-editor-frontend
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-80}:80"
+      - "${FRONTEND_PORT:-8000}:80"
     depends_on:
       backend:
         condition: service_healthy
