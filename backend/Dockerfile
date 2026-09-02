@@ -18,3 +18,4 @@ ENV DB_PATH=/app/data/mermaid.db
 
 # Run the application
 CMD ["bun", "run", "src/index.ts"]
+
