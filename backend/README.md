@@ -1,69 +1,106 @@
 # Mermaid Live Editor - Bun & SQLite Backend
 
-Mermaid Live Editor 的持久化后端服务，基于 **Bun.js** 与内置的 **SQLite (`bun:sqlite`)** 构建，提供轻量、高效的图表项目云端存储服务。
+[简体中文](README.zh.md) | English
+
+Persistent storage backend for Mermaid Live Editor, built with **Bun.js** and native **SQLite (`bun:sqlite`)**, providing lightweight, ultra-fast chart persistence across devices.
 
 ---
 
-## 功能特性
+## Features
 
-- **RESTful API**：标准的项目 CRUD 操作。
-- **SQLite 存储**：自动数据库迁移 (`migrations/001_init.sql`)，单文件无须额外部署数据库服务。
-- **跨域支持 (CORS)**：原生配置预检请求 (OPTIONS) 及响应头，支持前端开箱即用。
-- **内置类型安全**：TypeScript 严格模式。
+- **RESTful API**: Standard CRUD operations for Mermaid chart projects.
+- **Embedded SQLite Storage**: Automatic database migrations (`migrations/001_init.sql`), zero external database dependencies.
+- **Cross-Origin Resource Sharing (CORS)**: Built-in support for preflight `OPTIONS` requests and configurable origins.
+- **Strict Type Safety**: Fully typed with TypeScript strict mode.
+- **Container Ready**: Multi-stage `Dockerfile` with health check and persistent volume.
 
 ---
 
-## 环境变量
+## Environment Variables
 
-创建 `.env` 文件（或参考 `.env.example`）：
+Create a `.env` file in `backend/` or copy from `.env.example`:
 
 ```env
 PORT=8080
 DB_PATH=./data/mermaid.db
+NODE_ENV=production
 ```
 
-- `PORT`: 服务监听端口（默认 `8080`）
-- `DB_PATH`: SQLite 数据库存储文件路径（默认 `./data/mermaid.db`）
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `8080` | HTTP port for the backend server |
+| `DB_PATH` | `./data/mermaid.db` | Path to the SQLite database file |
+| `NODE_ENV` | `development` / `production` | Environment mode |
 
 ---
 
-## 启动指南
+## Quick Start
 
-### 依赖安装
+### Local Development
+
+1. **Install dependencies**:
+   ```bash
+   bun install
+   ```
+
+2. **Run in development mode (with watch)**:
+   ```bash
+   bun run dev
+   ```
+
+3. **Start in production mode**:
+   ```bash
+   bun run start
+   ```
+
+---
+
+## Docker Deployment
+
+### 1. Build and Run Standalone Container
 ```bash
-bun install
+# Build image
+docker build -t mermaid-editor-backend .
+
+# Run with persistent data volume
+docker run -d \
+  --name mermaid-editor-backend \
+  -p 8080:8080 \
+  -v $(pwd)/data:/app/data \
+  mermaid-editor-backend
 ```
 
-### 开发模式（热重载）
+### 2. Run with Docker Compose
+From the project root directory:
 ```bash
-bun run dev
-```
-
-### 生产启动
-```bash
-bun run start
+docker compose up -d
 ```
 
 ---
 
-## API 接口文档
+## API Documentation
 
-基准路径: `http://localhost:8080`
+Base URL: `http://localhost:8080`
 
-### 1. 健康检查
+### 1. Health Check
 - **GET `/health`**
-- **响应**：`{ "status": "ok" }`
+- **Response** `200 OK`:
+  ```json
+  {
+    "status": "ok"
+  }
+  ```
 
-### 2. 获取项目列表
+### 2. List Projects
 - **GET `/api/projects`**
-- **响应**：
+- **Response** `200 OK`:
   ```json
   {
     "success": true,
     "data": [
       {
         "id": "c5accb93-f523-47ec-a450-15afb7c61e5b",
-        "title": "流程图项目",
+        "title": "Architecture Overview",
         "code": "graph TD\n  A --> B",
         "created_at": 1788324930518,
         "updated_at": 1788324930518
@@ -72,50 +109,103 @@ bun run start
   }
   ```
 
-### 3. 获取单个项目
+### 3. Get Project by ID
 - **GET `/api/projects/:id`**
-- **响应**：`{ "success": true, "data": { ... } }`
-- **错误**（404）：`{ "success": false, "error": { "code": "NOT_FOUND", "message": "Project with id xxx not found" } }`
-
-### 4. 创建项目
-- **POST `/api/projects`**
-- **请求体**：
+- **Response** `200 OK`:
   ```json
   {
-    "title": "未命名项目",
+    "success": true,
+    "data": {
+      "id": "c5accb93-f523-47ec-a450-15afb7c61e5b",
+      "title": "Architecture Overview",
+      "code": "graph TD\n  A --> B",
+      "created_at": 1788324930518,
+      "updated_at": 1788324930518
+    }
+  }
+  ```
+- **Response** `404 Not Found`:
+  ```json
+  {
+    "success": false,
+    "error": {
+      "code": "NOT_FOUND",
+      "message": "Project with id c5accb93-f523-47ec-a450-15afb7c61e5b not found"
+    }
+  }
+  ```
+
+### 4. Create Project
+- **POST `/api/projects`**
+- **Request Body**:
+  ```json
+  {
+    "title": "Untitled Project",
     "code": "graph TD\n  Start --> Stop"
   }
   ```
-- **响应**（201）：`{ "success": true, "data": { "id": "...", "title": "...", ... } }`
-
-### 5. 更新项目
-- **PUT `/api/projects/:id`**
-- **请求体**：
+- **Response** `201 Created`:
   ```json
   {
-    "title": "新标题",
+    "success": true,
+    "data": {
+      "id": "7bf3b0f5-0453-488b-a7e3-36358dbbbf30",
+      "title": "Untitled Project",
+      "code": "graph TD\n  Start --> Stop",
+      "created_at": 1788324930518,
+      "updated_at": 1788324930518
+    }
+  }
+  ```
+
+### 5. Update Project
+- **PUT `/api/projects/:id`**
+- **Request Body**:
+  ```json
+  {
+    "title": "Updated Flowchart",
     "code": "graph LR\n  A --> B"
   }
   ```
-- **响应**（200）：`{ "success": true, "data": { ... } }`
+- **Response** `200 OK`:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "7bf3b0f5-0453-488b-a7e3-36358dbbbf30",
+      "title": "Updated Flowchart",
+      "code": "graph LR\n  A --> B",
+      "created_at": 1788324930518,
+      "updated_at": 1788324995000
+    }
+  }
+  ```
 
-### 6. 删除项目
+### 6. Delete Project
 - **DELETE `/api/projects/:id`**
-- **响应**（200）：`{ "success": true, "data": { "deleted": true } }`
+- **Response** `200 OK`:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "deleted": true
+    }
+  }
+  ```
 
 ---
 
-## 数据库架构
+## Database Schema
 
-数据表 `projects` 定义位于 `migrations/001_init.sql`：
+Defined in `migrations/001_init.sql`:
 
 ```sql
 CREATE TABLE IF NOT EXISTS projects (
     id TEXT PRIMARY KEY,                  -- UUID v4
-    title TEXT NOT NULL,                  -- 项目标题
-    code TEXT NOT NULL,                   -- Mermaid 代码内容
-    created_at INTEGER NOT NULL,          -- Unix 时间戳 (毫秒)
-    updated_at INTEGER NOT NULL           -- Unix 时间戳 (毫秒)
+    title TEXT NOT NULL,                  -- Project title
+    code TEXT NOT NULL,                   -- Mermaid diagram code
+    created_at INTEGER NOT NULL,          -- Unix timestamp in ms
+    updated_at INTEGER NOT NULL           -- Unix timestamp in ms
 );
 CREATE INDEX IF NOT EXISTS idx_projects_updated_at ON projects(updated_at DESC);
 ```

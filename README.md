@@ -1,70 +1,123 @@
-# Mermaid Live Editor with Bun.js Backend (Persistent Storage)
+# Mermaid Live Editor with Bun.js & SQLite Backend
 
-本项目为官方 [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) 增加了 **Bun.js + SQLite** 的云端持久化存储后端，实现个人图表项目的多端同步与持久化管理。
+[简体中文](README.zh.md) | English
 
----
-
-## 架构概览
-
-- **前端 (Frontend)**: 基于 `mermaid-live-editor` 官方源码（SvelteKit + TypeScript），新增“我的项目”列表页、全自动防抖云端同步保存及项目标题编辑。
-- **后端 (Backend)**: 使用 **Bun.js** + **SQLite (`bun:sqlite`)** 搭建极简、高性能的 RESTful API 服务，实现数据全自动迁移与 CRUD 操作。
-
-```
-+--------------------------+       HTTP API       +-------------------------+
-|   Mermaid Live Editor    | <------------------> |    Bun.js API Server    |
-|   (Frontend :3000)       |   (RESTful / CORS)   |     (Backend :8080)     |
-+--------------------------+                      +-------------------------+
-                                                               |
-                                                               v
-                                                       +---------------+
-                                                       | SQLite DB     |
-                                                       | (mermaid.db)  |
-                                                       +---------------+
-```
+This project extends the official [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) with a lightweight, persistent **Bun.js + SQLite** backend. It enables seamless cloud-persisted storage, cross-device editing, diagram project management, and automated debounced synchronization.
 
 ---
 
-## 快速开始
+## Architecture Overview
 
-### 运行环境准备
-- **Bun**: `>= 1.0` (推荐 1.3+)
+- **Frontend (`mermaid-live-editor/`)**: Built with SvelteKit and TypeScript (official upstream submodule). Features a new "My Projects" dashboard, automatic 1.5s debounced synchronization to backend storage, editable project titles, and visual save status indicators.
+- **Backend (`backend/`)**: Ultra-lightweight REST API powered by **Bun.js** and built-in **`bun:sqlite`**. Includes automatic migration on startup, CORS headers, and single-file SQLite database storage.
+
+```
++--------------------------+       HTTP REST API       +-------------------------+
+|   Mermaid Live Editor    | <-----------------------> |    Bun.js API Server    |
+|   (Frontend :3000)       |   (CORS / JSON DTOs)      |     (Backend :8080)     |
++--------------------------+                           +-------------------------+
+                                                                    |
+                                                                    v
+                                                            +---------------+
+                                                            | SQLite DB     |
+                                                            | (mermaid.db)  |
+                                                            +---------------+
+```
+
+---
+
+## Features
+
+- **Project Dashboard (`/projects`)**:
+  - View all saved Mermaid diagrams and flowcharts in SQLite.
+  - Real-time client-side search by diagram title or code snippet.
+  - Create new projects and delete existing ones with instant confirmation.
+- **Auto-Syncing Cloud Storage (`/edit?projectId=xxx`)**:
+  - Real-time debounced save (1.5s) on diagram code or title edits.
+  - Save status indicators: *Saving...*, *Saved*, or *Save failed (Click to retry)*.
+  - Dynamic URL synchronization without page reload.
+- **Docker Compose Orchestration**:
+  - One-click production deployment with persistent data volumes.
+  - Hot-reloading development compose configuration.
+- **Bilingual Documentation & i18n Aligned**:
+  - Fully bilingual documentation (English & Simplified Chinese).
+  - Clean English UI matching official Mermaid Live Editor design language.
+
+---
+
+## Prerequisites
+
+- **Bun**: `>= 1.0` (Recommended 1.3+)
 - **Node.js**: `>= 20`
-- **pnpm**: `>= 9` (推荐 10+)
+- **pnpm**: `>= 9` (Recommended 10+)
+- **Docker & Docker Compose** (Optional, for containerized deployment)
 
 ---
 
-### 1. 启动后端 API 服务
+## Quick Start
+
+### Method 1: Local Development
+
+#### 1. Start the Backend API
 ```bash
 cd backend
 bun install
 bun run dev
 ```
-后端服务默认启动于 `http://localhost:8080`，首次启动会自动创建 `./data/mermaid.db` 数据库及数据表。
+The backend API server starts at `http://localhost:8080`. On first run, it automatically initializes the SQLite database at `backend/data/mermaid.db`.
 
----
-
-### 2. 启动前端 Live Editor
+#### 2. Start the Frontend Live Editor
 ```bash
 cd mermaid-live-editor
 pnpm install
 pnpm dev
 ```
-前端服务默认启动于 `http://localhost:3000`。
+The frontend editor starts at `http://localhost:3000`.
 
 ---
 
-## 功能说明
+### Method 2: Docker Deployment
 
-1. **项目浏览与管理** (`/projects`)：
-   - 查看保存在 SQLite 中的所有 Mermaid 图表。
-   - 支持实时标题/代码模糊搜索过滤。
-   - 支持从列表新建项目或一键删除指定项目。
-2. **实时云端同步** (`/edit?projectId=xxx`)：
-   - 修改图表代码或项目标题时，防抖 1.5 秒自动同步保存至后端数据库。
-   - 顶部状态栏提示“保存中...”、“已保存”或“保存失败”。
-   - 新建项目在保存后自动同步 `projectId` 至浏览器 URL 地址栏。
+#### Production Mode
+```bash
+# Start backend service with persistent volume
+docker compose up -d
+
+# View service logs
+docker compose logs -f
+```
+
+#### Development Mode (with Source Mount & Hot Reload)
+```bash
+docker compose -f docker-compose.dev.yml up
+```
 
 ---
 
-## 许可证
-MIT License
+## Environment Variables
+
+Copy `.env.example` to `.env` or configure directly:
+
+```env
+# Backend Configuration
+PORT=8080
+DB_PATH=./data/mermaid.db
+NODE_ENV=production
+
+# Frontend Configuration
+VITE_API_BASE_URL=http://localhost:8080/api
+```
+
+---
+
+## Documentation Links
+
+- [Backend API Documentation (English)](backend/README.md) | [后端 API 文档 (中文)](backend/README.zh.md)
+- [Contributing Guidelines (English)](CONTRIBUTING.md) | [贡献指南 (中文)](CONTRIBUTING.zh.md)
+- [Development Roadmap](ROADMAP.md)
+
+---
+
+## License
+
+[MIT License](LICENSE)
