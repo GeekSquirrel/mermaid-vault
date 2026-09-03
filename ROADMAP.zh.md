@@ -50,7 +50,24 @@ timeline
 
 ---
 
-## 3. 后续迭代规划 (v2.1+ / v3.0 Planning)
+## v2.1 – 自托管适配与 UI 清理
+本版本聚焦于移除官方 Mermaid Live Editor 中与外部服务绑定的元素，使项目更适合自托管场景。
+
+- [x] 移除顶部推广横幅
+去掉顶部 “Try Mermaid Advanced Editor — OSS users get 10% off with code JS26” 横幅。
+- [x] 移除画板左上角的 AI/语音按钮
+删除 “Edit with AI” 或 “Edit with voice” 入口。
+- [x] 修改右上角保存行为
+将 “Save diagram” 按钮从跳转官网改为本地手动触发保存（调用已有保存接口）。
+- [x] 更新 GitHub 链接
+将右上角 GitHub 图标链接指向 https://github.com/GeekSquirrel/mermaid-editor。
+- [x] 更新左下角数据安全文案
+将 “Data security” 描述替换为自托管版本的介绍说明。
+- [x] 移除左上角菜单中的“Edit in playground”
+删除该菜单项，避免跳转至第三方 playground。
+
+
+<!-- ## 3. 后续迭代规划 (v2.1+ / v3.0 Planning)
 
 以下特性纳入后续版本迭代计划：
 
@@ -72,4 +89,4 @@ timeline
 ---
 
 ## 4. 历史记录查询
-- 完整逐项任务清单请参阅：[docs/ROADMAP_ARCHIVE.md](docs/ROADMAP_ARCHIVE.md)。
+- 完整逐项任务清单请参阅：[docs/ROADMAP_ARCHIVE.md](docs/ROADMAP_ARCHIVE.md)。 -->

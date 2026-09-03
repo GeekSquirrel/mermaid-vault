@@ -48,8 +48,24 @@ timeline
 | **Container Orchestration**| Docker Compose (Multi-stage Node.js + Nginx Alpine) | `docker-compose.yml` |
 | **Testing** | Vitest + Supertest | `backend/src/**/*.test.ts` |
 
----
+## v2.1 – Self-Hosting Adaptation & UI Cleanup
+This version focuses on removing elements tied to external third-party services in the official Mermaid Live Editor, making the project cleaner and better suited for self-hosted environments.
 
+- [x] Remove top promotional banner
+Remove the top banner promoting "Try Mermaid Advanced Editor — OSS users get 10% off with code JS26".
+- [x] Remove top-left AI/voice button on the canvas
+Remove the "Edit with AI" / "Edit with voice" entry.
+- [x] Update top-right save button behavior
+Change the "Save diagram" button from redirecting to the official cloud service to triggering local manual save (invoking the existing persistence API).
+- [x] Update GitHub link
+Point the top-right GitHub icon link to https://github.com/GeekSquirrel/mermaid-editor.
+- [x] Update data security notice
+Replace the "Data security" modal description with self-hosted instance and persistent storage documentation.
+- [x] Remove "Edit in Playground" from the main menu
+Remove the menu entry to avoid redirecting to third-party playgrounds.
+
+
+<!-- 
 ## 3. Future Roadmap (v2.1+ / v3.0 Planning)
 
 The following capabilities are planned for upcoming iterations:
@@ -72,4 +88,4 @@ The following capabilities are planned for upcoming iterations:
 ---
 
 ## 4. Historical Reference
-- For the full detailed checklist and development steps, refer to [ROADMAP_ARCHIVE.md](docs/ROADMAP_ARCHIVE.md).
+- For the full detailed checklist and development steps, refer to [ROADMAP_ARCHIVE.md](docs/ROADMAP_ARCHIVE.md). -->
