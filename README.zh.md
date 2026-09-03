@@ -55,28 +55,23 @@
 
 ## 快速开始
 
-### 方式一：本地直接运行 (pnpm Workspace)
+### 方式一：本地直接运行
 
-#### 1. 在根目录一键安装所有依赖
+#### 1. 启动后端 API 服务
 ```bash
+cd backend
 pnpm install
+pnpm dev
 ```
+后端服务默认启动于 `http://localhost:8080`，首次启动会自动创建 `./data/mermaid.db` 数据库文件及数据表。
 
-#### 2. 启动服务
-- **同时启动前端与后端**：
-  ```bash
-  pnpm dev
-  ```
-- **或单独启动**：
-  ```bash
-  pnpm dev:backend   # 后端 API 服务 (http://localhost:8080)
-  pnpm dev:frontend  # 前端编辑器 (http://localhost:3000)
-  ```
-
-#### 3. 构建与测试
-- 全局构建：`pnpm build`
-- 执行测试：`pnpm test`（或 `pnpm test:backend`）
-
+#### 2. 启动前端编辑器
+```bash
+cd mermaid-live-editor
+pnpm install
+pnpm dev
+```
+前端编辑器默认启动于 `http://localhost:3000` (或 `:5173`)。
 
 ---
 

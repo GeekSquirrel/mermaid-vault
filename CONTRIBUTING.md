@@ -8,9 +8,6 @@ Thank you for contributing to Mermaid Live Editor with Persistent Storage! Pleas
 
 ## 1. Development & Git Workflow
 
-- **pnpm Workspace Monorepo**:
-  - Run `pnpm install` at the root directory to link both packages.
-  - Use root scripts `pnpm dev`, `pnpm build`, `pnpm test` for unified execution.
 - **Branching**:
   - The main repository manages the project root and `backend/`.
   - The frontend is included as a Git submodule in `mermaid-live-editor/` pointing to your fork.
@@ -23,9 +20,8 @@ Thank you for contributing to Mermaid Live Editor with Persistent Storage! Pleas
 - **Commit Message Convention**:
   - Format: `<type>(<scope>): <subject>`
   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-  - Scopes: `backend`, `frontend`, `submodule`, `docs`, `docker`, `workspace`
+  - Scopes: `backend`, `frontend`, `submodule`, `docs`, `docker`
   - Example: `feat(backend): add health check endpoint`
-
 
 ---
 

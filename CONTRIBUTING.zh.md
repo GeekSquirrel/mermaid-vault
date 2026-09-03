@@ -8,9 +8,6 @@
 
 ## 1. 开发与 Git 工作流
 
-- **pnpm Workspace 单体多包仓库 (Monorepo)**：
-  - 在项目根目录执行 `pnpm install` 自动关联前后端所有依赖。
-  - 使用根目录脚本 `pnpm dev`、`pnpm build`、`pnpm test` 统一执行多项目操作。
 - **分支管理**：
   - 主仓库管理项目根目录及 `backend/` 后端代码。
   - 前端作为 Git 子模块引入于 `mermaid-live-editor/`，指向您的 fork 仓库。
@@ -23,9 +20,8 @@
 - **Git 提交信息规范**：
   - 格式：`<type>(<scope>): <subject>`
   - Type 类别：`feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-  - Scope 作用域：`backend`, `frontend`, `submodule`, `docs`, `docker`, `workspace`
+  - Scope 作用域：`backend`, `frontend`, `submodule`, `docs`, `docker`
   - 示例：`feat(backend): add health check endpoint`
-
 
 ---
 
