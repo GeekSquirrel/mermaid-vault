@@ -205,7 +205,9 @@ Base URL: `http://localhost:8080`
   ```
 
 ### 7. List History Entries
-- **GET `/api/history?type=manual`**
+- **GET `/api/history?type=manual&projectId=:projectId`**
+  - `type` (optional): `manual` (default), `auto`, or `all`.
+  - `projectId` (optional): Filter entries by project ID. Supports specific project UUID, `default` (unbound draft snapshots), or `all`.
 - **Response** `200 OK`:
   ```json
   {
@@ -213,6 +215,7 @@ Base URL: `http://localhost:8080`
     "data": [
       {
         "id": "8f8b3c63-455b-4357-96a8-f99a8ea8d88e",
+        "project_id": "c5accb93-f523-47ec-a450-15afb7c61e5b",
         "name": "Architecture Snapshot",
         "state": {
           "code": "graph TD\n  A --> B",
@@ -231,6 +234,7 @@ Base URL: `http://localhost:8080`
 - **Request Body**:
   ```json
   {
+    "projectId": "c5accb93-f523-47ec-a450-15afb7c61e5b",
     "name": "Architecture Snapshot",
     "state": {
       "code": "graph TD\n  A --> B",

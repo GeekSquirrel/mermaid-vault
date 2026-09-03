@@ -4,6 +4,7 @@ import type { CreateHistoryDto, HistoryEntry, UpdateHistoryDto } from "../types/
 
 interface HistoryRow {
   id: string;
+  project_id?: string | null;
   name: string;
   state: string;
   time: number;
@@ -19,6 +20,7 @@ function rowToEntry(row: HistoryRow): HistoryEntry {
   }
   return {
     id: row.id,
+    project_id: row.project_id || null,
     name: row.name,
     state: parsedState,
     time: row.time,
@@ -27,17 +29,29 @@ function rowToEntry(row: HistoryRow): HistoryEntry {
 }
 
 export class HistoryModel {
-  static getAll(type?: string): HistoryEntry[] {
+  static getAll(type?: string, projectId?: string | null): HistoryEntry[] {
     const db = getDB();
+    const conditions: string[] = [];
+    const params: (string | number)[] = [];
+
     if (type) {
-      const stmt = db.prepare(
-        "SELECT * FROM history_entries WHERE type = ? ORDER BY time DESC"
-      );
-      const rows = stmt.all(type) as HistoryRow[];
-      return rows.map(rowToEntry);
+      conditions.push("type = ?");
+      params.push(type);
     }
-    const stmt = db.prepare("SELECT * FROM history_entries ORDER BY time DESC");
-    const rows = stmt.all() as HistoryRow[];
+
+    if (projectId !== undefined) {
+      if (projectId === null || projectId === "default") {
+        conditions.push("(project_id IS NULL OR project_id = 'default')");
+      } else if (projectId !== "all") {
+        conditions.push("project_id = ?");
+        params.push(projectId);
+      }
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const sql = `SELECT * FROM history_entries ${whereClause} ORDER BY time DESC`;
+    const stmt = db.prepare(sql);
+    const rows = stmt.all(...params) as HistoryRow[];
     return rows.map(rowToEntry);
   }
 
@@ -51,18 +65,25 @@ export class HistoryModel {
   static create(data: CreateHistoryDto): HistoryEntry {
     const db = getDB();
     const id = data.id || crypto.randomUUID();
+    const projectId =
+      data.projectId !== undefined
+        ? data.projectId
+        : data.project_id !== undefined
+          ? data.project_id
+          : null;
     const name = data.name.trim();
     const stateStr = JSON.stringify(data.state || {});
     const time = data.time !== undefined ? data.time : Date.now();
     const type = data.type || "manual";
 
     const stmt = db.prepare(
-      "INSERT INTO history_entries (id, name, state, time, type) VALUES (?, ?, ?, ?, ?)"
+      "INSERT INTO history_entries (id, project_id, name, state, time, type) VALUES (?, ?, ?, ?, ?, ?)"
     );
-    stmt.run(id, name, stateStr, time, type);
+    stmt.run(id, projectId, name, stateStr, time, type);
 
     return {
       id,
+      project_id: projectId,
       name,
       state: data.state || {},
       time,
@@ -87,6 +108,11 @@ export class HistoryModel {
       setClauses.push("state = ?");
       params.push(JSON.stringify(updates.state));
     }
+    if (updates.projectId !== undefined || updates.project_id !== undefined) {
+      const pId = updates.projectId !== undefined ? updates.projectId : updates.project_id;
+      setClauses.push("project_id = ?");
+      params.push(pId ?? "");
+    }
 
     if (setClauses.length === 0) {
       return existing;
@@ -109,15 +135,29 @@ export class HistoryModel {
     return result.changes > 0;
   }
 
-  static clearAll(type?: string): boolean {
+  static clearAll(type?: string, projectId?: string | null): boolean {
     const db = getDB();
+    const conditions: string[] = [];
+    const params: (string | number)[] = [];
+
     if (type) {
-      const stmt = db.prepare("DELETE FROM history_entries WHERE type = ?");
-      stmt.run(type);
-    } else {
-      const stmt = db.prepare("DELETE FROM history_entries");
-      stmt.run();
+      conditions.push("type = ?");
+      params.push(type);
     }
+
+    if (projectId !== undefined) {
+      if (projectId === null || projectId === "default") {
+        conditions.push("(project_id IS NULL OR project_id = 'default')");
+      } else if (projectId !== "all") {
+        conditions.push("project_id = ?");
+        params.push(projectId);
+      }
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const sql = `DELETE FROM history_entries ${whereClause}`;
+    const stmt = db.prepare(sql);
+    stmt.run(...params);
     return true;
   }
 }

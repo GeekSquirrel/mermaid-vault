@@ -97,4 +97,47 @@ describe("History Controller & API Integration Tests", () => {
     expect(listRes.status).toBe(200);
     expect(listRes.body.data.length).toBe(0);
   });
+
+  it("should support projectId query filtering and scoping via REST API", async () => {
+    const proj1 = "proj-1-uuid";
+    const proj2 = "proj-2-uuid";
+
+    await request(app)
+      .post("/api/history")
+      .send({
+        projectId: proj1,
+        name: "proj1-diag",
+        state: { code: "graph LR; P1" },
+      });
+
+    await request(app)
+      .post("/api/history")
+      .send({
+        projectId: proj2,
+        name: "proj2-diag",
+        state: { code: "graph LR; P2" },
+      });
+
+    // Fetch proj1
+    const res1 = await request(app).get(`/api/history?projectId=${proj1}`);
+    expect(res1.status).toBe(200);
+    expect(res1.body.data).toHaveLength(1);
+    expect(res1.body.data[0].name).toBe("proj1-diag");
+
+    // Fetch proj2
+    const res2 = await request(app).get(`/api/history?projectId=${proj2}`);
+    expect(res2.status).toBe(200);
+    expect(res2.body.data).toHaveLength(1);
+    expect(res2.body.data[0].name).toBe("proj2-diag");
+
+    // Clear proj1 only
+    const del1 = await request(app).delete(`/api/history?projectId=${proj1}`);
+    expect(del1.status).toBe(200);
+
+    const res1After = await request(app).get(`/api/history?projectId=${proj1}`);
+    expect(res1After.body.data).toHaveLength(0);
+
+    const res2After = await request(app).get(`/api/history?projectId=${proj2}`);
+    expect(res2After.body.data).toHaveLength(1);
+  });
 });

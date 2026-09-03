@@ -27,6 +27,7 @@ export interface ApiResponse<T = unknown> {
 
 export interface HistoryEntry {
   id: string;
+  project_id?: string | null;
   name: string;
   state: Record<string, unknown>;
   time: number;
@@ -36,6 +37,8 @@ export interface HistoryEntry {
 
 export interface CreateHistoryDto {
   id?: string;
+  project_id?: string | null;
+  projectId?: string | null;
   name: string;
   state: Record<string, unknown>;
   time?: number;
@@ -45,5 +48,7 @@ export interface CreateHistoryDto {
 export interface UpdateHistoryDto {
   name?: string;
   state?: Record<string, unknown>;
+  project_id?: string | null;
+  projectId?: string | null;
 }
 

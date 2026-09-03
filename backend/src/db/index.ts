@@ -34,6 +34,19 @@ export function getDB(customPath?: string): DatabaseType {
       const sql = fs.readFileSync(sqlPath, "utf-8");
       db.exec(sql);
     }
+
+    // Ensure history_entries has project_id column and index
+    try {
+      const tableInfo = db.pragma("table_info(history_entries)") as { name: string }[];
+      if (tableInfo.length > 0) {
+        if (!tableInfo.some((col) => col.name === "project_id")) {
+          db.exec("ALTER TABLE history_entries ADD COLUMN project_id TEXT;");
+        }
+        db.exec("CREATE INDEX IF NOT EXISTS idx_history_entries_project_id ON history_entries(project_id, time DESC);");
+      }
+    } catch {
+      // Ignore if table does not exist
+    }
   }
 
   if (!customPath) {

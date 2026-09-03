@@ -205,7 +205,9 @@ docker compose up -d
   ```
 
 ### 7. 获取历史记录列表
-- **GET `/api/history?type=manual`**
+- **GET `/api/history?type=manual&projectId=:projectId`**
+  - `type`（可选）：`manual`（默认）或 `auto` 或 `all`。
+  - `projectId`（可选）：指定项目 ID 过滤。支持特定项目 UUID、`default`（未绑定项目的草稿快照）或 `all`。
 - **响应** `200 OK`：
   ```json
   {
@@ -213,6 +215,7 @@ docker compose up -d
     "data": [
       {
         "id": "8f8b3c63-455b-4357-96a8-f99a8ea8d88e",
+        "project_id": "c5accb93-f523-47ec-a450-15afb7c61e5b",
         "name": "架构设计图快照",
         "state": {
           "code": "graph TD\n  A --> B",
@@ -231,6 +234,7 @@ docker compose up -d
 - **请求体**：
   ```json
   {
+    "projectId": "c5accb93-f523-47ec-a450-15afb7c61e5b",
     "name": "架构设计图快照",
     "state": {
       "code": "graph TD\n  A --> B",
