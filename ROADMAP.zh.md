@@ -82,6 +82,7 @@ timeline
     - [x] 重命名和新建项目时，执行自动保存操作，但不显示saving/saved的标识
     - [x] 保留当前代码编辑框10秒无变更则自动保存的逻辑，显示saving/saved的标识
     - [x] 新增timeline生成每分钟local storage快照时，也顺带执行一次自动保存，显示saving/saved的标识
+    - [ ] 当鼠标点击文本编辑器之外时确保编辑器失去焦点并触发一次自动保存，显示saving/saved的标识
 
 - [x] 状态标识增强（指 Projects/${Project Name} 的右侧旁边的状态标识）
     - [x] 新增粉红主题色的bookmarked标识，在用户成功保存书签到sqlite后显示，显示3秒后淡出消失；如保存失败则显示红色标识Failed to save bookmark

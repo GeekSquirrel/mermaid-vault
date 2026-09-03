@@ -80,6 +80,7 @@ Remove the menu entry to avoid redirecting to third-party playgrounds.
     - [x] Perform auto-save silently when renaming or creating a new project (do not display saving/saved badges).
     - [x] Retain 10s inactivity auto-save in code editor, displaying saving/saved badges.
     - [x] When Timeline generates a 1-minute localStorage snapshot, also trigger an auto-save displaying saving/saved badges.
+    - [ ] When clicking outside the code editor, ensure the editor loses focus and triggers an auto-save, displaying saving/saved badges.
 
 - [x] Status Indicator Enhancements (next to `Projects/${Project Name}`)
     - [x] Add pink-themed `Bookmarked` badge shown for 3s with fadeout when bookmark is saved successfully to SQLite; show red `Failed to save bookmark` badge on error.
