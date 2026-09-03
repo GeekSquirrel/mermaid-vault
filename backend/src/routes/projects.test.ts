@@ -95,6 +95,37 @@ describe("Project Controller & API Integration Tests", () => {
     expect(res.body.success).toBe(false);
     expect(res.body.error.code).toBe("NOT_FOUND");
   });
+
+  it("should cascade delete associated history entries when deleting project via DELETE /api/projects/:id", async () => {
+    // 1. Create project
+    const projRes = await request(app).post("/api/projects").send({
+      title: "Cascade Project",
+      code: "graph LR; X-->Y",
+    });
+    const projId = projRes.body.data.id;
+
+    // 2. Create history entry for this project
+    await request(app).post("/api/history").send({
+      projectId: projId,
+      name: "Cascade Snapshot",
+      state: { code: "graph LR; X-->Y" },
+    });
+
+    const listHistoryBefore = await request(app).get(`/api/history?projectId=${projId}`);
+    expect(listHistoryBefore.body.data).toHaveLength(1);
+
+    // 3. Delete project
+    const deleteRes = await request(app).delete(`/api/projects/${projId}`);
+    expect(deleteRes.status).toBe(200);
+
+    // 4. Verify project is deleted
+    const getProjAfter = await request(app).get(`/api/projects/${projId}`);
+    expect(getProjAfter.status).toBe(404);
+
+    // 5. Verify associated history entries are also deleted
+    const listHistoryAfter = await request(app).get(`/api/history?projectId=${projId}`);
+    expect(listHistoryAfter.body.data).toHaveLength(0);
+  });
 });
 
 

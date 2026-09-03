@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { HistoryModel } from "./HistoryModel.js";
 import { ProjectModel } from "./ProjectModel.js";
 
 describe("ProjectModel CRUD operations", () => {
@@ -40,6 +41,28 @@ describe("ProjectModel CRUD operations", () => {
     // Verify deletion
     const afterDelete = ProjectModel.getById(project.id);
     expect(afterDelete).toBeNull();
+  });
+
+  it("should cascade delete associated history entries when project is deleted", () => {
+    const project = ProjectModel.create("Cascading Test Project", "graph TD; C-->D");
+    HistoryModel.create({
+      name: "snapshot-1",
+      state: { code: "graph TD; C-->D" },
+      projectId: project.id,
+    });
+    HistoryModel.create({
+      name: "snapshot-2",
+      state: { code: "graph TD; C-->D v2" },
+      projectId: project.id,
+    });
+
+    expect(HistoryModel.getAll("manual", project.id)).toHaveLength(2);
+
+    const deleted = ProjectModel.delete(project.id);
+    expect(deleted).toBe(true);
+
+    expect(ProjectModel.getById(project.id)).toBeNull();
+    expect(HistoryModel.getAll("manual", project.id)).toHaveLength(0);
   });
 });
 

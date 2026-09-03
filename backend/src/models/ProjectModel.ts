@@ -73,9 +73,15 @@ export class ProjectModel {
 
   static delete(id: string): boolean {
     const db = getDB();
-    const stmt = db.prepare("DELETE FROM projects WHERE id = ?");
-    const result = stmt.run(id);
-    return result.changes > 0;
+    const deleteTx = db.transaction((projectId: string) => {
+      // 1. Cascade delete associated saved history entries
+      db.prepare("DELETE FROM history_entries WHERE project_id = ?").run(projectId);
+      // 2. Delete the project
+      const result = db.prepare("DELETE FROM projects WHERE id = ?").run(projectId);
+      return result.changes > 0;
+    });
+
+    return deleteTx(id);
   }
 }
 

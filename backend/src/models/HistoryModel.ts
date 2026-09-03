@@ -40,8 +40,8 @@ export class HistoryModel {
     }
 
     if (projectId !== undefined) {
-      if (projectId === null || projectId === "default") {
-        conditions.push("(project_id IS NULL OR project_id = 'default')");
+      if (!projectId || projectId === "default" || projectId === "null") {
+        conditions.push("(project_id IS NULL OR project_id = '' OR project_id = 'default')");
       } else if (projectId !== "all") {
         conditions.push("project_id = ?");
         params.push(projectId);
@@ -98,7 +98,7 @@ export class HistoryModel {
     }
 
     const setClauses: string[] = [];
-    const params: (string | number)[] = [];
+    const params: (string | number | null)[] = [];
 
     if (updates.name !== undefined) {
       setClauses.push("name = ?");
@@ -111,7 +111,7 @@ export class HistoryModel {
     if (updates.projectId !== undefined || updates.project_id !== undefined) {
       const pId = updates.projectId !== undefined ? updates.projectId : updates.project_id;
       setClauses.push("project_id = ?");
-      params.push(pId ?? "");
+      params.push(pId || null);
     }
 
     if (setClauses.length === 0) {
@@ -146,8 +146,8 @@ export class HistoryModel {
     }
 
     if (projectId !== undefined) {
-      if (projectId === null || projectId === "default") {
-        conditions.push("(project_id IS NULL OR project_id = 'default')");
+      if (!projectId || projectId === "default" || projectId === "null") {
+        conditions.push("(project_id IS NULL OR project_id = '' OR project_id = 'default')");
       } else if (projectId !== "all") {
         conditions.push("project_id = ?");
         params.push(projectId);
