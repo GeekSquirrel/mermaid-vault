@@ -94,6 +94,15 @@ The editor will be accessible at `http://localhost` (or `http://localhost:80`).
 docker compose -f docker-compose.dev.yml up
 ```
 
+#### Pre-Built Development Images (GHCR)
+
+Test images are published to GitHub Container Registry (`ghcr.io`, `linux/amd64`):
+
+- **Frontend Image**: `ghcr.io/geeksquirrel/mermaid-live-editor:dev` (or tagged by commit SHA)
+- **Backend Image**: `ghcr.io/geeksquirrel/mermaid-live-editor-backend:dev` (or tagged by commit SHA)
+
+Images can be published on-demand via GitHub Actions: navigate to **Actions** → **Publish Dev Docker Images to GHCR** → click **Run workflow**.
+
 ---
 
 ## Deployment Modes & Configuration

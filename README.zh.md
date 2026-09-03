@@ -94,6 +94,15 @@ docker compose logs -f
 docker compose -f docker-compose.dev.yml up
 ```
 
+#### 预构建测试镜像 (GHCR)
+
+测试版镜像通过 GitHub Container Registry (`ghcr.io`，架构支持 `linux/amd64`) 发布：
+
+- **前端镜像**：`ghcr.io/geeksquirrel/mermaid-live-editor:dev`（或指定 commit SHA）
+- **后端镜像**：`ghcr.io/geeksquirrel/mermaid-live-editor-backend:dev`（或指定 commit SHA）
+
+镜像发布支持在 GitHub Actions 中手动触发：进入 GitHub 仓库页面 **Actions** → 选择 **Publish Dev Docker Images to GHCR** → 点击 **Run workflow** 即可触发构建与发布。
+
 ---
 
 ## 部署模式与环境变量配置
