@@ -68,6 +68,23 @@ Remove the menu entry to avoid redirecting to third-party playgrounds.
     - Saved Tab: When the user manually clicks the top-right save button, an entry is generated and stored in backend SQLite, enabling cross-device synchronization. Backend capability was added concurrently.
     - Timeline Tab: Auto-saves once every minute into the browser's local storage.
 
+- [x] Navigation Bar Revamp
+    - [x] Remove left-side "Mermaid Live Editor" and logo, replace with `Projects/${Project Name}` (or `Projects` when on My Projects page). Clicking `Projects` navigates to My Projects; clicking `${Project Name}` allows renaming the project. Remove duplicate `Projects` button and project rename textbox on the right.
+    - [x] Move GitHub icon to the far right of the navigation bar; place Share button 2nd from right with a share icon preceding the text.
+    - [x] Remove "Save diagram" button from the navbar.
+    - [x] Split History button into two independent buttons: Bookmarks (formerly Saved) and Timeline (both in `icon text` format like Share). Bookmarks is 4th from right, Timeline is 3rd from right. Display bubble badge on Bookmarks showing current bookmark count (hidden when count is 0). Remove upload and save buttons from Timeline panel header (preserving pure per-minute auto-save to localStorage); Bookmarks panel retains all features, replacing save button icon with bookmark-with-plus icon.
+    - [x] Add save icon button and bookmark-with-plus icon button to the top-right canvas toolbar (alongside fit, zoom out, zoom in, full screen). Save button triggers manual diagram save; bookmark button saves current state snapshot as bookmark.
+    - [x] Move saving/saved status indicators to the right of `Projects/${Project Name}`.
+
+- [x] Auto-Save Logic Update (auto-save refers to persisting latest project state to SQLite, not bookmarks snapshots)
+    - [x] Perform auto-save silently when renaming or creating a new project (do not display saving/saved badges).
+    - [x] Retain 10s inactivity auto-save in code editor, displaying saving/saved badges.
+    - [x] When Timeline generates a 1-minute localStorage snapshot, also trigger an auto-save displaying saving/saved badges.
+
+- [x] Status Indicator Enhancements (next to `Projects/${Project Name}`)
+    - [x] Add pink-themed `Bookmarked` badge shown for 3s with fadeout when bookmark is saved successfully to SQLite; show red `Failed to save bookmark` badge on error.
+    - [x] If save process completes in < 3s, skip `saving` and display `saved` directly; if save takes > 3s, show `saving` first then switch to `saved`; show red `Failed to save diagram` if save fails.
+
 
 <!-- 
 ## 3. Future Roadmap (v2.1+ / v3.0 Planning)

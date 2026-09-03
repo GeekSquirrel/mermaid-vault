@@ -70,6 +70,23 @@ timeline
     - Saved页面：当用户手动点击右上角保存时生成一个条目，数据存储于后端的sqlite，可以实现跨设备同步。需要同时在修改前端逻辑的同时，给后端新增对应的能力。
     - Timeline页面：每分钟自动保存一次，存储在浏览器的local storage即可。
 
+- [x] 导航栏重做
+    - [x] 去除左侧 Mermaid Live Editor及其LOGO，改为 Projects/${Project Name}（如果是在My Projects界面则只显示Projects）。单击Projects跳转到My Projects页面，单击${Project Name}可修改项目名称。去除右侧重复的Projects按钮和项目重命名文本框
+    - [x] github图标调整至导航栏最右侧；share按钮在从右数第二位，并在文字前新增分享icon
+    - [x] 删除save diagram按钮
+    - [x] 将history按钮按其面边功能拆分成两个独立按钮：Bookmarks（原saved）和Timeline（都是和share一样的`icon 文字`的按钮形式）。Bookmarks在导航栏右侧右数第四位，timeline在第三位。Bookmarks右上角气泡显示当前书签数量（书签为0时不显示气泡）。去掉Timeline面板中顶栏右侧的上传按钮和保存按钮（保持Timeline按分钟自动保存到local storage的纯粹性）；Bookmarks面板继承原来的所有功能，但把顶栏的保存按钮icon替换为带加号的书签icon。
+    - [x] 在编辑器右上角的工具栏（当前自动缩放、缩小、放大、全屏功能）新增保存icon按钮和带加号书签icon按钮。保存按钮提供手动保存功能，带加号书签按钮将当前状态作为快照保存（功能与Bookmarks面板中的带加号书签按钮相同）。
+    - [x] saving/saved等保存状态标识提示移动到 Projects/${Project Name} 的右侧旁边
+
+- [x] 自动保存逻辑更新（自动保存均指保存到sqlite中项目的最新状态，而非保存到sqlite中的bookmarks快照）
+    - [x] 重命名和新建项目时，执行自动保存操作，但不显示saving/saved的标识
+    - [x] 保留当前代码编辑框10秒无变更则自动保存的逻辑，显示saving/saved的标识
+    - [x] 新增timeline生成每分钟local storage快照时，也顺带执行一次自动保存，显示saving/saved的标识
+
+- [x] 状态标识增强（指 Projects/${Project Name} 的右侧旁边的状态标识）
+    - [x] 新增粉红主题色的bookmarked标识，在用户成功保存书签到sqlite后显示，显示3秒后淡出消失；如保存失败则显示红色标识Failed to save bookmark
+    - [x] 当自动/手动保存过程过程小于3秒种时，不显示saving，直接在成功保存后显示saved；超过3秒再显示saving，保存成功后切换为saved；若最终保存失败则显示Failed to save diagram
+
 
 
 <!-- ## 3. 后续迭代规划 (v2.1+ / v3.0 Planning)
