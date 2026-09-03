@@ -22,11 +22,18 @@ export function getDB(customPath?: string): DatabaseType {
   const db = new Database(absoluteDbPath);
   db.pragma("journal_mode = WAL");
 
-  // Run initial migration
-  const migrationPath = path.resolve(process.cwd(), "migrations/001_init.sql");
-  if (fs.existsSync(migrationPath)) {
-    const migrationSql = fs.readFileSync(migrationPath, "utf-8");
-    db.exec(migrationSql);
+  // Run migrations in order
+  const migrationsDir = path.resolve(process.cwd(), "migrations");
+  if (fs.existsSync(migrationsDir)) {
+    const files = fs
+      .readdirSync(migrationsDir)
+      .filter((f) => f.endsWith(".sql"))
+      .sort();
+    for (const file of files) {
+      const sqlPath = path.join(migrationsDir, file);
+      const sql = fs.readFileSync(sqlPath, "utf-8");
+      db.exec(sql);
+    }
   }
 
   if (!customPath) {

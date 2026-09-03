@@ -66,6 +66,11 @@ timeline
 - [x] 移除左上角菜单中的“Edit in playground”
 删除该菜单项，避免跳转至第三方 playground。
 
+- [x] 历史面板逻辑重做
+    - Saved页面：当用户手动点击右上角保存时生成一个条目，数据存储于后端的sqlite，可以实现跨设备同步。需要同时在修改前端逻辑的同时，给后端新增对应的能力。
+    - Timeline页面：每分钟自动保存一次，存储在浏览器的local storage即可。
+
+
 
 <!-- ## 3. 后续迭代规划 (v2.1+ / v3.0 Planning)
 

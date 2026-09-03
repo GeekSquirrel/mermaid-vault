@@ -64,6 +64,10 @@ Replace the "Data security" modal description with self-hosted instance and pers
 - [x] Remove "Edit in Playground" from the main menu
 Remove the menu entry to avoid redirecting to third-party playgrounds.
 
+- [x] Revamp History Panel Logic
+    - Saved Tab: When the user manually clicks the top-right save button, an entry is generated and stored in backend SQLite, enabling cross-device synchronization. Backend capability was added concurrently.
+    - Timeline Tab: Auto-saves once every minute into the browser's local storage.
+
 
 <!-- 
 ## 3. Future Roadmap (v2.1+ / v3.0 Planning)

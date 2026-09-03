@@ -204,13 +204,81 @@ docker compose up -d
   }
   ```
 
+### 7. 获取历史记录列表
+- **GET `/api/history?type=manual`**
+- **响应** `200 OK`：
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "8f8b3c63-455b-4357-96a8-f99a8ea8d88e",
+        "name": "架构设计图快照",
+        "state": {
+          "code": "graph TD\n  A --> B",
+          "mermaid": "{}",
+          "updateDiagram": true
+        },
+        "time": 1788325000000,
+        "type": "manual"
+      }
+    ]
+  }
+  ```
+
+### 8. 创建历史快照
+- **POST `/api/history`**
+- **请求体**：
+  ```json
+  {
+    "name": "架构设计图快照",
+    "state": {
+      "code": "graph TD\n  A --> B",
+      "mermaid": "{}"
+    },
+    "type": "manual"
+  }
+  ```
+- **响应** `201 Created`：
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "8f8b3c63-455b-4357-96a8-f99a8ea8d88e",
+      "name": "架构设计图快照",
+      "state": { ... },
+      "time": 1788325000000,
+      "type": "manual"
+    }
+  }
+  ```
+
+### 9. 更新/重命名历史记录
+- **PUT `/api/history/:id`**
+- **请求体**：
+  ```json
+  {
+    "name": "新快照名称"
+  }
+  ```
+- **响应** `200 OK`
+
+### 10. 删除单个历史记录
+- **DELETE `/api/history/:id`**
+- **响应** `200 OK`
+
+### 11. 清空历史记录
+- **DELETE `/api/history?type=manual`**
+- **响应** `200 OK`
+
 ---
 
 ## 数据库表结构
 
-定义位于 `migrations/001_init.sql`：
+定义位于 `migrations/001_init.sql` 与 `migrations/002_history.sql`：
 
 ```sql
+-- 1. 项目主表
 CREATE TABLE IF NOT EXISTS projects (
     id TEXT PRIMARY KEY,                  -- UUID v4
     title TEXT NOT NULL,                  -- 项目标题
@@ -219,5 +287,15 @@ CREATE TABLE IF NOT EXISTS projects (
     updated_at INTEGER NOT NULL           -- Unix 时间戳 (毫秒)
 );
 CREATE INDEX IF NOT EXISTS idx_projects_updated_at ON projects(updated_at DESC);
+
+-- 2. 历史保存快照表 (支持跨端同步)
+CREATE TABLE IF NOT EXISTS history_entries (
+    id TEXT PRIMARY KEY,                  -- UUID v4
+    name TEXT NOT NULL,                   -- 条目名称/标题
+    state TEXT NOT NULL,                  -- Mermaid 完整状态 JSON 字符串
+    time INTEGER NOT NULL,                -- Unix 时间戳 (毫秒)
+    type TEXT NOT NULL DEFAULT 'manual'   -- 类型 ('manual' / 'auto')
+);
+CREATE INDEX IF NOT EXISTS idx_history_entries_time ON history_entries(time DESC);
 ```
 

@@ -204,13 +204,81 @@ Base URL: `http://localhost:8080`
   }
   ```
 
+### 7. List History Entries
+- **GET `/api/history?type=manual`**
+- **Response** `200 OK`:
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "8f8b3c63-455b-4357-96a8-f99a8ea8d88e",
+        "name": "Architecture Snapshot",
+        "state": {
+          "code": "graph TD\n  A --> B",
+          "mermaid": "{}",
+          "updateDiagram": true
+        },
+        "time": 1788325000000,
+        "type": "manual"
+      }
+    ]
+  }
+  ```
+
+### 8. Create History Snapshot
+- **POST `/api/history`**
+- **Request Body**:
+  ```json
+  {
+    "name": "Architecture Snapshot",
+    "state": {
+      "code": "graph TD\n  A --> B",
+      "mermaid": "{}"
+    },
+    "type": "manual"
+  }
+  ```
+- **Response** `201 Created`:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "8f8b3c63-455b-4357-96a8-f99a8ea8d88e",
+      "name": "Architecture Snapshot",
+      "state": { ... },
+      "time": 1788325000000,
+      "type": "manual"
+    }
+  }
+  ```
+
+### 9. Update / Rename History Entry
+- **PUT `/api/history/:id`**
+- **Request Body**:
+  ```json
+  {
+    "name": "Updated Snapshot Name"
+  }
+  ```
+- **Response** `200 OK`
+
+### 10. Delete History Entry
+- **DELETE `/api/history/:id`**
+- **Response** `200 OK`
+
+### 11. Clear History Entries
+- **DELETE `/api/history?type=manual`**
+- **Response** `200 OK`
+
 ---
 
 ## Database Schema
 
-Defined in `migrations/001_init.sql`:
+Defined in `migrations/001_init.sql` and `migrations/002_history.sql`:
 
 ```sql
+-- 1. Projects table
 CREATE TABLE IF NOT EXISTS projects (
     id TEXT PRIMARY KEY,                  -- UUID v4
     title TEXT NOT NULL,                  -- Project title
@@ -219,4 +287,14 @@ CREATE TABLE IF NOT EXISTS projects (
     updated_at INTEGER NOT NULL           -- Unix timestamp in ms
 );
 CREATE INDEX IF NOT EXISTS idx_projects_updated_at ON projects(updated_at DESC);
+
+-- 2. History snapshot entries (cross-device synchronization)
+CREATE TABLE IF NOT EXISTS history_entries (
+    id TEXT PRIMARY KEY,                  -- UUID v4
+    name TEXT NOT NULL,                   -- Entry name / title
+    state TEXT NOT NULL,                  -- Mermaid complete state JSON string
+    time INTEGER NOT NULL,                -- Unix timestamp in ms
+    type TEXT NOT NULL DEFAULT 'manual'   -- Type ('manual' / 'auto')
+);
+CREATE INDEX IF NOT EXISTS idx_history_entries_time ON history_entries(time DESC);
 ```

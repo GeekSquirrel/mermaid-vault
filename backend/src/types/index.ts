@@ -25,3 +25,25 @@ export interface ApiResponse<T = unknown> {
   };
 }
 
+export interface HistoryEntry {
+  id: string;
+  name: string;
+  state: Record<string, unknown>;
+  time: number;
+  type: string;
+  url?: string;
+}
+
+export interface CreateHistoryDto {
+  id?: string;
+  name: string;
+  state: Record<string, unknown>;
+  time?: number;
+  type?: string;
+}
+
+export interface UpdateHistoryDto {
+  name?: string;
+  state?: Record<string, unknown>;
+}
+

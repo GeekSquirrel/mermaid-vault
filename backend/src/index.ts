@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import { getDB } from "./db/index.js";
+import { historyRouter } from "./routes/history.js";
 import { projectRouter } from "./routes/projects.js";
 
 dotenv.config();
@@ -33,6 +34,9 @@ app.get(["/health", "/api/health"], (_req, res) => {
 
 // Mount project REST routes (support both /api/projects and /projects)
 app.use(["/api/projects", "/projects"], projectRouter);
+
+// Mount history REST routes (support both /api/history and /history)
+app.use(["/api/history", "/history"], historyRouter);
 
 // 404 handler
 app.use((req, res) => {
