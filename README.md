@@ -55,23 +55,28 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 
 ## Quick Start
 
-### Method 1: Local Development
+### Method 1: Local Development (pnpm Workspace)
 
-#### 1. Start the Backend API
+#### 1. Install all dependencies from root
 ```bash
-cd backend
 pnpm install
-pnpm dev
 ```
-The backend API server starts at `http://localhost:8080`. On first run, it automatically initializes the SQLite database at `backend/data/mermaid.db`.
 
-#### 2. Start the Frontend Live Editor
-```bash
-cd mermaid-live-editor
-pnpm install
-pnpm dev
-```
-The frontend editor starts at `http://localhost:3000` (or `:5173`).
+#### 2. Start Services
+- **Start both frontend & backend concurrently**:
+  ```bash
+  pnpm dev
+  ```
+- **Or start individually**:
+  ```bash
+  pnpm dev:backend   # Backend API (http://localhost:8080)
+  pnpm dev:frontend  # Frontend Live Editor (http://localhost:3000)
+  ```
+
+#### 3. Build & Test
+- Build all packages: `pnpm build`
+- Run test suite: `pnpm test` (or `pnpm test:backend`)
+
 
 ---
 

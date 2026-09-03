@@ -1,0 +1,30 @@
+{
+  "name": "mermaid-editor-workspace",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.17.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter mermaid-editor-backend --filter mermaid-live-editor dev",
+    "dev:backend": "pnpm --filter mermaid-editor-backend dev",
+    "dev:frontend": "pnpm --filter mermaid-live-editor dev",
+    "build": "pnpm --recursive build",
+    "build:backend": "pnpm --filter mermaid-editor-backend build",
+    "build:frontend": "pnpm --filter mermaid-live-editor build",
+    "test": "pnpm --recursive test",
+    "test:backend": "pnpm --filter mermaid-editor-backend test",
+    "test:frontend": "pnpm --filter mermaid-live-editor test"
+  },
+  "overrides": {
+    "svelte": "5.56.4",
+    "bits-ui": "2.18.1",
+    "@sveltejs/kit": "2.63.1",
+    "@sveltejs/vite-plugin-svelte": "7.2.0",
+    "vite": "8.0.16",
+    "@typescript-eslint/types": "8.60.1"
+  }
+}
+
+
+
+

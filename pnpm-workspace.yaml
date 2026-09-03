@@ -1,0 +1,22 @@
+packages:
+  - "backend"
+  - "mermaid-live-editor"
+
+overrides:
+  svelte: "5.56.4"
+  bits-ui: "2.18.1"
+  "@sveltejs/kit": "2.63.1"
+  "@sveltejs/vite-plugin-svelte": "7.2.0"
+  vite: "8.0.16"
+  "@typescript-eslint/types": "8.60.1"
+
+
+
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+  svelte-preprocess: true
+
+onlyBuiltDependencies:
+  - better-sqlite3
+  - esbuild
