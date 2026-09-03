@@ -77,6 +77,8 @@ The frontend editor starts at `http://localhost:3000` (or `:5173`).
 
 ### Method 2: Docker Deployment
 
+By default, **only the frontend container exposes a port to the host** (port `80`). The backend container communicates exclusively over Docker's internal network, enhancing security and isolating backend services.
+
 #### Production Mode (Full-Stack)
 ```bash
 # Start frontend and backend services with persistent volume
@@ -85,12 +87,24 @@ docker compose up -d
 # View service logs
 docker compose logs -f
 ```
+The editor will be accessible at `http://localhost` (or `http://localhost:80`).
 
 #### Development Mode (with Source Mount & Hot Reload)
 ```bash
 docker compose -f docker-compose.dev.yml up
 ```
 
+---
+
+## Deployment Modes & Configuration
+
+You can easily select one of three deployment modes via the `API_BASE_URL` environment variable:
+
+| Mode | `API_BASE_URL` Setting | Description |
+|---|---|---|
+| **1. Same-Origin Internal Proxy (Default)** | Leave empty / unset | Frontend uses relative path `/api`, proxied by frontend Nginx directly to backend container. No CORS required, single exposed port. |
+| **2. Shared Domain / Gateway** | `API_BASE_URL=https://example.com/api` | Frontend directly requests this absolute URL, suitable for unified reverse proxy or gateway configurations. |
+| **3. Standalone API Domain (CORS)** | `API_BASE_URL=https://api.example.com` | Frontend sends cross-origin requests to independent backend domain. Backend includes CORS headers and supports both `/api/projects` and `/projects`. |
 
 ---
 
@@ -98,14 +112,28 @@ docker compose -f docker-compose.dev.yml up
 
 Copy `.env.example` to `.env` or configure directly:
 
+| Variable | Target | Default | Description |
+|---|---|---|---|
+| `APP_FRONTEND_PORT` | Frontend | `80` | Host port mapped to frontend container (replaces `FRONTEND_PORT`). |
+| `API_BASE_URL` | Frontend | *(Empty)* | Runtime API base URL. Empty uses internal Nginx reverse proxy. |
+| `PORT` | Backend | `8080` | Internal listening port inside the backend container. |
+| `DB_PATH` | Backend | `/app/data/mermaid.db` | SQLite database file path. |
+| `NODE_ENV` | Backend | `production` | Node.js execution environment. |
+| `APP_BACKEND_PORT` | Backend *(Optional)* | *(Unset)* | Optional host port mapping for backend debugging (e.g. `8080`). |
+
+Example `.env`:
 ```env
-# Backend Configuration
+# Frontend Service Configuration
+APP_FRONTEND_PORT=80
+API_BASE_URL=
+
+# Backend Configuration (Internal container settings)
 PORT=8080
-DB_PATH=./data/mermaid.db
+DB_PATH=/app/data/mermaid.db
 NODE_ENV=production
 
-# Frontend Configuration
-VITE_API_BASE_URL=http://localhost:8080/api
+# Optional: Host port mapping for backend debugging
+# APP_BACKEND_PORT=8080
 ```
 
 ---

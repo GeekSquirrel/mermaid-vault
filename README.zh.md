@@ -77,6 +77,8 @@ pnpm dev
 
 ### 方式二：使用 Docker 部署
 
+默认情况下，**仅前端容器向宿主机暴露端口**（端口 `80`）。后端容器仅在 Docker 内部网络中进行通信，外部无法直接访问，增强了后端服务的安全性与隔离性。
+
 #### 生产模式（全栈一键启动）
 ```bash
 # 启动前端与后端服务（自动持久化数据）
@@ -85,12 +87,24 @@ docker compose up -d
 # 查看容器日志
 docker compose logs -f
 ```
+启动后，可在浏览器中通过 `http://localhost`（或 `http://localhost:80`）直接访问编辑器。
 
 #### 开发模式（源码挂载与热重载）
 ```bash
 docker compose -f docker-compose.dev.yml up
 ```
 
+---
+
+## 部署模式与环境变量配置
+
+您可以通过配置 `API_BASE_URL` 环境变量，轻松在三种部署模式之间切换：
+
+| 部署模式 | `API_BASE_URL` 设置 | 说明 |
+|---|---|---|
+| **1. 同源内部代理模式（默认推荐）** | 留空 / 不设置 | 前端使用相对路径 `/api`，由前端 Nginx 直接反向代理到后端容器。无跨域问题，仅对外暴露单个前端端口。 |
+| **2. 共用外部域名/网关模式** | `API_BASE_URL=https://example.com/api` | 前端直接请求该绝对路径，适用于前后端挂在同一反向代理或统一网关下的场景。 |
+| **3. 独立 API 域名模式（跨域）** | `API_BASE_URL=https://api.example.com` | 前端直接向独立后端域名发起跨域请求。后端已内置 CORS 支持，并同时兼容 `/api/projects` 与 `/projects`。 |
 
 ---
 
@@ -98,14 +112,28 @@ docker compose -f docker-compose.dev.yml up
 
 复制 `.env.example` 为 `.env` 或按需配置：
 
+| 变量名 | 目标服务 | 默认值 | 说明 |
+|---|---|---|---|
+| `APP_FRONTEND_PORT` | 前端容器 | `80` | 前端映射到宿主机的端口（替代原 `FRONTEND_PORT`）。 |
+| `API_BASE_URL` | 前端容器 | *(留空)* | 运行时 API 基础 URL。留空则启用前端 Nginx 内部反向代理。 |
+| `PORT` | 后端容器 | `8080` | 后端容器内部监听端口。 |
+| `DB_PATH` | 后端容器 | `/app/data/mermaid.db` | SQLite 数据库文件存储路径。 |
+| `NODE_ENV` | 后端容器 | `production` | Node.js 运行环境。 |
+| `APP_BACKEND_PORT` | 后端容器 *(可选)* | *(未设置)* | 调试时可选的宿主机端口映射（如设置为 `8080`）。 |
+
+配置示例（`.env`）：
 ```env
-# 后端配置
+# 前端服务配置
+APP_FRONTEND_PORT=80
+API_BASE_URL=
+
+# 后端服务配置（容器内部参数）
 PORT=8080
-DB_PATH=./data/mermaid.db
+DB_PATH=/app/data/mermaid.db
 NODE_ENV=production
 
-# 前端配置
-VITE_API_BASE_URL=http://localhost:8080/api
+# 可选：后端独立调试宿主机端口映射
+# APP_BACKEND_PORT=8080
 ```
 
 ---

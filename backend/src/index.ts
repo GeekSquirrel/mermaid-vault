@@ -26,13 +26,13 @@ app.use(
 // Body parser
 app.use(express.json());
 
-// Health check endpoint
-app.get("/health", (_req, res) => {
+// Health check endpoint (support both /health and /api/health)
+app.get(["/health", "/api/health"], (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-// Mount project REST routes
-app.use("/api/projects", projectRouter);
+// Mount project REST routes (support both /api/projects and /projects)
+app.use(["/api/projects", "/projects"], projectRouter);
 
 // 404 handler
 app.use((req, res) => {

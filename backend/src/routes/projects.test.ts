@@ -3,10 +3,21 @@ import { describe, expect, it } from "vitest";
 import { app } from "../index.js";
 
 describe("Project Controller & API Integration Tests", () => {
-  it("GET /health should return status ok", async () => {
-    const res = await request(app).get("/health");
+  it("GET /health and /api/health should return status ok", async () => {
+    const res1 = await request(app).get("/health");
+    expect(res1.status).toBe(200);
+    expect(res1.body).toEqual({ status: "ok" });
+
+    const res2 = await request(app).get("/api/health");
+    expect(res2.status).toBe(200);
+    expect(res2.body).toEqual({ status: "ok" });
+  });
+
+  it("GET /projects should also return list of projects via alias", async () => {
+    const res = await request(app).get("/projects");
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: "ok" });
+    expect(res.body.success).toBe(true);
+    expect(Array.isArray(res.body.data)).toBe(true);
   });
 
   it("should perform complete project lifecycle via REST API", async () => {
