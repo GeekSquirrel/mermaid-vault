@@ -45,7 +45,6 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/mermaid-live-editor
           flavor: |
             latest=false
-            lowercase=true
           tags: |
             type=raw,value=dev
             type=sha,format=short,prefix=
@@ -92,7 +91,6 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/mermaid-live-editor-backend
           flavor: |
             latest=false
-            lowercase=true
           tags: |
             type=raw,value=dev
             type=sha,format=short,prefix=
