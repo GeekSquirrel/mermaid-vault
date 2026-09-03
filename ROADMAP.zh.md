@@ -82,11 +82,34 @@ timeline
     - [x] 重命名和新建项目时，执行自动保存操作，但不显示saving/saved的标识
     - [x] 保留当前代码编辑框10秒无变更则自动保存的逻辑，显示saving/saved的标识
     - [x] 新增timeline生成每分钟local storage快照时，也顺带执行一次自动保存，显示saving/saved的标识
-    - [ ] 当鼠标点击文本编辑器之外时确保编辑器失去焦点并触发一次自动保存，显示saving/saved的标识
+    - [x] 当鼠标点击文本编辑器之外时确保编辑器失去焦点并触发一次自动保存，显示saving/saved的标识
 
 - [x] 状态标识增强（指 Projects/${Project Name} 的右侧旁边的状态标识）
     - [x] 新增粉红主题色的bookmarked标识，在用户成功保存书签到sqlite后显示，显示3秒后淡出消失；如保存失败则显示红色标识Failed to save bookmark
     - [x] 当自动/手动保存过程过程小于3秒种时，不显示saving，直接在成功保存后显示saved；超过3秒再显示saving，保存成功后切换为saved；若最终保存失败则显示Failed to save diagram
+
+- [x] 文本编辑器
+    - [x] 去除代码编辑器行号前的AI提示和点击之后的弹窗(移除所有相关的引流至官方的代码)
+    - [x] 去除代码编辑器报错时底部弹出提示中的Create a free account to repair with AI和AI Repair按钮(移除所有相关的引流至官方的代码)
+    - [x] 移除文本编辑器的config标签页，将配置信息合并到code标签页当中。配置语法由json切换为（文档顶部分隔符包围的）yaml，具体示例如下
+        ```markdown
+        ---
+        config:
+            theme: dark
+        ---
+        architecture-beta
+            group api(cloud)[API]
+
+            service db(database)[Database] in api
+            service disk1(disk)[Storage] in api
+            service disk2(disk)[Storage] in api
+            service server(server)[Server] in api
+
+            db:L -- R:server
+            disk1:T -- B:server
+            disk2:T -- B:db
+        ```
+        确保新格式下，配置和绘图代码都可以得到正确解析。
 
 
 

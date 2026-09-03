@@ -80,11 +80,34 @@ Remove the menu entry to avoid redirecting to third-party playgrounds.
     - [x] Perform auto-save silently when renaming or creating a new project (do not display saving/saved badges).
     - [x] Retain 10s inactivity auto-save in code editor, displaying saving/saved badges.
     - [x] When Timeline generates a 1-minute localStorage snapshot, also trigger an auto-save displaying saving/saved badges.
-    - [ ] When clicking outside the code editor, ensure the editor loses focus and triggers an auto-save, displaying saving/saved badges.
+    - [x] When clicking outside the code editor, ensure the editor loses focus and triggers an auto-save, displaying saving/saved badges.
 
 - [x] Status Indicator Enhancements (next to `Projects/${Project Name}`)
     - [x] Add pink-themed `Bookmarked` badge shown for 3s with fadeout when bookmark is saved successfully to SQLite; show red `Failed to save bookmark` badge on error.
     - [x] If save process completes in < 3s, skip `saving` and display `saved` directly; if save takes > 3s, show `saving` first then switch to `saved`; show red `Failed to save diagram` if save fails.
+
+- [x] Text Editor
+    - [x] Remove AI prompt before line numbers in code editor and popup dialog on click (remove all official upsell/lead-generation code).
+    - [x] Remove "Create a free account to repair with AI" text and "AI Repair" button from syntax error popup (remove all official upsell/lead-generation code).
+    - [x] Remove Config tab from text editor and merge configuration into Code tab using YAML frontmatter enclosed by document delimiters (`---`), e.g.:
+        ```markdown
+        ---
+        config:
+            theme: dark
+        ---
+        architecture-beta
+            group api(cloud)[API]
+
+            service db(database)[Database] in api
+            service disk1(disk)[Storage] in api
+            service disk2(disk)[Storage] in api
+            service server(server)[Server] in api
+
+            db:L -- R:server
+            disk1:T -- B:server
+            disk2:T -- B:db
+        ```
+        Ensure that both configuration and diagram code parse and render correctly under the new format.
 
 
 <!-- 
