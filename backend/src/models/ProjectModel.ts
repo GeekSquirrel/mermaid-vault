@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { getDB } from "../db/index.js";
-import type { Project } from "../types/index.js";
+import { codeHash } from "../util/hash.js";
+import type { PreviewSvg, PreviewTheme, Project } from "../types/index.js";
 
 export class ProjectModel {
   static getAll(): Project[] {
@@ -82,6 +83,44 @@ export class ProjectModel {
     });
 
     return deleteTx(id);
+  }
+
+  /**
+   * Return the stored preview SVG for the given theme, but only when it was
+   * rendered from the project's current code (hash match). Otherwise null.
+   */
+  static getPreview(id: string, theme: PreviewTheme): PreviewSvg | null {
+    const db = getDB();
+    const row = db
+      .prepare(
+        `SELECT code, preview_${theme}_svg AS svg, preview_${theme}_hash AS hash FROM projects WHERE id = ?`
+      )
+      .get(id) as { code: string; svg: string | null; hash: string | null } | undefined;
+    if (!row || !row.svg || !row.hash) {
+      return null;
+    }
+    if (codeHash(row.code) !== row.hash) {
+      return null;
+    }
+    return { svg: row.svg, hash: row.hash };
+  }
+
+  /** Store the preview SVG only if codeHash still matches the project's current code. */
+  static savePreview(id: string, theme: PreviewTheme, svg: string, hash: string): boolean {
+    const db = getDB();
+    const row = db.prepare("SELECT code FROM projects WHERE id = ?").get(id) as
+      | { code: string }
+      | undefined;
+    if (!row) {
+      return false;
+    }
+    if (codeHash(row.code) !== hash) {
+      return false;
+    }
+    db.prepare(
+      `UPDATE projects SET preview_${theme}_svg = ?, preview_${theme}_hash = ?, preview_updated_at = ? WHERE id = ?`
+    ).run(svg, hash, Date.now(), id);
+    return true;
   }
 }
 

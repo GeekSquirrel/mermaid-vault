@@ -257,7 +257,40 @@ Base URL: `http://localhost:8080`
   }
   ```
 
-### 9. Update / Rename History Entry
+### 9. Get Stored Diagram Preview
+- **GET `/api/projects/:id/preview.svg?theme=light|dark`**
+- **GET `/api/history/:id/preview.svg?theme=light|dark`**
+- Serves the cached preview SVG for a project or a history (bookmark) entry, per color theme.
+- A stored preview is only served while it was rendered from the resource's **current** code
+  (verified with a SHA-256 hash of the code). When the code has changed (or no preview exists
+  yet), the endpoint returns `404 Not Found` so clients can fall back to live rendering and
+  upload a fresh preview.
+- **Response** `200 OK`: `Content-Type: image/svg+xml`, `ETag: "<code sha256>"`,
+  `Cache-Control: no-cache` (conditional requests get `304 Not Modified`).
+- **Response** `404 Not Found`: standard error envelope (`error.code: "NOT_FOUND"`).
+
+### 10. Upload Diagram Preview
+- **PUT `/api/projects/:id/preview`**
+- **PUT `/api/history/:id/preview`**
+- Stores a preview SVG rendered by the client. The `codeHash` must match the SHA-256 hash of the
+  resource's current code, otherwise the upload is rejected with `409 Conflict` (stale render).
+- **Request Body**:
+  ```json
+  {
+    "theme": "light",
+    "codeHash": "9f2b…64-char sha256 hex of the diagram code…",
+    "svg": "<svg …>…</svg>"
+  }
+  ```
+- **Response** `200 OK`:
+  ```json
+  {
+    "success": true,
+    "data": { "saved": true }
+  }
+  ```
+
+### 11. Update / Rename History Entry
 - **PUT `/api/history/:id`**
 - **Request Body**:
   ```json
@@ -267,11 +300,11 @@ Base URL: `http://localhost:8080`
   ```
 - **Response** `200 OK`
 
-### 10. Delete History Entry
+### 12. Delete History Entry
 - **DELETE `/api/history/:id`**
 - **Response** `200 OK`
 
-### 11. Clear History Entries
+### 13. Clear History Entries
 - **DELETE `/api/history?type=manual`**
 - **Response** `200 OK`
 
@@ -302,3 +335,8 @@ CREATE TABLE IF NOT EXISTS history_entries (
 );
 CREATE INDEX IF NOT EXISTS idx_history_entries_time ON history_entries(time DESC);
 ```
+
+Preview cache columns are added idempotently at startup (see `src/db/index.ts`) to both tables:
+`preview_light_svg`, `preview_light_hash`, `preview_dark_svg`, `preview_dark_hash` (TEXT) and
+`preview_updated_at` (INTEGER). Each `preview_*_hash` stores the SHA-256 of the diagram code the
+SVG was rendered from; a preview is considered fresh only while that hash matches the stored code.

@@ -1,6 +1,13 @@
 import crypto from "node:crypto";
 import { getDB } from "../db/index.js";
-import type { CreateHistoryDto, HistoryEntry, UpdateHistoryDto } from "../types/index.js";
+import { codeHash } from "../util/hash.js";
+import type {
+  CreateHistoryDto,
+  HistoryEntry,
+  PreviewSvg,
+  PreviewTheme,
+  UpdateHistoryDto,
+} from "../types/index.js";
 
 interface HistoryRow {
   id: string;
@@ -9,6 +16,16 @@ interface HistoryRow {
   state: string;
   time: number;
   type: string;
+}
+
+/** Extract the diagram code from a serialized state JSON; null when absent. */
+function stateCode(stateJson: string): string | null {
+  try {
+    const state = JSON.parse(stateJson) as { code?: unknown };
+    return typeof state.code === "string" ? state.code : null;
+  } catch {
+    return null;
+  }
 }
 
 function rowToEntry(row: HistoryRow): HistoryEntry {
@@ -158,6 +175,46 @@ export class HistoryModel {
     const sql = `DELETE FROM history_entries ${whereClause}`;
     const stmt = db.prepare(sql);
     stmt.run(...params);
+    return true;
+  }
+
+  /**
+   * Return the stored preview SVG for the given theme, but only when it was
+   * rendered from the entry's current state code (hash match). Otherwise null.
+   */
+  static getPreview(id: string, theme: PreviewTheme): PreviewSvg | null {
+    const db = getDB();
+    const row = db
+      .prepare(
+        `SELECT state, preview_${theme}_svg AS svg, preview_${theme}_hash AS hash FROM history_entries WHERE id = ?`
+      )
+      .get(id) as { state: string; svg: string | null; hash: string | null } | undefined;
+    if (!row || !row.svg || !row.hash) {
+      return null;
+    }
+    const code = stateCode(row.state);
+    if (code === null || codeHash(code) !== row.hash) {
+      return null;
+    }
+    return { svg: row.svg, hash: row.hash };
+  }
+
+  /** Store the preview SVG only if codeHash still matches the entry's current state code. */
+  static savePreview(id: string, theme: PreviewTheme, svg: string, hash: string): boolean {
+    const db = getDB();
+    const row = db.prepare("SELECT state FROM history_entries WHERE id = ?").get(id) as
+      | { state: string }
+      | undefined;
+    if (!row) {
+      return false;
+    }
+    const code = stateCode(row.state);
+    if (code === null || codeHash(code) !== hash) {
+      return false;
+    }
+    db.prepare(
+      `UPDATE history_entries SET preview_${theme}_svg = ?, preview_${theme}_hash = ?, preview_updated_at = ? WHERE id = ?`
+    ).run(svg, hash, Date.now(), id);
     return true;
   }
 }

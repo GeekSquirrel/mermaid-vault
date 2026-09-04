@@ -257,7 +257,39 @@ docker compose up -d
   }
   ```
 
-### 9. 更新/重命名历史记录
+### 9. 获取已存图表预览
+- **GET `/api/projects/:id/preview.svg?theme=light|dark`**
+- **GET `/api/history/:id/preview.svg?theme=light|dark`**
+- 返回项目或历史（书签）条目在指定配色主题下缓存的预览 SVG。
+- 仅当存储的预览是由该资源**当前**代码渲染而来时才会返回（通过代码的 SHA-256 哈希校验）。
+  当代码已变更（或尚无预览）时返回 `404 Not Found`，客户端可据此回退到前端实时渲染，
+  并上传新的预览。
+- **响应** `200 OK`：`Content-Type: image/svg+xml`，`ETag: "<代码 sha256>"`，
+  `Cache-Control: no-cache`（条件请求返回 `304 Not Modified`）。
+- **响应** `404 Not Found`：标准错误结构（`error.code: "NOT_FOUND"`）。
+
+### 10. 上传图表预览
+- **PUT `/api/projects/:id/preview`**
+- **PUT `/api/history/:id/preview`**
+- 存储由客户端渲染的预览 SVG。`codeHash` 必须与该资源当前代码的 SHA-256 哈希一致，
+  否则拒绝写入并返回 `409 Conflict`（渲染结果已过期）。
+- **请求体**：
+  ```json
+  {
+    "theme": "light",
+    "codeHash": "9f2b…图表代码的 64 位 sha256 十六进制串…",
+    "svg": "<svg …>…</svg>"
+  }
+  ```
+- **响应** `200 OK`：
+  ```json
+  {
+    "success": true,
+    "data": { "saved": true }
+  }
+  ```
+
+### 11. 更新/重命名历史记录
 - **PUT `/api/history/:id`**
 - **请求体**：
   ```json
@@ -267,11 +299,11 @@ docker compose up -d
   ```
 - **响应** `200 OK`
 
-### 10. 删除单个历史记录
+### 12. 删除单个历史记录
 - **DELETE `/api/history/:id`**
 - **响应** `200 OK`
 
-### 11. 清空历史记录
+### 13. 清空历史记录
 - **DELETE `/api/history?type=manual`**
 - **响应** `200 OK`
 
@@ -302,4 +334,9 @@ CREATE TABLE IF NOT EXISTS history_entries (
 );
 CREATE INDEX IF NOT EXISTS idx_history_entries_time ON history_entries(time DESC);
 ```
+
+预览缓存列在启动时以幂等方式添加到两张表中（见 `src/db/index.ts`）：
+`preview_light_svg`、`preview_light_hash`、`preview_dark_svg`、`preview_dark_hash`（TEXT）与
+`preview_updated_at`（INTEGER）。每个 `preview_*_hash` 记录渲染该 SVG 所用图表代码的
+SHA-256 哈希；只有哈希与当前存储代码一致时，预览才被视为最新。
 

@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { ProjectModel } from "../models/ProjectModel.js";
-import type { CreateProjectDto, UpdateProjectDto } from "../types/index.js";
+import type { CreateProjectDto, SavePreviewDto, UpdateProjectDto } from "../types/index.js";
+import { parsePreviewTheme, validateSavePreviewBody } from "../util/preview.js";
 
 export class ProjectController {
   static listProjects(_req: Request, res: Response): void {
@@ -145,6 +146,94 @@ export class ProjectController {
         error: {
           code: "INTERNAL_ERROR",
           message: err instanceof Error ? err.message : "Failed to delete project",
+        },
+      });
+    }
+  }
+
+  static getProjectPreview(req: Request, res: Response): void {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: { code: "INVALID_INPUT", message: "Project ID is required" },
+        });
+        return;
+      }
+      const theme = parsePreviewTheme(req.query.theme);
+      if (!theme) {
+        res.status(400).json({
+          success: false,
+          error: { code: "INVALID_INPUT", message: "Theme must be 'light' or 'dark'" },
+        });
+        return;
+      }
+      const preview = ProjectModel.getPreview(id, theme);
+      if (!preview) {
+        res.status(404).json({
+          success: false,
+          error: {
+            code: "NOT_FOUND",
+            message: `No fresh preview for project ${id} (missing or outdated)`,
+          },
+        });
+        return;
+      }
+      res
+        .status(200)
+        .set("Content-Type", "image/svg+xml")
+        .set("ETag", `"${preview.hash}"`)
+        .set("Cache-Control", "no-cache")
+        .send(preview.svg);
+    } catch (err) {
+      res.status(500).json({
+        success: false,
+        error: {
+          code: "INTERNAL_ERROR",
+          message: err instanceof Error ? err.message : "Failed to get project preview",
+        },
+      });
+    }
+  }
+
+  static saveProjectPreview(req: Request, res: Response): void {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          error: { code: "INVALID_INPUT", message: "Project ID is required" },
+        });
+        return;
+      }
+      const body = req.body as SavePreviewDto;
+      const validationError = validateSavePreviewBody(body);
+      if (validationError) {
+        res.status(400).json({
+          success: false,
+          error: { code: "INVALID_INPUT", message: validationError },
+        });
+        return;
+      }
+      const saved = ProjectModel.savePreview(id, body.theme, body.svg, body.codeHash);
+      if (!saved) {
+        res.status(409).json({
+          success: false,
+          error: {
+            code: "CONFLICT",
+            message: `Preview rejected: project ${id} not found or code changed since render`,
+          },
+        });
+        return;
+      }
+      res.status(200).json({ success: true, data: { saved: true } });
+    } catch (err) {
+      res.status(500).json({
+        success: false,
+        error: {
+          code: "INTERNAL_ERROR",
+          message: err instanceof Error ? err.message : "Failed to save project preview",
         },
       });
     }

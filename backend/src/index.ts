@@ -24,8 +24,8 @@ app.use(
   })
 );
 
-// Body parser
-app.use(express.json());
+// Body parser (larger limit to accommodate preview SVG uploads)
+app.use(express.json({ limit: "5mb" }));
 
 // Health check endpoint (support both /health and /api/health)
 app.get(["/health", "/api/health"], (_req, res) => {

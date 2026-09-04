@@ -47,6 +47,30 @@ export function getDB(customPath?: string): DatabaseType {
     } catch {
       // Ignore if table does not exist
     }
+
+    // Ensure preview columns exist on projects and history_entries (light/dark SVG + freshness hash)
+    const previewColumns: [string, string][] = [
+      ["preview_light_svg", "TEXT"],
+      ["preview_light_hash", "TEXT"],
+      ["preview_dark_svg", "TEXT"],
+      ["preview_dark_hash", "TEXT"],
+      ["preview_updated_at", "INTEGER"],
+    ];
+    for (const table of ["projects", "history_entries"]) {
+      try {
+        const info = db.pragma(`table_info(${table})`) as { name: string }[];
+        if (info.length === 0) {
+          continue;
+        }
+        for (const [column, type] of previewColumns) {
+          if (!info.some((col) => col.name === column)) {
+            db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type};`);
+          }
+        }
+      } catch {
+        // Ignore if table does not exist
+      }
+    }
   }
 
   if (!customPath) {

@@ -52,3 +52,18 @@ export interface UpdateHistoryDto {
   projectId?: string | null;
 }
 
+export type PreviewTheme = "light" | "dark";
+
+export interface SavePreviewDto {
+  theme: PreviewTheme;
+  /** sha256 hex of the code the preview was rendered from */
+  codeHash: string;
+  svg: string;
+}
+
+export interface PreviewSvg {
+  svg: string;
+  hash: string;
+}
+
+
