@@ -5,15 +5,15 @@
   "type": "module",
   "packageManager": "pnpm@11.17.0",
   "scripts": {
-    "dev": "pnpm --parallel --filter mermaid-editor-backend --filter mermaid-live-editor dev",
+    "dev": "pnpm --parallel --filter mermaid-editor-backend --filter mermaid-vault-frontend dev",
     "dev:backend": "pnpm --filter mermaid-editor-backend dev",
-    "dev:frontend": "pnpm --filter mermaid-live-editor dev",
+    "dev:frontend": "pnpm --filter mermaid-vault-frontend dev",
     "build": "pnpm --recursive build",
     "build:backend": "pnpm --filter mermaid-editor-backend build",
-    "build:frontend": "pnpm --filter mermaid-live-editor build",
+    "build:frontend": "pnpm --filter mermaid-vault-frontend build",
     "test": "pnpm --recursive test",
     "test:backend": "pnpm --filter mermaid-editor-backend test",
-    "test:frontend": "pnpm --filter mermaid-live-editor test"
+    "test:frontend": "pnpm --filter mermaid-vault-frontend test"
   },
   "overrides": {
     "svelte": "5.56.4",
