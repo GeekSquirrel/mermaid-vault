@@ -32,6 +32,14 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
   - View all saved Mermaid diagrams and flowcharts in SQLite.
   - Real-time client-side search by diagram title or code snippet.
   - Create new projects and delete existing ones with instant confirmation.
+- **Server-Cached Diagram Previews**:
+  - Project cards and bookmark cards load a cached preview SVG from the backend
+    (light & dark themes stored separately, keyed by a SHA-256 hash of the code).
+  - When the code has changed or no preview exists, the client falls back to live
+    rendering and backfills the backend preview automatically.
+- **Bookmark Cards with Previews**:
+  - The Bookmarks panel renders entries as cards with diagram previews, plus the
+    existing rename / restore / open / delete actions.
 - **Auto-Syncing Cloud Storage (`/edit?projectId=xxx`)**:
   - Real-time debounced save (1.5s) on diagram code or title edits.
   - Save status indicators: *Saving...*, *Saved*, or *Save failed (Click to retry)*.
