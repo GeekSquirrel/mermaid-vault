@@ -110,6 +110,8 @@ Remove the menu entry to avoid redirecting to third-party playgrounds.
         Ensure that both configuration and diagram code parse and render correctly under the new format.
     - [x] Remove the Docs button from the top-right of the editor Card header.
     - [x] Merge sample diagrams into the editor panel as a `Samples` tab at the previous Docs button location. Retain the sample diagrams icon and name it `Samples`. In the Samples panel, redesign the UI: for each diagram type, render the type name as a top-left subheading, and the example titles as buttons arranged in a flex layout. Display all diagram types in a vertical list. If a diagram type has only one example, name it `Basic ${diagramType}`.
+    - [x] Change category subheadings in Samples panel to theme pink.
+    - [x] Keep editor top bar unchanged (never cover or replace Code button when opening Samples panel), allowing users to click Code or Samples to switch to the corresponding panel.
 
 - [x] Projects Page Redesign
     - [x] Rename `My Projects` to `Projects` in the left main menu.
@@ -119,6 +121,7 @@ Remove the menu entry to avoid redirecting to third-party playgrounds.
     - [x] Position search input on the far left with appropriate max-width; group Refresh and New Project buttons in a parent container positioned on the far right.
     - [x] Fix downward vertical offset of the search icon in the search input.
     - [x] Increase project card height, replace raw code snippet preview with rendered SVG diagram preview using `IntersectionObserver` lazy loading, and display syntax error messages directly for invalid diagrams.
+    - [x] Switch card layout to flex layout with card max-width, self-adapting column count according to screen width.
 
 - [x] Mobile UI Fixes
     - [x] Fix the Edit / View toggle switch on mobile.
