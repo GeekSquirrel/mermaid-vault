@@ -115,8 +115,8 @@ docker compose -f docker-compose.dev.yml up
 
 Images are published to GitHub Container Registry (`ghcr.io`):
 
-- **Frontend Image**: `ghcr.io/geeksquirrel/mermaid-live-editor`
-- **Backend Image**: `ghcr.io/geeksquirrel/mermaid-live-editor-backend`
+- **Frontend Image**: `ghcr.io/geeksquirrel/mermaid-vault-frontend`
+- **Backend Image**: `ghcr.io/geeksquirrel/mermaid-vault-backend`
 
 | Channel | Trigger | Tags | Platforms |
 |---|---|---|---|

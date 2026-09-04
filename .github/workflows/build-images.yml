@@ -1,0 +1,87 @@
+name: Docker Build & Publish (Reusable)
+
+# Reusable build pipeline shared by dev and release workflows.
+# Builds one image, pushes to GHCR, and caches layers in GitHub Actions cache.
+
+on:
+  workflow_call:
+    inputs:
+      image-name:
+        description: 'Full image name (e.g. ghcr.io/owner/repo)'
+        required: true
+        type: string
+      context:
+        description: 'Build context path'
+        required: true
+        type: string
+      dockerfile:
+        description: 'Path to Dockerfile'
+        required: true
+        type: string
+      target:
+        description: 'Dockerfile build target (empty = final stage)'
+        required: false
+        type: string
+        default: ''
+      platforms:
+        description: 'Comma-separated target platforms'
+        required: false
+        type: string
+        default: 'linux/amd64,linux/arm64'
+      tags:
+        description: 'metadata-action tags configuration (multiline)'
+        required: true
+        type: string
+      cache-scope:
+        description: 'GitHub Actions cache scope for layer cache'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ inputs.image-name }}
+          flavor: |
+            latest=false
+          tags: ${{ inputs.tags }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          target: ${{ inputs.target }}
+          platforms: ${{ inputs.platforms }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ inputs.cache-scope }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.cache-scope }}

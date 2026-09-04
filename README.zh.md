@@ -114,8 +114,8 @@ docker compose -f docker-compose.dev.yml up
 
 镜像通过 GitHub Container Registry (`ghcr.io`) 发布：
 
-- **前端镜像**：`ghcr.io/geeksquirrel/mermaid-live-editor`
-- **后端镜像**：`ghcr.io/geeksquirrel/mermaid-live-editor-backend`
+- **前端镜像**：`ghcr.io/geeksquirrel/mermaid-vault-frontend`
+- **后端镜像**：`ghcr.io/geeksquirrel/mermaid-vault-backend`
 
 | 通道 | 触发方式 | 镜像标签 | 支持架构 |
 |---|---|---|---|

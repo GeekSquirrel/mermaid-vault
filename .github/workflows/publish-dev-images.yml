@@ -1,8 +1,16 @@
 name: Publish Dev Docker Images to GHCR
 
+# Manual build for testing. Publishes :dev plus commit SHA tags.
+# Default platform is linux/amd64 for fast iteration; arm64 can be added via input.
+
 on:
   workflow_dispatch:
     inputs:
+      platforms:
+        description: 'Target platforms (comma-separated)'
+        required: false
+        default: 'linux/amd64'
+        type: string
       tag:
         description: 'Optional custom image tag (in addition to commit SHA and dev)'
         required: false
@@ -18,95 +26,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  publish-frontend:
-    name: Build & Publish Frontend (x64)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository with submodules
-        uses: actions/checkout@v7
-        with:
-          submodules: recursive
-          fetch-depth: 0
+  frontend:
+    name: Build & Publish Frontend
+    uses: ./.github/workflows/build-images.yml
+    with:
+      image-name: ghcr.io/${{ github.repository_owner }}/mermaid-vault-frontend
+      context: ./mermaid-live-editor
+      dockerfile: ./mermaid-live-editor/Dockerfile
+      target: mermaid
+      platforms: ${{ inputs.platforms }}
+      tags: |
+        type=raw,value=dev
+        type=sha,format=short,prefix=
+        type=sha,format=long,prefix=
+        type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
+      cache-scope: frontend
+    secrets: inherit
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract Docker metadata for Frontend
-        id: meta-frontend
-        uses: docker/metadata-action@v6
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/mermaid-live-editor
-          flavor: |
-            latest=false
-          tags: |
-            type=raw,value=dev
-            type=sha,format=short,prefix=
-            type=sha,format=long,prefix=
-            type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
-
-      - name: Build and push Frontend image
-        uses: docker/build-push-action@v7
-        with:
-          context: ./mermaid-live-editor
-          file: ./mermaid-live-editor/Dockerfile
-          target: mermaid
-          platforms: linux/amd64
-          push: true
-          tags: ${{ steps.meta-frontend.outputs.tags }}
-          labels: ${{ steps.meta-frontend.outputs.labels }}
-          cache-from: type=gha,scope=frontend
-          cache-to: type=gha,mode=max,scope=frontend
-
-  publish-backend:
-    name: Build & Publish Backend (x64)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository with submodules
-        uses: actions/checkout@v7
-        with:
-          submodules: recursive
-          fetch-depth: 0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract Docker metadata for Backend
-        id: meta-backend
-        uses: docker/metadata-action@v6
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/mermaid-live-editor-backend
-          flavor: |
-            latest=false
-          tags: |
-            type=raw,value=dev
-            type=sha,format=short,prefix=
-            type=sha,format=long,prefix=
-            type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
-
-      - name: Build and push Backend image
-        uses: docker/build-push-action@v7
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          target: runner
-          platforms: linux/amd64
-          push: true
-          tags: ${{ steps.meta-backend.outputs.tags }}
-          labels: ${{ steps.meta-backend.outputs.labels }}
-          cache-from: type=gha,scope=backend
-          cache-to: type=gha,mode=max,scope=backend
-
+  backend:
+    name: Build & Publish Backend
+    uses: ./.github/workflows/build-images.yml
+    with:
+      image-name: ghcr.io/${{ github.repository_owner }}/mermaid-vault-backend
+      context: ./backend
+      dockerfile: ./backend/Dockerfile
+      target: runner
+      platforms: ${{ inputs.platforms }}
+      tags: |
+        type=raw,value=dev
+        type=sha,format=short,prefix=
+        type=sha,format=long,prefix=
+        type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
+      cache-scope: backend
+    secrets: inherit
