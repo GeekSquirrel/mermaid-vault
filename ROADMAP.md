@@ -108,6 +108,21 @@ Remove the menu entry to avoid redirecting to third-party playgrounds.
             disk2:T -- B:db
         ```
         Ensure that both configuration and diagram code parse and render correctly under the new format.
+    - [x] Remove the Docs button from the top-right of the editor Card header.
+    - [x] Merge sample diagrams into the editor panel as a `Samples` tab at the previous Docs button location. Retain the sample diagrams icon and name it `Samples`. In the Samples panel, redesign the UI: for each diagram type, render the type name as a top-left subheading, and the example titles as buttons arranged in a flex layout. Display all diagram types in a vertical list. If a diagram type has only one example, name it `Basic ${diagramType}`.
+
+- [x] Projects Page Redesign
+    - [x] Rename `My Projects` to `Projects` in the left main menu.
+    - [x] Remove the desktop `New Project` button to the left of the GitHub icon in the Projects navbar; add a mobile GitHub icon to the far right of the mobile navbar.
+    - [x] Align search bar and project card grid container with navbar margins (matching `px-4 sm:px-6` so the search input aligns with the left menu and action buttons align with the GitHub icon on the right).
+    - [x] Remove the `My Projects` headline and the `Manage your Mermaid diagrams and chart projects saved in cloud storage` subtitle.
+    - [x] Position search input on the far left with appropriate max-width; group Refresh and New Project buttons in a parent container positioned on the far right.
+    - [x] Fix downward vertical offset of the search icon in the search input.
+    - [x] Increase project card height, replace raw code snippet preview with rendered SVG diagram preview using `IntersectionObserver` lazy loading, and display syntax error messages directly for invalid diagrams.
+
+- [x] Mobile UI Fixes
+    - [x] Fix the Edit / View toggle switch on mobile.
+    - [x] Fix incorrect line numbers column background color in the mobile code editor to match dark/light theme colors.
 
 
 <!-- 

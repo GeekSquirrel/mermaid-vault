@@ -110,8 +110,21 @@ timeline
             disk2:T -- B:db
         ```
         确保新格式下，配置和绘图代码都可以得到正确解析。
+    - [x] 去掉编辑器顶栏的最右侧的doc按钮
+    - [x] 将sample diagrams作为一个标签页合并到文本编辑器面板，放置在之前doc的位置。sample diagram的icon不变，标题简写为Samples。Samples面板中，重写UI。对于每个类型的图表：将类型名称作为左上角小标题，二级菜单中的图标样例标题作为按钮，按钮以flex形式排列。面板以纵向列表的形式展示所有图标类型。如果图标只有一个样例，则样例名为`Basic ${类型名称}`
 
+- [x] My Projects页面升级
+    - [x] 左侧菜单中的My Projects更名为Projects
+    - [x] 去掉桌面端Projects页面中，导航栏上，github图标左侧的的New Projects按钮；为移动端在导航栏最右侧添加github图标。
+    - [x] 搜索栏+卡片列表的最外侧容器和顶部导航栏左右侧对齐。即视觉上，导航栏的菜单最左侧和github图标最右侧为左右侧基准线，下方可见的最左侧/最右侧组件应该分别与之对齐。
+    - [x] Projects页面中，移除搜索栏中的`My Projects`大标题以及下方`Manage your Mermaid diagrams and chart projects saved in cloud storage`相关代码。
+    - [x] 搜索栏中，搜索框至于搜索栏最左侧，设置合适的最大宽度；刷新和new projects并入一个父容器后，父容器至于搜索栏最右侧
+    - [x] 修复Search projects的icon向下偏移的问题。
+    - [x] 项目卡片高度拉高，中间的预览界面从代码预览改为渲染后结果预览，为了性能考量采取懒加载（即将可见时再加载卡片）。对于语法错误卡片直接显示syntax error的内容。
 
+- [x] 移动端界面修复
+    - [x] 修复编辑/预览切换按钮失效的问题。
+    - [x] 修复代码编辑器行号一列颜色不正确的问题。
 
 <!-- ## 3. 后续迭代规划 (v2.1+ / v3.0 Planning)
 
@@ -131,8 +144,9 @@ timeline
 - [ ] **版本历史与回滚**：自动保存历史快照，提供图形化版本对比与恢复。
 - [ ] **服务端渲染 (SSR)**：提供服务端图表渲染接口（`/api/render`），便于 CI/CD 自动化调用生成图片。
 - [ ] **云存储扩展**：支持 S3 兼容对象存储与数据库定时自动备份。
+ -->
 
 ---
 
 ## 4. 历史记录查询
-- 完整逐项任务清单请参阅：[docs/ROADMAP_ARCHIVE.md](docs/ROADMAP_ARCHIVE.md)。 -->
+- 完整逐项任务清单请参阅：[docs/ROADMAP_ARCHIVE.md](docs/ROADMAP_ARCHIVE.md)。
