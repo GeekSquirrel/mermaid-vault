@@ -85,6 +85,8 @@ Remove the menu entry to avoid redirecting to third-party playgrounds.
 - [x] Status Indicator Enhancements (next to `Projects/${Project Name}`)
     - [x] Add pink-themed `Bookmarked` badge shown for 3s with fadeout when bookmark is saved successfully to SQLite; show red `Failed to save bookmark` badge on error.
     - [x] If save process completes in < 3s, skip `saving` and display `saved` directly; if save takes > 3s, show `saving` first then switch to `saved`; show red `Failed to save diagram` if save fails.
+    - [x] Make the saved badge also fade out and disappear after 3 seconds.
+    - [x] On mobile, change status indicators into a bar notification popping up at the bottom-right corner, maintaining original colors, ensuring save times < 3s do not show saving, and keeping 3s fadeout for all non-saving notifications (success/failure/error).
 
 - [x] Text Editor
     - [x] Remove AI prompt before line numbers in code editor and popup dialog on click (remove all official upsell/lead-generation code).
@@ -114,6 +116,7 @@ Remove the menu entry to avoid redirecting to third-party playgrounds.
     - [x] Keep editor top bar unchanged (never cover or replace Code button when opening Samples panel), allowing users to click Code or Samples to switch to the corresponding panel.
     - [x] Unify Code and Samples top bar button styles (both active and inactive states match current Samples button).
     - [x] Code editor scrollbar style matches Samples panel scrollbar.
+    - [x] Trigger an auto-save silently when switching sample diagrams, without displaying saving/saved badges.
 
 - [x] Projects Page Redesign
     - [x] Rename `My Projects` to `Projects` in the left main menu.

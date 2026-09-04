@@ -87,6 +87,8 @@ timeline
 - [x] 状态标识增强（指 Projects/${Project Name} 的右侧旁边的状态标识）
     - [x] 新增粉红主题色的bookmarked标识，在用户成功保存书签到sqlite后显示，显示3秒后淡出消失；如保存失败则显示红色标识Failed to save bookmark
     - [x] 当自动/手动保存过程过程小于3秒种时，不显示saving，直接在成功保存后显示saved；超过3秒再显示saving，保存成功后切换为saved；若最终保存失败则显示Failed to save diagram
+    - [x] saved标识也做成显示3秒钟后淡出消失
+    - [x] 移动端当中标识改为右下角弹出的条形通知，保持原来配色，保持保存时间小于3秒不能显示saving。除saving外的成功/失败/报错等通知依然保持3秒后淡出。
 
 - [x] 文本编辑器
     - [x] 去除代码编辑器行号前的AI提示和点击之后的弹窗(移除所有相关的引流至官方的代码)
@@ -116,6 +118,7 @@ timeline
     - [x] 保持编辑器顶栏不变（打开sample面板时不要遮盖code按钮），允许用户点击code/samples切换到对应面板
     - [x] 顶栏的code和samples的按钮样式保持一致，选中高亮和未选中样式也保持一致，均与当前samples按钮为准
     - [x] code编辑器的滚动条样式和samples面板一致，以samples面板的滚动条为准
+    - [x] 用户切换sample时触发一次自动保存，但不显示saving/saved的标识
 
 - [x] My Projects页面升级
     - [x] 左侧菜单中的My Projects更名为Projects
