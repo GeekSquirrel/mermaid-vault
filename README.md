@@ -81,6 +81,13 @@ pnpm dev
 ```
 The frontend editor starts at `http://localhost:3000` (or `:5173`).
 
+Or start both from the repository root at once:
+```bash
+pnpm run dev
+```
+
+> **How it works**: In development the frontend always calls the relative path `/api`, and the Vite dev server proxies `/api/*` to the backend (default `http://localhost:8080`, override with `MERMAID_API_PROXY_TARGET`). Requests stay same-origin, so no CORS configuration is needed.
+
 ---
 
 ### Method 2: Docker Deployment
@@ -95,21 +102,33 @@ docker compose up -d
 # View service logs
 docker compose logs -f
 ```
-The editor will be accessible at `http://localhost` (or `http://localhost:80`).
+The editor will be accessible at `http://localhost` (or `http://<host-ip>` with `APP_FRONTEND_PORT`), so it works out of the box for LAN access. The frontend Nginx proxies `/api/*` to the backend container (`BACKEND_UPSTREAM`, default `backend:8080`) — no extra configuration is needed.
+
+**Behind a reverse proxy**: point your Nginx/Caddy/Traefik at the frontend's exposed port and forward normally (e.g. `proxy_pass http://127.0.0.1:<APP_FRONTEND_PORT>;`). Everything is same-origin, so no CORS configuration is required on either side.
 
 #### Development Mode (with Source Mount & Hot Reload)
 ```bash
 docker compose -f docker-compose.dev.yml up
 ```
 
-#### Pre-Built Development Images (GHCR)
+#### Pre-Built Images (GHCR)
 
-Test images are published to GitHub Container Registry (`ghcr.io`, `linux/amd64`):
+Images are published to GitHub Container Registry (`ghcr.io`):
 
-- **Frontend Image**: `ghcr.io/geeksquirrel/mermaid-live-editor:dev` (or tagged by commit SHA)
-- **Backend Image**: `ghcr.io/geeksquirrel/mermaid-live-editor-backend:dev` (or tagged by commit SHA)
+- **Frontend Image**: `ghcr.io/geeksquirrel/mermaid-live-editor`
+- **Backend Image**: `ghcr.io/geeksquirrel/mermaid-live-editor-backend`
 
-Images can be published on-demand via GitHub Actions: navigate to **Actions** → **Publish Dev Docker Images to GHCR** → click **Run workflow**.
+| Channel | Trigger | Tags | Platforms |
+|---|---|---|---|
+| **Dev** | Manual (**Actions** → **Publish Dev Docker Images to GHCR** → **Run workflow**) | `dev`, commit SHA, optional custom tag | `linux/amd64` by default; `linux/arm64` can be added via the `platforms` input |
+| **Release** | Automatic, on pushing a `v*` tag (e.g. `v2.1.0`) | `X.Y.Z`, `X.Y`, `latest` | `linux/amd64`, `linux/arm64` |
+
+To cut a release, push a version tag and the multi-arch images build automatically:
+
+```bash
+git tag v2.1.0
+git push origin v2.1.0
+```
 
 ---
 
@@ -121,7 +140,7 @@ You can easily select one of three deployment modes via the `API_BASE_URL` envir
 |---|---|---|
 | **1. Same-Origin Internal Proxy (Default)** | Leave empty / unset | Frontend uses relative path `/api`, proxied by frontend Nginx directly to backend container. No CORS required, single exposed port. |
 | **2. Shared Domain / Gateway** | `API_BASE_URL=https://example.com/api` | Frontend directly requests this absolute URL, suitable for unified reverse proxy or gateway configurations. |
-| **3. Standalone API Domain (CORS)** | `API_BASE_URL=https://api.example.com` | Frontend sends cross-origin requests to independent backend domain. Backend includes CORS headers and supports both `/api/projects` and `/projects`. |
+| **3. Standalone API Domain (CORS)** | `API_BASE_URL=https://api.example.com` | Frontend sends cross-origin requests to independent backend domain. Set `CORS_ORIGIN` on the backend to the frontend origin. Backend supports both `/api/projects` and `/projects`. |
 
 ---
 
@@ -133,21 +152,30 @@ Copy `.env.example` to `.env` or configure directly:
 |---|---|---|---|
 | `APP_FRONTEND_PORT` | Frontend | `80` | Host port mapped to frontend container (replaces `FRONTEND_PORT`). |
 | `API_BASE_URL` | Frontend | *(Empty)* | Runtime API base URL. Empty uses internal Nginx reverse proxy. |
+| `BACKEND_UPSTREAM` | Frontend | `backend:8080` | Backend origin the frontend Nginx proxies `/api/` to. Change it when the backend is not in the same Docker compose network. |
 | `PORT` | Backend | `8080` | Internal listening port inside the backend container. |
 | `DB_PATH` | Backend | `/app/data/mermaid.db` | SQLite database file path. |
 | `NODE_ENV` | Backend | `production` | Node.js execution environment. |
+| `CORS_ORIGIN` | Backend *(Optional)* | `*` | Comma-separated origin whitelist, e.g. `https://example.com,https://app.example.com`. Only relevant for cross-origin API access (Mode 3). |
 | `APP_BACKEND_PORT` | Backend *(Optional)* | *(Unset)* | Optional host port mapping for backend debugging (e.g. `8080`). |
+
+`MERMAID_API_PROXY_TARGET` (dev only) overrides the Vite dev-proxy target for `/api`, defaulting to `http://localhost:8080` locally; the dev compose sets it to `http://backend:8080`.
 
 Example `.env`:
 ```env
 # Frontend Service Configuration
 APP_FRONTEND_PORT=80
 API_BASE_URL=
+# Optional: override the backend origin used by the frontend Nginx proxy
+# BACKEND_UPSTREAM=backend:8080
 
 # Backend Configuration (Internal container settings)
 PORT=8080
 DB_PATH=/app/data/mermaid.db
 NODE_ENV=production
+
+# Optional: restrict cross-origin API access (comma-separated whitelist)
+# CORS_ORIGIN=https://example.com
 
 # Optional: Host port mapping for backend debugging
 # APP_BACKEND_PORT=8080

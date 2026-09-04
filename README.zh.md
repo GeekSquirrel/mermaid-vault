@@ -80,6 +80,13 @@ pnpm dev
 ```
 前端编辑器默认启动于 `http://localhost:3000` (或 `:5173`)。
 
+也可以在仓库根目录一键同时启动前后端：
+```bash
+pnpm run dev
+```
+
+> **工作原理**：开发阶段前端始终请求相对路径 `/api`，由 Vite 开发服务器将 `/api/*` 代理到后端（默认 `http://localhost:8080`，可通过 `MERMAID_API_PROXY_TARGET` 覆盖）。请求保持同源，无需任何 CORS 配置。
+
 ---
 
 ### 方式二：使用 Docker 部署
@@ -94,21 +101,33 @@ docker compose up -d
 # 查看容器日志
 docker compose logs -f
 ```
-启动后，可在浏览器中通过 `http://localhost`（或 `http://localhost:80`）直接访问编辑器。
+启动后，可在浏览器中通过 `http://localhost`（或使用 `APP_FRONTEND_PORT` 自定义的 `http://<主机IP>:<端口>`）直接访问，局域网访问开箱即用。前端 Nginx 会将 `/api/*` 反向代理到后端容器（`BACKEND_UPSTREAM`，默认 `backend:8080`），无需额外配置。
+
+**反向代理部署**：将您的 Nginx/Caddy/Traefik 指向前端暴露的端口并正常转发即可（如 `proxy_pass http://127.0.0.1:<APP_FRONTEND_PORT>;`）。全程同源，前后端均无需 CORS 配置。
 
 #### 开发模式（源码挂载与热重载）
 ```bash
 docker compose -f docker-compose.dev.yml up
 ```
 
-#### 预构建测试镜像 (GHCR)
+#### 预构建镜像 (GHCR)
 
-测试版镜像通过 GitHub Container Registry (`ghcr.io`，架构支持 `linux/amd64`) 发布：
+镜像通过 GitHub Container Registry (`ghcr.io`) 发布：
 
-- **前端镜像**：`ghcr.io/geeksquirrel/mermaid-live-editor:dev`（或指定 commit SHA）
-- **后端镜像**：`ghcr.io/geeksquirrel/mermaid-live-editor-backend:dev`（或指定 commit SHA）
+- **前端镜像**：`ghcr.io/geeksquirrel/mermaid-live-editor`
+- **后端镜像**：`ghcr.io/geeksquirrel/mermaid-live-editor-backend`
 
-镜像发布支持在 GitHub Actions 中手动触发：进入 GitHub 仓库页面 **Actions** → 选择 **Publish Dev Docker Images to GHCR** → 点击 **Run workflow** 即可触发构建与发布。
+| 通道 | 触发方式 | 镜像标签 | 支持架构 |
+|---|---|---|---|
+| **Dev** | 手动（**Actions** → **Publish Dev Docker Images to GHCR** → **Run workflow**） | `dev`、commit SHA、可选自定义标签 | 默认 `linux/amd64`，可通过 `platforms` 输入追加 `linux/arm64` |
+| **Release** | 自动，推送 `v*` 标签时触发（如 `v2.1.0`） | `X.Y.Z`、`X.Y`、`latest` | `linux/amd64`、`linux/arm64` |
+
+发布新版本时，只需推送版本标签，即可自动构建多架构镜像：
+
+```bash
+git tag v2.1.0
+git push origin v2.1.0
+```
 
 ---
 
@@ -120,7 +139,7 @@ docker compose -f docker-compose.dev.yml up
 |---|---|---|
 | **1. 同源内部代理模式（默认推荐）** | 留空 / 不设置 | 前端使用相对路径 `/api`，由前端 Nginx 直接反向代理到后端容器。无跨域问题，仅对外暴露单个前端端口。 |
 | **2. 共用外部域名/网关模式** | `API_BASE_URL=https://example.com/api` | 前端直接请求该绝对路径，适用于前后端挂在同一反向代理或统一网关下的场景。 |
-| **3. 独立 API 域名模式（跨域）** | `API_BASE_URL=https://api.example.com` | 前端直接向独立后端域名发起跨域请求。后端已内置 CORS 支持，并同时兼容 `/api/projects` 与 `/projects`。 |
+| **3. 独立 API 域名模式（跨域）** | `API_BASE_URL=https://api.example.com` | 前端直接向独立后端域名发起跨域请求。需将后端 `CORS_ORIGIN` 设置为前端来源。后端同时兼容 `/api/projects` 与 `/projects`。 |
 
 ---
 
@@ -132,21 +151,30 @@ docker compose -f docker-compose.dev.yml up
 |---|---|---|---|
 | `APP_FRONTEND_PORT` | 前端容器 | `80` | 前端映射到宿主机的端口（替代原 `FRONTEND_PORT`）。 |
 | `API_BASE_URL` | 前端容器 | *(留空)* | 运行时 API 基础 URL。留空则启用前端 Nginx 内部反向代理。 |
+| `BACKEND_UPSTREAM` | 前端容器 | `backend:8080` | 前端 Nginx 将 `/api/` 代理到的后端源地址。当后端不在同一 Docker Compose 网络时修改此项。 |
 | `PORT` | 后端容器 | `8080` | 后端容器内部监听端口。 |
 | `DB_PATH` | 后端容器 | `/app/data/mermaid.db` | SQLite 数据库文件存储路径。 |
 | `NODE_ENV` | 后端容器 | `production` | Node.js 运行环境。 |
+| `CORS_ORIGIN` | 后端容器 *(可选)* | `*` | 逗号分隔的来源白名单，如 `https://example.com,https://app.example.com`。仅跨域访问 API（模式 3）时需要配置。 |
 | `APP_BACKEND_PORT` | 后端容器 *(可选)* | *(未设置)* | 调试时可选的宿主机端口映射（如设置为 `8080`）。 |
+
+`MERMAID_API_PROXY_TARGET`（仅开发环境）用于覆盖 Vite 开发代理 `/api` 的目标地址，本地默认 `http://localhost:8080`；开发 Compose 中已设置为 `http://backend:8080`。
 
 配置示例（`.env`）：
 ```env
 # 前端服务配置
 APP_FRONTEND_PORT=80
 API_BASE_URL=
+# 可选：覆盖前端 Nginx 代理的后端源地址
+# BACKEND_UPSTREAM=backend:8080
 
 # 后端服务配置（容器内部参数）
 PORT=8080
 DB_PATH=/app/data/mermaid.db
 NODE_ENV=production
+
+# 可选：限制跨域 API 访问来源（逗号分隔白名单）
+# CORS_ORIGIN=https://example.com
 
 # 可选：后端独立调试宿主机端口映射
 # APP_BACKEND_PORT=8080

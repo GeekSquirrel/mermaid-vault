@@ -15,10 +15,18 @@ getDB();
 export const app: express.Express = express();
 
 
-// Enable CORS with standard permissive policy for local & container environments
+// CORS policy: CORS_ORIGIN accepts a comma-separated origin whitelist.
+// Defaults to "*" (permissive) — only set it when the frontend calls the API
+// cross-origin (e.g. API_BASE_URL pointing to a standalone API domain).
+// Same-origin proxying (vite dev proxy / nginx) never triggers CORS.
+const CORS_ORIGIN = process.env.CORS_ORIGIN?.trim();
+const corsOrigins: string[] | boolean = CORS_ORIGIN
+  ? CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean)
+  : true;
+
 app.use(
   cors({
-    origin: "*",
+    origin: corsOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

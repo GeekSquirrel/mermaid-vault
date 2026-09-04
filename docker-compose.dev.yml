@@ -33,7 +33,8 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      - VITE_API_BASE_URL=http://localhost:8080/api
+      # Vite dev server proxies /api to the backend service over the Docker network
+      - MERMAID_API_PROXY_TARGET=http://backend:8080
     volumes:
       - ./mermaid-live-editor/src:/app/src
     depends_on:

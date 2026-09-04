@@ -37,12 +37,15 @@ services:
     container_name: mermaid-editor-frontend
     restart: unless-stopped
     ports:
-      # - "${APP_FRONTEND_PORT:-${FRONTEND_PORT:-80}}:80"
-      - 8000:80
+      # 仅前端暴露端口；通过 APP_FRONTEND_PORT 修改宿主机端口（默认 80）
+      - "${APP_FRONTEND_PORT:-80}:80"
     depends_on:
       backend:
         condition: service_healthy
     environment:
+      # Backend origin used by the frontend nginx proxy (default: backend service in this network)
+      - BACKEND_UPSTREAM=${BACKEND_UPSTREAM:-backend:8080}
+      # Absolute API base URL baked into the frontend at runtime (leave empty for same-origin /api proxying)
       - API_BASE_URL=${API_BASE_URL:-}
     env_file:
       - path: ./.env
