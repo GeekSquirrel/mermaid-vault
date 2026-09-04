@@ -1,6 +1,6 @@
-# Historical Roadmap Archive (v1.0 & v2.0)
+# Historical Roadmap Archive (v1.0, v2.0 & v2.1)
 
-> This document contains the full historical task list, execution steps, and acceptance criteria for **Mermaid Live Editor with Persistent Storage (v1.0 & v2.0)**.
+> This document contains the full historical task list, execution steps, and acceptance criteria for **Mermaid Live Editor with Persistent Storage (v1.0, v2.0 & v2.1)**.
 > All milestones listed below have been completed. For the current high-level roadmap and future planning, see [ROADMAP.md](../ROADMAP.md).
 
 ---
@@ -206,3 +206,96 @@
 - [x] Docker Compose 一键启动全栈服务，支持数据持久化卷挂载。
 - [x] 根目录通过 pnpm workspace 统一管理前后端多包开发与构建。
 - [x] 全套双语文档（`README`, `CONTRIBUTING`, `backend/README`）同步就绪。
+
+---
+
+# Plan: Mermaid Live Editor — v2.1 自托管适配与 UI 清理
+
+> **目标**：移除官方 Mermaid Live Editor 中与外部服务绑定的引流元素，并重构保存、导航与项目浏览体验，使项目更适合自托管场景。  
+> **状态**：✅ 全部完成。以下为压缩归档的任务清单（保留关键决策与规范细节）。
+
+## 里程碑概览
+
+| 阶段 | 描述 | 状态 |
+|------|------|------|
+| **v2.1 自托管清理** | 移除官方引流元素（横幅 / AI / Playground） | ✅ 已完成 |
+| **v2.1 体验重构** | 历史面板拆分、导航栏重做、自动保存与状态标识统一、编辑器与 Projects 页重构 | ✅ 已完成 |
+
+---
+
+## 1. 自托管清理（移除官方引流）
+- [x] 移除顶部推广横幅（"Try Mermaid Advanced Editor — OSS users get 10% off with code JS26"）。
+- [x] 移除画板左上角 AI/语音按钮（"Edit with AI" / "Edit with voice"）。
+- [x] 移除代码编辑器行号前的 AI 提示及点击弹窗（清除所有引流至官方的代码）。
+- [x] 移除报错弹出提示中的 "Create a free account to repair with AI" 与 AI Repair 按钮。
+- [x] "Save diagram" 按钮由跳转官网改为本地手动保存（调用已有保存接口）。
+- [x] GitHub 图标链接指向 https://github.com/GeekSquirrel/mermaid-editor。
+- [x] "Data security" 文案替换为自托管版本介绍说明。
+- [x] 移除左上角菜单中的 "Edit in Playground"。
+
+## 2. 历史面板拆分
+- [x] **Bookmarks（原 Saved）**：手动点击保存时生成条目，存后端 SQLite，支持跨设备同步（后端同步新增书签能力）。
+- [x] **Timeline**：每分钟自动快照一次，仅存浏览器 localStorage；移除面板顶栏的上传与保存按钮，保持其纯粹性。
+
+## 3. 导航栏重做
+- [x] 左侧移除 "Mermaid Live Editor" 及 LOGO，改为 `Projects/${Project Name}` 面包屑（My Projects 页仅显示 `Projects`）；点击 `Projects` 跳转项目页，点击项目名可改名；移除右侧重复的 Projects 按钮与重命名文本框。
+- [x] GitHub 图标移至导航栏最右侧；Share 按钮右数第二位，文字前加分享 icon。
+- [x] 删除导航栏 Save diagram 按钮。
+- [x] History 按钮拆分为 Bookmarks（右数第四，右上角气泡显示书签数量，为 0 时不显示）与 Timeline（右数第三），均为 `icon 文字` 形式；Bookmarks 面板继承原全部功能，顶栏保存 icon 替换为带加号书签 icon。
+- [x] 画板右上角工具栏（缩放/全屏区）新增保存按钮与带加号书签按钮（书签功能与 Bookmarks 面板一致）。
+- [x] saving/saved 等状态标识移至 `Projects/${Project Name}` 右侧。
+
+## 4. 自动保存逻辑（均指保存项目最新状态到 SQLite，非书签快照）
+- [x] 重命名/新建项目：自动保存但不显示 saving/saved 标识。
+- [x] 代码编辑器 10 秒无变更自动保存（显示标识）。
+- [x] Timeline 每分钟生成 localStorage 快照时同步执行一次自动保存（显示标识）。
+- [x] 点击编辑器外部时使其失焦并触发一次自动保存（显示标识）。
+- [x] 切换 sample 时自动保存但不显示标识。
+
+## 5. 状态标识增强（`Projects/${Project Name}` 右侧）
+- [x] 书签保存成功显示粉红主题 `bookmarked` 标识，3 秒后淡出；失败显示红色 `Failed to save bookmark`。
+- [x] 保存 <3 秒完成不显示 `saving`，成功后直接显示 `saved`；>3 秒先显示 `saving` 再切换 `saved`；失败显示 `Failed to save diagram`。
+- [x] `saved` 标识同样 3 秒后淡出。
+- [x] 移动端改为右下角弹出条形通知（保持原配色；<3 秒不显示 saving；成功/失败/报错通知均 3 秒淡出）。
+
+## 6. 文本编辑器
+- [x] 移除 Config 标签页，配置合并进 code 标签页：配置语法由 JSON 改为文档顶部 `---` 分隔符包围的 YAML frontmatter，配置与绘图代码均可正确解析。
+- [x] 移除编辑器顶栏最右侧的 doc 按钮。
+- [x] 新增 Samples 标签页（置于原 doc 位置，icon 不变）：图表类型名称作左上角小标题（主题粉红色），样例标题作按钮以 flex 排列，纵向列表展示全部类型；仅一个样例时命名 `Basic ${类型名称}`。
+- [x] 打开 Samples 面板不遮盖 code 按钮，顶栏 code/samples 按钮样式统一（选中/未选均以 samples 按钮为准）。
+- [x] code 编辑器滚动条样式与 Samples 面板一致。
+- [x] 编辑器代码与某 sample 一致时高亮该样例（选择成功后高亮；从 code 返回时重新匹配高亮）。
+
+YAML frontmatter 配置格式示例：
+
+```markdown
+---
+config:
+    theme: dark
+---
+architecture-beta
+    group api(cloud)[API]
+
+    service db(database)[Database] in api
+    service disk1(disk)[Storage] in api
+    service disk2(disk)[Storage] in api
+    service server(server)[Server] in api
+
+    db:L -- R:server
+    disk1:T -- B:server
+    disk2:T -- B:db
+```
+
+## 7. Projects 页面升级
+- [x] 左侧菜单 "My Projects" 更名 "Projects"。
+- [x] 移除桌面端导航栏 GitHub 图标左侧的 New Projects 按钮；移动端导航栏最右新增 GitHub 图标。
+- [x] 搜索栏 + 卡片列表最外侧容器与导航栏左右基准线对齐（菜单最左 / GitHub 图标最右）。
+- [x] 移除搜索栏中的 `My Projects` 大标题及 "Manage your Mermaid diagrams…" 副标题代码。
+- [x] 搜索框置于搜索栏最左（设合适最大宽度）；刷新与 New Projects 并入一个父容器置于最右。
+- [x] 修复 Search projects 图标向下偏移。
+- [x] 项目卡片增高，预览由代码改为渲染结果；`IntersectionObserver` 懒加载（即将可见时再加载）；语法错误卡片直接显示 syntax error 内容。
+- [x] 卡片改为 grid 布局，1:1 宽高比，列数随屏宽自适应（参考：16:9 4K 横屏 5 列 / 竖屏 3 列），间距参照整体布局左右边距；搜索框边框可见且与卡片设计语言一致。
+
+## 8. 移动端界面修复
+- [x] 修复编辑/预览切换按钮失效问题。
+- [x] 修复代码编辑器行号一列颜色不正确问题。
