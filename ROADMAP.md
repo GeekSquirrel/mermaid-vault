@@ -117,6 +117,7 @@ Remove the menu entry to avoid redirecting to third-party playgrounds.
     - [x] Unify Code and Samples top bar button styles (both active and inactive states match current Samples button).
     - [x] Code editor scrollbar style matches Samples panel scrollbar.
     - [x] Trigger an auto-save silently when switching sample diagrams, without displaying saving/saved badges.
+    - [x] Highlight the corresponding sample button when editor code matches a sample (upon successful selection, or when navigating back to Samples with matching code).
 
 - [x] Projects Page Redesign
     - [x] Rename `My Projects` to `Projects` in the left main menu.

@@ -119,6 +119,7 @@ timeline
     - [x] 顶栏的code和samples的按钮样式保持一致，选中高亮和未选中样式也保持一致，均与当前samples按钮为准
     - [x] code编辑器的滚动条样式和samples面板一致，以samples面板的滚动条为准
     - [x] 用户切换sample时触发一次自动保存，但不显示saving/saved的标识
+    - [x] 编辑器代码与sample一致时，高亮对应sample，主要是用户选择sample成功后要高亮标记，或者就是当用户从code编辑器回到sample时，如果编辑器代码还与某个sample相同，也需要高亮。
 
 - [x] My Projects页面升级
     - [x] 左侧菜单中的My Projects更名为Projects
