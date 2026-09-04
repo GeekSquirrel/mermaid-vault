@@ -44,7 +44,7 @@ timeline
 
 | Component | Technology Stack | Location |
 |---|---|---|
-| **Frontend** | SvelteKit 2 + Svelte 5 + TailwindCSS + Monaco Editor + Vite | `mermaid-live-editor/` |
+| **Frontend** | SvelteKit 2 + Svelte 5 + TailwindCSS + Monaco Editor + Vite | `mermaid-vault-frontend/` |
 | **Backend API** | Node.js 22 LTS + Express + TypeScript + better-sqlite3 | `backend/` |
 | **Database** | SQLite with WAL mode & auto-migration | `backend/data/mermaid.db` |
 | **Monorepo Management** | pnpm 11+ Workspaces | Root `pnpm-workspace.yaml` |

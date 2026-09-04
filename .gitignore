@@ -4,5 +4,5 @@ node_modules/
 .DS_Store
 backend/data/*.db
 backend/dist/
-mermaid-live-editor/docs/
+mermaid-vault-frontend/docs/
 

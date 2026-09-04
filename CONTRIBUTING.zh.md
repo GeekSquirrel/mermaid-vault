@@ -10,11 +10,11 @@
 
 - **分支管理**：
   - 主仓库管理项目根目录及 `backend/` 后端代码。
-  - 前端作为 Git 子模块引入于 `mermaid-live-editor/`，指向您的 fork 仓库。
+  - 前端作为 Git 子模块引入于 `mermaid-vault-frontend/`，指向您的 fork 仓库。
 - **前端代码变更**：
-  - 在 `mermaid-live-editor/` 子模块内进行修改。
-  - 在 `mermaid-live-editor/` 内部的 `develop` 分支上提交代码。
-  - 返回主仓库根目录，提交子模块指针更新（`git add mermaid-live-editor`）。
+  - 在 `mermaid-vault-frontend/` 子模块内进行修改。
+  - 在 `mermaid-vault-frontend/` 内部的 `develop` 分支上提交代码。
+  - 返回主仓库根目录，提交子模块指针更新（`git add mermaid-vault-frontend`）。
 - **后端代码变更**：
   - 直接在 `backend/` 下进行修改，并在主仓库根目录下提交。
 - **Git 提交信息规范**：
@@ -38,7 +38,7 @@
 
 ## 3. UI 国际化规范 (i18n)
 
-- 前端所有用户可见文本必须与官方 `mermaid-live-editor` 上游原生风格保持一致。
+- 前端所有用户可见文本必须与官方 `mermaid-vault-frontend` 上游原生风格保持一致。
 - 所有新增的 UI 标签、状态提示（如 "Saving...", "Saved"）、输入占位符和错误信息必须使用规范的纯英文。
 - 严禁在前端源代码中硬编码非英文文本。
 

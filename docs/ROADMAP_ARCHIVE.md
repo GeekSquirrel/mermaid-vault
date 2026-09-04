@@ -28,7 +28,7 @@
 ## M0 – 环境准备与项目结构
 ### 0.1 仓库与子模块初始化
 - [x] **0.1.1** 在根目录初始化 Git 仓库（若尚未）。
-- [x] **0.1.2** 将 `mermaid-live-editor` 添加为 Git 子模块（指向你的 fork）。
+- [x] **0.1.2** 将 `mermaid-vault-frontend` 添加为 Git 子模块（指向你的 fork）。
 - [x] **0.1.3** 进入子模块目录，添加官方仓库为 upstream。
 - [x] **0.1.4** 确认子模块处于最新稳定分支。
 
@@ -46,7 +46,7 @@
 - [x] **0.3.4** 创建 `.gitignore`。
 
 ### 0.4 前端环境确认
-- [x] **0.4.1** 进入 `mermaid-live-editor/`，执行依赖安装。
+- [x] **0.4.1** 进入 `mermaid-vault-frontend/`，执行依赖安装。
 - [x] **0.4.2** 确认前后端端口不冲突。
 
 ---
@@ -84,10 +84,10 @@
 
 ## M2 – 前端改造（项目浏览界面 + API 集成）
 ### 2.1 前端 API 客户端封装
-- [x] **2.1.1** 在 `mermaid-live-editor/src/lib/services/api.ts` 中封装 HTTP 客户端。
+- [x] **2.1.1** 在 `mermaid-vault-frontend/src/lib/services/api.ts` 中封装 HTTP 客户端。
 
 ### 2.2 新增“项目浏览”页面
-- [x] **2.2.1** 在 `mermaid-live-editor/src/routes/(app)/projects/+page.svelte` 下创建组件。
+- [x] **2.2.1** 在 `mermaid-vault-frontend/src/routes/(app)/projects/+page.svelte` 下创建组件。
 - [x] **2.2.2** 实现项目删除与确认逻辑。
 - [x] **2.2.3** 实现新建项目跳转。
 - [x] **2.2.4** 导航栏与主菜单集成“我的项目”入口。

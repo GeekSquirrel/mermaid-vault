@@ -10,11 +10,11 @@ Thank you for contributing to Mermaid Live Editor with Persistent Storage! Pleas
 
 - **Branching**:
   - The main repository manages the project root and `backend/`.
-  - The frontend is included as a Git submodule in `mermaid-live-editor/` pointing to your fork.
+  - The frontend is included as a Git submodule in `mermaid-vault-frontend/` pointing to your fork.
 - **Frontend Changes**:
-  - Make edits inside `mermaid-live-editor/`.
-  - Commit your changes inside `mermaid-live-editor/` on the `develop` branch.
-  - Return to the root repository and stage the updated submodule pointer (`git add mermaid-live-editor`).
+  - Make edits inside `mermaid-vault-frontend/`.
+  - Commit your changes inside `mermaid-vault-frontend/` on the `develop` branch.
+  - Return to the root repository and stage the updated submodule pointer (`git add mermaid-vault-frontend`).
 - **Backend Changes**:
   - Make edits directly inside `backend/` and commit from the root repository.
 - **Commit Message Convention**:
@@ -38,7 +38,7 @@ Whenever you add, modify, or delete sections in any documentation file, you **mu
 
 ## 3. UI Internationalization (i18n)
 
-- Frontend user-facing texts must remain aligned with the official `mermaid-live-editor` upstream style.
+- Frontend user-facing texts must remain aligned with the official `mermaid-vault-frontend` upstream style.
 - All new UI labels, status text, placeholders, and error messages must be written in standard English.
 - Avoid hardcoding non-English strings in frontend source files.
 

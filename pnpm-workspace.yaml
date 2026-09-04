@@ -1,6 +1,6 @@
 packages:
   - "backend"
-  - "mermaid-live-editor"
+  - "mermaid-vault-frontend"
 
 overrides:
   svelte: "5.56.4"

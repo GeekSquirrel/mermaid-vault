@@ -32,7 +32,7 @@ services:
 
   frontend:
     build:
-      context: ./mermaid-live-editor
+      context: ./mermaid-vault-frontend
       dockerfile: Dockerfile
     container_name: mermaid-editor-frontend
     restart: unless-stopped

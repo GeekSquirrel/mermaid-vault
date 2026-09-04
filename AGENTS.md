@@ -22,8 +22,8 @@
 
 | 项目 | 详情 |
 |------|------|
-| **根目录** | 包含 `mermaid-live-editor/`（子模块）和 `backend/` |
-| **前端技术栈** | Svelte + TypeScript + Vite（基于官方 `mermaid-live-editor`） |
+| **根目录** | 包含 `mermaid-vault-frontend/`（子模块）和 `backend/` |
+| **前端技术栈** | Svelte + TypeScript + Vite（基于官方 `mermaid-vault-frontend`） |
 | **后端技术栈** | Node.js + Express + better-sqlite3，TypeScript，pnpm |
 | **端口** | 前端默认 `:5173`（开发）或 `:80`（Docker），后端 `:8080` |
 | **数据库** | `backend/data/mermaid.db`，通过迁移文件初始化 |
@@ -47,9 +47,9 @@
 - **清晰**：使用 Markdown 格式，列出已完成和待完成项，便于用户快速定位。
 
 ### 3.3 代码变更管理
-- **前端修改**：所有 `mermaid-live-editor/` 下的变更，需在子模块内部提交并推送到你的 fork。
+- **前端修改**：所有 `mermaid-vault-frontend/` 下的变更，需在子模块内部提交并推送到你的 fork。
 - **后端修改**：直接在主仓库根目录提交，与前端子模块分离。
-- **子模块更新**：主仓库根目录下执行 `git add mermaid-live-editor` 更新子模块的引用（当子模块有提交时）。
+- **子模块更新**：主仓库根目录下执行 `git add mermaid-vault-frontend` 更新子模块的引用（当子模块有提交时）。
 
 ### 3.4 文档同步（新增）
 - **双语要求**：所有文档（尤其是 `README.md`）必须同时提供英文和中文版本。英文版本为默认版本，中文版本内容需与英文保持同步。
@@ -86,7 +86,7 @@
 - 前端：手动测试所有 UI 交互（按 `ROADMAP.md` 中的测试用例执行），确保无控制台报错。
 
 ### 4.6 国际化 (i18n)
-- **与官方对齐**：前端 UI 中的用户可见文字**不得硬编码**，必须与官方 `mermaid-live-editor` 的国际化策略保持一致。
+- **与官方对齐**：前端 UI 中的用户可见文字**不得硬编码**，必须与官方 `mermaid-vault-frontend` 的国际化策略保持一致。
 - **具体规则**：
   - 若官方版本为纯英文（无 i18n 框架），则所有新增 UI 文字也必须使用**纯英文**，不得混入中文或其他语言。
   - 若官方已集成 i18n 框架，则新增文案应添加到相应的语言资源文件中，并遵循官方已有的翻译键命名规范。
@@ -111,7 +111,7 @@
 
 ## 6. 特殊注意事项
 
-1. **子模块提交**：修改前端后，需在 `mermaid-live-editor/` 内执行 `git add .` 和 `git commit`，并推送到你的 fork。不要忘记在主仓库根目录 `git add mermaid-live-editor` 以更新子模块指针。
+1. **子模块提交**：修改前端后，需在 `mermaid-vault-frontend/` 内执行 `git add .` 和 `git commit`，并推送到你的 fork。不要忘记在主仓库根目录 `git add mermaid-vault-frontend` 以更新子模块指针。
 2. **不要破坏官方 upstream**：所有定制化应通过你的 fork 分支进行，避免直接向官方仓库发起 PR。
 3. **数据库文件**：`backend/data/` 已加入 `.gitignore`，确保不提交数据库文件。
 4. **迁移前后端**：在 M6 期间，确保前后端分离开发（前端仍可指向原 Bun 后端进行对比测试），直至迁移完成。

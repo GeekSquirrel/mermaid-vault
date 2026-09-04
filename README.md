@@ -8,7 +8,7 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 
 ## Architecture Overview
 
-- **Frontend (`mermaid-live-editor/`)**: Built with SvelteKit and TypeScript (official upstream submodule). Features a "My Projects" dashboard, automatic 1.5s debounced synchronization to backend storage, editable project titles, and visual save status indicators.
+- **Frontend (`mermaid-vault-frontend/`)**: Built with SvelteKit and TypeScript (official upstream submodule). Features a "My Projects" dashboard, automatic 1.5s debounced synchronization to backend storage, editable project titles, and visual save status indicators.
 - **Backend (`backend/`)**: Robust REST API powered by **Node.js (LTS)**, **Express**, and **`better-sqlite3`**. Includes automatic migration on startup, CORS headers, single-file SQLite database storage, and automated Vitest test suite.
 
 ```
@@ -75,7 +75,7 @@ The backend API server starts at `http://localhost:8080`. On first run, it autom
 
 #### 2. Start the Frontend Live Editor
 ```bash
-cd mermaid-live-editor
+cd mermaid-vault-frontend
 pnpm install
 pnpm dev
 ```

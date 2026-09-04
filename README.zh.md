@@ -8,7 +8,7 @@
 
 ## 架构概览
 
-- **前端 (`mermaid-live-editor/`)**: 基于 SvelteKit 与 TypeScript（官方 Git 子模块）。包含“我的项目”管理面板、1.5 秒防抖自动云端同步、自定义项目标题编辑及可视化保存状态提示。
+- **前端 (`mermaid-vault-frontend/`)**: 基于 SvelteKit 与 TypeScript（官方 Git 子模块）。包含“我的项目”管理面板、1.5 秒防抖自动云端同步、自定义项目标题编辑及可视化保存状态提示。
 - **后端 (`backend/`)**: 基于 **Node.js (LTS)**、**Express** 与 **`better-sqlite3`** 构建的稳健 REST API 服务，包含启动时自动数据库迁移、CORS 支持、单文件 SQLite 持久化存储及自动化 Vitest 测试套件。
 
 ```
@@ -74,7 +74,7 @@ pnpm dev
 
 #### 2. 启动前端编辑器
 ```bash
-cd mermaid-live-editor
+cd mermaid-vault-frontend
 pnpm install
 pnpm dev
 ```

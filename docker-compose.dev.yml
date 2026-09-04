@@ -25,7 +25,7 @@ services:
 
   frontend:
     build:
-      context: ./mermaid-live-editor
+      context: ./mermaid-vault-frontend
       dockerfile: Dockerfile
       target: mermaid-dev
     container_name: mermaid-editor-frontend-dev
@@ -36,7 +36,7 @@ services:
       # Vite dev server proxies /api to the backend service over the Docker network
       - MERMAID_API_PROXY_TARGET=http://backend:8080
     volumes:
-      - ./mermaid-live-editor/src:/app/src
+      - ./mermaid-vault-frontend/src:/app/src
     depends_on:
       - backend
 

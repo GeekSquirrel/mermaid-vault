@@ -23,8 +23,8 @@ jobs:
     uses: ./.github/workflows/build-images.yml
     with:
       image-name: ghcr.io/${{ github.repository_owner }}/mermaid-vault-frontend
-      context: ./mermaid-live-editor
-      dockerfile: ./mermaid-live-editor/Dockerfile
+      context: ./mermaid-vault-frontend
+      dockerfile: ./mermaid-vault-frontend/Dockerfile
       target: mermaid
       platforms: linux/amd64,linux/arm64
       tags: |
