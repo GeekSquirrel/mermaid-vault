@@ -123,7 +123,7 @@ Remove the menu entry to avoid redirecting to third-party playgrounds.
     - [x] Position search input on the far left with appropriate max-width; group Refresh and New Project buttons in a parent container positioned on the far right.
     - [x] Fix downward vertical offset of the search icon in the search input.
     - [x] Increase project card height, replace raw code snippet preview with rendered SVG diagram preview using `IntersectionObserver` lazy loading, and display syntax error messages directly for invalid diagrams.
-    - [x] Change card arrangement to grid layout with card max-width, adapting columns to screen width (reference standard: 16:9 4K display, 4 columns on landscape, 3 columns on portrait).
+    - [x] Change card arrangement to grid layout, adapting column count based on screen width (reference standard: 16:9 4K display, 5 columns on landscape, 3 columns on portrait), keep cell aspect ratio 1:1, leave appropriate gaps matching layout margins, and make cards fill the cells.
     - [x] Search box border is clearly visible and adopts the same design language as project cards.
 
 - [x] Mobile UI Fixes
