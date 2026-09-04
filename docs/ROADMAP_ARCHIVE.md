@@ -33,16 +33,16 @@
 - [x] **0.1.4** 确认子模块处于最新稳定分支。
 
 ### 0.2 后端项目初始化
-- [x] **0.2.1** 在根目录创建 `backend/` 文件夹。
-- [x] **0.2.2** 进入 `backend/`，执行 `bun init -y` 初始化 Bun 项目。
-- [x] **0.2.3** 修改 `backend/package.json`，添加启动脚本。
+- [x] **0.2.1** 在根目录创建 `mermaid-vault-backend/` 文件夹。
+- [x] **0.2.2** 进入 `mermaid-vault-backend/`，执行 `bun init -y` 初始化 Bun 项目。
+- [x] **0.2.3** 修改 `mermaid-vault-backend/package.json`，添加启动脚本。
 - [x] **0.2.4** 安装必要依赖。
-- [x] **0.2.5** 创建 `backend/tsconfig.json`。
+- [x] **0.2.5** 创建 `mermaid-vault-backend/tsconfig.json`。
 
 ### 0.3 目录结构创建
-- [x] **0.3.1** 在 `backend/src/` 下创建子目录：`routes/`, `controllers/`, `models/`, `db/`, `types/`, `middleware/`。
-- [x] **0.3.2** 在 `backend/` 下创建 `data/` 文件夹。
-- [x] **0.3.3** 在 `backend/` 下创建 `migrations/` 文件夹。
+- [x] **0.3.1** 在 `mermaid-vault-backend/src/` 下创建子目录：`routes/`, `controllers/`, `models/`, `db/`, `types/`, `middleware/`。
+- [x] **0.3.2** 在 `mermaid-vault-backend/` 下创建 `data/` 文件夹。
+- [x] **0.3.3** 在 `mermaid-vault-backend/` 下创建 `migrations/` 文件夹。
 - [x] **0.3.4** 创建 `.gitignore`。
 
 ### 0.4 前端环境确认
@@ -53,26 +53,26 @@
 
 ## M1 – 后端核心开发（Bun + SQLite + API）
 ### 1.1 数据库层（Schema & Migration）
-- [x] **1.1.1** 在 `backend/migrations/` 下创建 `001_init.sql` 建表语句。
-- [x] **1.1.2** 在 `backend/src/db/index.ts` 中实现数据库初始化模块与迁移。
-- [x] **1.1.3** 在 `backend/src/types/index.ts` 中定义 DTO 与数据接口。
+- [x] **1.1.1** 在 `mermaid-vault-backend/migrations/` 下创建 `001_init.sql` 建表语句。
+- [x] **1.1.2** 在 `mermaid-vault-backend/src/db/index.ts` 中实现数据库初始化模块与迁移。
+- [x] **1.1.3** 在 `mermaid-vault-backend/src/types/index.ts` 中定义 DTO 与数据接口。
 - [x] **1.1.4** 设置环境变量机制。
 
 ### 1.2 数据访问层（Repository / Model）
-- [x] **1.2.1** 在 `backend/src/models/ProjectModel.ts` 中实现 CRUD 方法。
+- [x] **1.2.1** 在 `mermaid-vault-backend/src/models/ProjectModel.ts` 中实现 CRUD 方法。
 - [x] **1.2.2** 编写单元测试验证数据操作。
 
 ### 1.3 业务逻辑层（Controller）
-- [x] **1.3.1** 在 `backend/src/controllers/projectController.ts` 中封装 RESTful 响应。
+- [x] **1.3.1** 在 `mermaid-vault-backend/src/controllers/projectController.ts` 中封装 RESTful 响应。
 - [x] **1.3.2** 统一错误处理格式。
 
 ### 1.4 API 路由层（RESTful Endpoints）
-- [x] **1.4.1** 在 `backend/src/routes/projects.ts` 中定义路由。
+- [x] **1.4.1** 在 `mermaid-vault-backend/src/routes/projects.ts` 中定义路由。
 - [x] **1.4.2** 聚合路由统一前缀 `/api`。
 - [x] **1.4.3** 添加健康检查端点 `GET /health`。
 
 ### 1.5 主服务器与中间件
-- [x] **1.5.1** 在 `backend/src/index.ts` 中创建服务实例与 CORS 配置。
+- [x] **1.5.1** 在 `mermaid-vault-backend/src/index.ts` 中创建服务实例与 CORS 配置。
 - [x] **1.5.2** 实现请求体解析与预检处理。
 - [x] **1.5.3** 挂载路由中间件。
 
@@ -121,7 +121,7 @@
 ## M4 – v1.1 国际化与文档同步（修正）
 - [x] **4.1** 前端 UI 用户可见文案纯英文规范对齐。
 - [x] **4.2** 根目录 `README.md` 与 `README.zh.md` 双语同步。
-- [x] **4.3** `backend/README.md` 与 `backend/README.zh.md` 双语同步。
+- [x] **4.3** `mermaid-vault-backend/README.md` 与 `mermaid-vault-backend/README.zh.md` 双语同步。
 - [x] **4.4** 建立文档中英文同步维护机制。
 
 ---
@@ -154,7 +154,7 @@
 ### 6.1 依赖与工具链迁移
 - [x] **6.1.1** 移除 Bun 依赖，引入 `express`, `better-sqlite3`, `cors`, `dotenv`, `tsx`, `vitest`。
 - [x] **6.1.2** 包管理器切换为 `pnpm`，生成 `pnpm-lock.yaml`。
-- [x] **6.1.3** 调整 `backend/tsconfig.json` 适配 `NodeNext` ESM 规范。
+- [x] **6.1.3** 调整 `mermaid-vault-backend/tsconfig.json` 适配 `NodeNext` ESM 规范。
 - [x] **6.1.4** 配置构建与启动脚本（`tsc` 输出到 `dist/`）。
 
 ### 6.2 数据库层适配
@@ -205,7 +205,7 @@
 - [x] 前端项目浏览与自动保存无缝对接后端 API。
 - [x] Docker Compose 一键启动全栈服务，支持数据持久化卷挂载。
 - [x] 根目录通过 pnpm workspace 统一管理前后端多包开发与构建。
-- [x] 全套双语文档（`README`, `CONTRIBUTING`, `backend/README`）同步就绪。
+- [x] 全套双语文档（`README`, `CONTRIBUTING`, `mermaid-vault-backend/README`）同步就绪。
 
 ---
 

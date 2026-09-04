@@ -2,7 +2,7 @@ node_modules/
 .env
 .env.local
 .DS_Store
-backend/data/*.db
-backend/dist/
+mermaid-vault-backend/data/*.db
+mermaid-vault-backend/dist/
 mermaid-vault-frontend/docs/
 

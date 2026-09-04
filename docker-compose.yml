@@ -1,9 +1,9 @@
 services:
   backend:
     build:
-      context: ./backend
+      context: ./mermaid-vault-backend
       dockerfile: Dockerfile
-    container_name: mermaid-editor-backend
+    container_name: mermaid-vault-backend
     restart: unless-stopped
     # 默认不暴露宿主机端口，仅容器内部网络通信。如需独立调试后端，可取消以下注释：
     # ports:
@@ -13,14 +13,14 @@ services:
       - DB_PATH=/app/data/mermaid.db
       - NODE_ENV=production
     env_file:
-      - path: ./backend/.env
+      - path: ./mermaid-vault-backend/.env
         required: false
       - path: ./.env
         required: false
       - path: ./.env.production
         required: false
     volumes:
-      - ./backend/data:/app/data
+      - ./mermaid-vault-backend/data:/app/data
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 15s
@@ -34,7 +34,7 @@ services:
     build:
       context: ./mermaid-vault-frontend
       dockerfile: Dockerfile
-    container_name: mermaid-editor-frontend
+    container_name: mermaid-vault-frontend
     restart: unless-stopped
     ports:
       # 仅前端暴露端口；通过 APP_FRONTEND_PORT 修改宿主机端口（默认 80）
@@ -44,7 +44,7 @@ services:
         condition: service_healthy
     environment:
       # Backend origin used by the frontend nginx proxy (default: backend service in this network)
-      - BACKEND_UPSTREAM=${BACKEND_UPSTREAM:-backend:8080}
+      - BACKEND_UPSTREAM=${BACKEND_UPSTREAM:-http://backend:8080}
       # Absolute API base URL baked into the frontend at runtime (leave empty for same-origin /api proxying)
       - API_BASE_URL=${API_BASE_URL:-}
     env_file:

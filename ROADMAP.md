@@ -45,11 +45,11 @@ timeline
 | Component | Technology Stack | Location |
 |---|---|---|
 | **Frontend** | SvelteKit 2 + Svelte 5 + TailwindCSS + Monaco Editor + Vite | `mermaid-vault-frontend/` |
-| **Backend API** | Node.js 22 LTS + Express + TypeScript + better-sqlite3 | `backend/` |
-| **Database** | SQLite with WAL mode & auto-migration | `backend/data/mermaid.db` |
+| **Backend API** | Node.js 22 LTS + Express + TypeScript + better-sqlite3 | `mermaid-vault-backend/` |
+| **Database** | SQLite with WAL mode & auto-migration | `mermaid-vault-backend/data/mermaid.db` |
 | **Monorepo Management** | pnpm 11+ Workspaces | Root `pnpm-workspace.yaml` |
 | **Container Orchestration**| Docker Compose (Multi-stage Node.js + Nginx Alpine) | `docker-compose.yml` |
-| **Testing** | Vitest + Supertest | `backend/src/**/*.test.ts` |
+| **Testing** | Vitest + Supertest | `mermaid-vault-backend/src/**/*.test.ts` |
 
 ## v2.1 – Self-Hosting Adaptation & UI Cleanup (✅ Completed, Archived)
 This version focused on removing elements tied to external third-party services in the official Mermaid Live Editor and revamping the save & navigation experience, making the project better suited for self-hosted environments. The detailed task checklist (including key decisions and spec examples) has been compressed and archived in [docs/ROADMAP_ARCHIVE.md](docs/ROADMAP_ARCHIVE.md). Key changes summary:

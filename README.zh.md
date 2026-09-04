@@ -9,7 +9,7 @@
 ## 架构概览
 
 - **前端 (`mermaid-vault-frontend/`)**: 基于 SvelteKit 与 TypeScript（官方 Git 子模块）。包含“我的项目”管理面板、1.5 秒防抖自动云端同步、自定义项目标题编辑及可视化保存状态提示。
-- **后端 (`backend/`)**: 基于 **Node.js (LTS)**、**Express** 与 **`better-sqlite3`** 构建的稳健 REST API 服务，包含启动时自动数据库迁移、CORS 支持、单文件 SQLite 持久化存储及自动化 Vitest 测试套件。
+- **后端 (`mermaid-vault-backend/`)**: 基于 **Node.js (LTS)**、**Express** 与 **`better-sqlite3`** 构建的稳健 REST API 服务，包含启动时自动数据库迁移、CORS 支持、单文件 SQLite 持久化存储及自动化 Vitest 测试套件。
 
 ```
 +--------------------------+       HTTP REST API       +-------------------------+
@@ -66,7 +66,7 @@
 
 #### 1. 启动后端 API 服务
 ```bash
-cd backend
+cd mermaid-vault-backend
 pnpm install
 pnpm dev
 ```
@@ -101,7 +101,7 @@ docker compose up -d
 # 查看容器日志
 docker compose logs -f
 ```
-启动后，可在浏览器中通过 `http://localhost`（或使用 `APP_FRONTEND_PORT` 自定义的 `http://<主机IP>:<端口>`）直接访问，局域网访问开箱即用。前端 Nginx 会将 `/api/*` 反向代理到后端容器（`BACKEND_UPSTREAM`，默认 `backend:8080`），无需额外配置。
+启动后，可在浏览器中通过 `http://localhost`（或使用 `APP_FRONTEND_PORT` 自定义的 `http://<主机IP>:<端口>`）直接访问，局域网访问开箱即用。前端 Nginx 会将 `/api/*` 反向代理到后端容器（`BACKEND_UPSTREAM`，默认 `http://backend:8080`），无需额外配置。
 
 **反向代理部署**：将您的 Nginx/Caddy/Traefik 指向前端暴露的端口并正常转发即可（如 `proxy_pass http://127.0.0.1:<APP_FRONTEND_PORT>;`）。全程同源，前后端均无需 CORS 配置。
 
@@ -166,7 +166,7 @@ git push origin v2.1.0
 APP_FRONTEND_PORT=80
 API_BASE_URL=
 # 可选：覆盖前端 Nginx 代理的后端源地址
-# BACKEND_UPSTREAM=backend:8080
+# BACKEND_UPSTREAM=http://backend:8080
 
 # 后端服务配置（容器内部参数）
 PORT=8080
@@ -184,7 +184,7 @@ NODE_ENV=production
 
 ## 文档导航
 
-- [后端 API 文档 (中文)](backend/README.zh.md) | [Backend API Documentation (English)](backend/README.md)
+- [后端 API 文档 (中文)](mermaid-vault-backend/README.zh.md) | [Backend API Documentation (English)](mermaid-vault-backend/README.md)
 - [贡献指南 (中文)](CONTRIBUTING.zh.md) | [Contributing Guidelines (English)](CONTRIBUTING.md)
 - [开发路线图 (ROADMAP.md)](ROADMAP.md)
 

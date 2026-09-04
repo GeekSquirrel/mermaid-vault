@@ -48,8 +48,8 @@ jobs:
     uses: ./.github/workflows/build-images.yml
     with:
       image-name: ghcr.io/${{ github.repository_owner }}/mermaid-vault-backend
-      context: ./backend
-      dockerfile: ./backend/Dockerfile
+      context: ./mermaid-vault-backend
+      dockerfile: ./mermaid-vault-backend/Dockerfile
       target: runner
       platforms: ${{ inputs.platforms }}
       tags: |

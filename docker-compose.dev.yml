@@ -1,10 +1,10 @@
 services:
   backend:
     build:
-      context: ./backend
+      context: ./mermaid-vault-backend
       dockerfile: Dockerfile
       target: builder
-    container_name: mermaid-editor-backend-dev
+    container_name: mermaid-vault-backend-dev
     restart: unless-stopped
     ports:
       - "${BACKEND_PORT:-${PORT:-8080}}:8080"
@@ -13,14 +13,14 @@ services:
       - DB_PATH=/app/data/mermaid.db
       - NODE_ENV=development
     env_file:
-      - path: ./backend/.env
+      - path: ./mermaid-vault-backend/.env
         required: false
       - path: ./.env
         required: false
     volumes:
-      - ./backend/src:/app/src
-      - ./backend/migrations:/app/migrations
-      - ./backend/data:/app/data
+      - ./mermaid-vault-backend/src:/app/src
+      - ./mermaid-vault-backend/migrations:/app/migrations
+      - ./mermaid-vault-backend/data:/app/data
     command: ["pnpm", "dev"]
 
   frontend:
@@ -28,7 +28,7 @@ services:
       context: ./mermaid-vault-frontend
       dockerfile: Dockerfile
       target: mermaid-dev
-    container_name: mermaid-editor-frontend-dev
+    container_name: mermaid-vault-frontend-dev
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-3000}:3000"

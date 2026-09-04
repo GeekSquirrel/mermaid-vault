@@ -71,14 +71,14 @@ NODE_ENV=production
 ### 1. Build and Run Standalone Container
 ```bash
 # Build image
-docker build -t mermaid-editor-backend .
+docker build -t mermaid-vault-backend .
 
 # Run with persistent data volume
 docker run -d \
-  --name mermaid-editor-backend \
+  --name mermaid-vault-backend \
   -p 8080:8080 \
   -v $(pwd)/data:/app/data \
-  mermaid-editor-backend
+  mermaid-vault-backend
 ```
 
 ### 2. Run with Docker Compose

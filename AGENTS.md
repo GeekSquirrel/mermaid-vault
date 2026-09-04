@@ -22,11 +22,11 @@
 
 | 项目 | 详情 |
 |------|------|
-| **根目录** | 包含 `mermaid-vault-frontend/`（子模块）和 `backend/` |
+| **根目录** | 包含 `mermaid-vault-frontend/`（子模块）和 `mermaid-vault-backend/` |
 | **前端技术栈** | Svelte + TypeScript + Vite（基于官方 `mermaid-vault-frontend`） |
 | **后端技术栈** | Node.js + Express + better-sqlite3，TypeScript，pnpm |
 | **端口** | 前端默认 `:5173`（开发）或 `:80`（Docker），后端 `:8080` |
-| **数据库** | `backend/data/mermaid.db`，通过迁移文件初始化 |
+| **数据库** | `mermaid-vault-backend/data/mermaid.db`，通过迁移文件初始化 |
 | **API 前缀** | `/api`，所有端点需支持 CORS |
 | **计划文档** | 根目录 `ROADMAP.md` 包含所有任务清单（Checkbox） |
 
@@ -63,7 +63,7 @@
 ### 4.1 TypeScript 与类型安全
 - 所有函数需明确参数和返回值类型，避免 `any`。
 - 使用 `strict: true` 的 tsconfig，禁用隐式 `any`。
-- 为所有 API 请求/响应定义 DTO 接口（位于 `backend/src/types/`）。
+- 为所有 API 请求/响应定义 DTO 接口（位于 `mermaid-vault-backend/src/types/`）。
 
 ### 4.2 错误处理
 - 后端：统一使用 `try/catch` 捕获异常，返回 `{ success: false, error: { code, message } }` 结构。
@@ -113,7 +113,7 @@
 
 1. **子模块提交**：修改前端后，需在 `mermaid-vault-frontend/` 内执行 `git add .` 和 `git commit`，并推送到你的 fork。不要忘记在主仓库根目录 `git add mermaid-vault-frontend` 以更新子模块指针。
 2. **不要破坏官方 upstream**：所有定制化应通过你的 fork 分支进行，避免直接向官方仓库发起 PR。
-3. **数据库文件**：`backend/data/` 已加入 `.gitignore`，确保不提交数据库文件。
+3. **数据库文件**：`mermaid-vault-backend/data/` 已加入 `.gitignore`，确保不提交数据库文件。
 4. **迁移前后端**：在 M6 期间，确保前后端分离开发（前端仍可指向原 Bun 后端进行对比测试），直至迁移完成。
 5. **Docker 构建**：在 M7 中，确保镜像构建不包含源码中的敏感信息（如 `.env`），使用构建参数传递。
 

@@ -71,14 +71,14 @@ NODE_ENV=production
 ### 1. 构建与运行独立容器
 ```bash
 # 构建镜像
-docker build -t mermaid-editor-backend .
+docker build -t mermaid-vault-backend .
 
 # 运行并挂载持久化数据目录
 docker run -d \
-  --name mermaid-editor-backend \
+  --name mermaid-vault-backend \
   -p 8080:8080 \
   -v $(pwd)/data:/app/data \
-  mermaid-editor-backend
+  mermaid-vault-backend
 ```
 
 ### 2. 使用 Docker Compose 一键启动

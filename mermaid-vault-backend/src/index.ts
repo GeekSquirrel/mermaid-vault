@@ -79,7 +79,7 @@ app.use(
 // Start listening if not running under test runner
 if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
   app.listen(PORT, () => {
-    console.log(`Mermaid Editor Backend listening on http://localhost:${PORT}`);
+    console.log(`Mermaid Vault Backend listening on http://localhost:${PORT}`);
   });
 }
 

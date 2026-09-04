@@ -9,7 +9,7 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 ## Architecture Overview
 
 - **Frontend (`mermaid-vault-frontend/`)**: Built with SvelteKit and TypeScript (official upstream submodule). Features a "My Projects" dashboard, automatic 1.5s debounced synchronization to backend storage, editable project titles, and visual save status indicators.
-- **Backend (`backend/`)**: Robust REST API powered by **Node.js (LTS)**, **Express**, and **`better-sqlite3`**. Includes automatic migration on startup, CORS headers, single-file SQLite database storage, and automated Vitest test suite.
+- **Backend (`mermaid-vault-backend/`)**: Robust REST API powered by **Node.js (LTS)**, **Express**, and **`better-sqlite3`**. Includes automatic migration on startup, CORS headers, single-file SQLite database storage, and automated Vitest test suite.
 
 ```
 +--------------------------+       HTTP REST API       +-------------------------+
@@ -67,11 +67,11 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 
 #### 1. Start the Backend API
 ```bash
-cd backend
+cd mermaid-vault-backend
 pnpm install
 pnpm dev
 ```
-The backend API server starts at `http://localhost:8080`. On first run, it automatically initializes the SQLite database at `backend/data/mermaid.db`.
+The backend API server starts at `http://localhost:8080`. On first run, it automatically initializes the SQLite database at `mermaid-vault-backend/data/mermaid.db`.
 
 #### 2. Start the Frontend Live Editor
 ```bash
@@ -102,7 +102,7 @@ docker compose up -d
 # View service logs
 docker compose logs -f
 ```
-The editor will be accessible at `http://localhost` (or `http://<host-ip>` with `APP_FRONTEND_PORT`), so it works out of the box for LAN access. The frontend Nginx proxies `/api/*` to the backend container (`BACKEND_UPSTREAM`, default `backend:8080`) — no extra configuration is needed.
+The editor will be accessible at `http://localhost` (or `http://<host-ip>` with `APP_FRONTEND_PORT`), so it works out of the box for LAN access. The frontend Nginx proxies `/api/*` to the backend container (`BACKEND_UPSTREAM`, default `http://backend:8080`) — no extra configuration is needed.
 
 **Behind a reverse proxy**: point your Nginx/Caddy/Traefik at the frontend's exposed port and forward normally (e.g. `proxy_pass http://127.0.0.1:<APP_FRONTEND_PORT>;`). Everything is same-origin, so no CORS configuration is required on either side.
 
@@ -152,7 +152,7 @@ Copy `.env.example` to `.env` or configure directly:
 |---|---|---|---|
 | `APP_FRONTEND_PORT` | Frontend | `80` | Host port mapped to frontend container (replaces `FRONTEND_PORT`). |
 | `API_BASE_URL` | Frontend | *(Empty)* | Runtime API base URL. Empty uses internal Nginx reverse proxy. |
-| `BACKEND_UPSTREAM` | Frontend | `backend:8080` | Backend origin the frontend Nginx proxies `/api/` to. Change it when the backend is not in the same Docker compose network. |
+| `BACKEND_UPSTREAM` | Frontend X Backend origin the frontend Nginx proxies `/api/` to. Change it when the backend is not in the same Docker compose network. |
 | `PORT` | Backend | `8080` | Internal listening port inside the backend container. |
 | `DB_PATH` | Backend | `/app/data/mermaid.db` | SQLite database file path. |
 | `NODE_ENV` | Backend | `production` | Node.js execution environment. |
@@ -167,7 +167,7 @@ Example `.env`:
 APP_FRONTEND_PORT=80
 API_BASE_URL=
 # Optional: override the backend origin used by the frontend Nginx proxy
-# BACKEND_UPSTREAM=backend:8080
+# BACKEND_UPSTREAM=http://backend:8080
 
 # Backend Configuration (Internal container settings)
 PORT=8080
@@ -185,7 +185,7 @@ NODE_ENV=production
 
 ## Documentation Links
 
-- [Backend API Documentation (English)](backend/README.md) | [后端 API 文档 (中文)](backend/README.zh.md)
+- [Backend API Documentation (English)](mermaid-vault-backend/README.md) | [后端 API 文档 (中文)](mermaid-vault-backend/README.zh.md)
 - [Contributing Guidelines (English)](CONTRIBUTING.md) | [贡献指南 (中文)](CONTRIBUTING.zh.md)
 - [Development Roadmap](ROADMAP.md)
 
