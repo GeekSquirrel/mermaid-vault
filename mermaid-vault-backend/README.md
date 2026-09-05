@@ -8,7 +8,7 @@ Persistent storage backend for Mermaid Live Editor, built with **Node.js**, **Ex
 
 ## Features
 
-- **RESTful API**: Standard CRUD operations for Mermaid chart projects with Express.
+- **RESTful API**: Standard CRUD operations for Mermaid diagrams with Express.
 - **Embedded SQLite Storage**: Automatic database migrations (`migrations/001_init.sql`), zero external database dependencies.
 - **Cross-Origin Resource Sharing (CORS)**: Built-in support for preflight `OPTIONS` requests and configurable origins.
 - **Strict Type Safety**: Fully typed with TypeScript strict mode and automated Vitest test suite.
@@ -102,8 +102,8 @@ Base URL: `http://localhost:8080`
   }
   ```
 
-### 2. List Projects
-- **GET `/api/projects`**
+### 2. List Diagrams
+- **GET `/api/diagrams`**
 - **Response** `200 OK`:
   ```json
   {
@@ -120,8 +120,8 @@ Base URL: `http://localhost:8080`
   }
   ```
 
-### 3. Get Project by ID
-- **GET `/api/projects/:id`**
+### 3. Get Diagram by ID
+- **GET `/api/diagrams/:id`**
 - **Response** `200 OK`:
   ```json
   {
@@ -141,17 +141,17 @@ Base URL: `http://localhost:8080`
     "success": false,
     "error": {
       "code": "NOT_FOUND",
-      "message": "Project with id c5accb93-f523-47ec-a450-15afb7c61e5b not found"
+      "message": "Diagram with id c5accb93-f523-47ec-a450-15afb7c61e5b not found"
     }
   }
   ```
 
-### 4. Create Project
-- **POST `/api/projects`**
+### 4. Create Diagram
+- **POST `/api/diagrams`**
 - **Request Body**:
   ```json
   {
-    "title": "Untitled Project",
+    "title": "Untitled Diagram",
     "code": "graph TD\n  Start --> Stop"
   }
   ```
@@ -161,7 +161,7 @@ Base URL: `http://localhost:8080`
     "success": true,
     "data": {
       "id": "7bf3b0f5-0453-488b-a7e3-36358dbbbf30",
-      "title": "Untitled Project",
+      "title": "Untitled Diagram",
       "code": "graph TD\n  Start --> Stop",
       "created_at": 1788324930518,
       "updated_at": 1788324930518
@@ -169,8 +169,8 @@ Base URL: `http://localhost:8080`
   }
   ```
 
-### 5. Update Project
-- **PUT `/api/projects/:id`**
+### 5. Update Diagram
+- **PUT `/api/diagrams/:id`**
 - **Request Body**:
   ```json
   {
@@ -192,8 +192,8 @@ Base URL: `http://localhost:8080`
   }
   ```
 
-### 6. Delete Project
-- **DELETE `/api/projects/:id`**
+### 6. Delete Diagram
+- **DELETE `/api/diagrams/:id`**
 - **Response** `200 OK`:
   ```json
   {
@@ -205,9 +205,9 @@ Base URL: `http://localhost:8080`
   ```
 
 ### 7. List History Entries
-- **GET `/api/history?type=manual&projectId=:projectId`**
+- **GET `/api/history?type=manual&diagramId=:diagramId`**
   - `type` (optional): `manual` (default), `auto`, or `all`.
-  - `projectId` (optional): Filter entries by project ID. Supports specific project UUID, `default` (unbound draft snapshots), or `all`.
+  - `diagramId` (optional): Filter entries by diagram ID. Supports specific diagram UUID, `default` (unbound draft snapshots), or `all`.
 - **Response** `200 OK`:
   ```json
   {
@@ -215,7 +215,7 @@ Base URL: `http://localhost:8080`
     "data": [
       {
         "id": "8f8b3c63-455b-4357-96a8-f99a8ea8d88e",
-        "project_id": "c5accb93-f523-47ec-a450-15afb7c61e5b",
+        "diagram_id": "c5accb93-f523-47ec-a450-15afb7c61e5b",
         "name": "Architecture Snapshot",
         "state": {
           "code": "graph TD\n  A --> B",
@@ -234,7 +234,7 @@ Base URL: `http://localhost:8080`
 - **Request Body**:
   ```json
   {
-    "projectId": "c5accb93-f523-47ec-a450-15afb7c61e5b",
+    "diagramId": "c5accb93-f523-47ec-a450-15afb7c61e5b",
     "name": "Architecture Snapshot",
     "state": {
       "code": "graph TD\n  A --> B",
@@ -258,9 +258,9 @@ Base URL: `http://localhost:8080`
   ```
 
 ### 9. Get Stored Diagram Preview
-- **GET `/api/projects/:id/preview.svg?theme=light|dark`**
+- **GET `/api/diagrams/:id/preview.svg?theme=light|dark`**
 - **GET `/api/history/:id/preview.svg?theme=light|dark`**
-- Serves the cached preview SVG for a project or a history (bookmark) entry, per color theme.
+- Serves the cached preview SVG for a diagram or a history (bookmark) entry, per color theme.
 - A stored preview is only served while it was rendered from the resource's **current** code
   (verified with a SHA-256 hash of the code). When the code has changed (or no preview exists
   yet), the endpoint returns `404 Not Found` so clients can fall back to live rendering and
@@ -270,7 +270,7 @@ Base URL: `http://localhost:8080`
 - **Response** `404 Not Found`: standard error envelope (`error.code: "NOT_FOUND"`).
 
 ### 10. Upload Diagram Preview
-- **PUT `/api/projects/:id/preview`**
+- **PUT `/api/diagrams/:id/preview`**
 - **PUT `/api/history/:id/preview`**
 - Stores a preview SVG rendered by the client. The `codeHash` must match the SHA-256 hash of the
   resource's current code, otherwise the upload is rejected with `409 Conflict` (stale render).
@@ -306,9 +306,9 @@ Base URL: `http://localhost:8080`
 
 ### 14. Workspaces
 All workspaces are equivalent — there is no privileged default. A sample workspace is seeded on
-first initialization and can be renamed or deleted like any other. Every project always belongs to
-an existing workspace: deleting a workspace moves its projects to the oldest remaining workspace;
-when the last workspace is deleted, a new workspace is created to hold its projects (or the list is
+first initialization and can be renamed or deleted like any other. Every diagram always belongs to
+an existing workspace: deleting a workspace moves its diagrams to the oldest remaining workspace;
+when the last workspace is deleted, a new workspace is created to hold its diagrams (or the list is
 simply left empty when it has none).
 
 - **GET `/api/workspaces`** — list workspaces
@@ -317,7 +317,7 @@ simply left empty when it has none).
   - Body: `{ "name": "Engineering" }`
 - **PUT `/api/workspaces/:id`** — rename a workspace
   - Body: `{ "name": "Design" }`
-- **DELETE `/api/workspaces/:id`** — delete a workspace (projects move to the oldest remaining one)
+- **DELETE `/api/workspaces/:id`** — delete a workspace (diagrams move to the oldest remaining one)
 - **PUT `/api/workspaces/order`** — persist manual (drag) ordering
   - Body: `{ "order": ["<workspace-id>", ...] }` containing every workspace id exactly once
 - **Response** `200 OK`:
@@ -335,9 +335,9 @@ simply left empty when it has none).
   }
   ```
 
-`POST /api/projects` and `PUT /api/projects/:id` accept an optional `workspace_id` field to assign
-a project to a workspace. Unknown or missing workspace ids fall back to the oldest remaining
-workspace, so a project always ends up in an existing workspace.
+`POST /api/diagrams` and `PUT /api/diagrams/:id` accept an optional `workspace_id` field to assign
+a diagram to a workspace. Unknown or missing workspace ids fall back to the oldest remaining
+workspace, so a diagram always ends up in an existing workspace.
 
 ---
 
@@ -346,16 +346,16 @@ workspace, so a project always ends up in an existing workspace.
 Defined in `migrations/001_init.sql`, `migrations/002_history.sql` and `migrations/003_workspaces.sql`:
 
 ```sql
--- 1. Projects table
-CREATE TABLE IF NOT EXISTS projects (
+-- 1. Diagrams table
+CREATE TABLE IF NOT EXISTS diagrams (
     id TEXT PRIMARY KEY,                  -- UUID v4
-    title TEXT NOT NULL,                  -- Project title
+    title TEXT NOT NULL,                  -- Diagram title
     code TEXT NOT NULL,                   -- Mermaid diagram code
     workspace_id TEXT REFERENCES workspaces(id), -- Owning workspace (always set)
     created_at INTEGER NOT NULL,          -- Unix timestamp in ms
     updated_at INTEGER NOT NULL           -- Unix timestamp in ms
 );
-CREATE INDEX IF NOT EXISTS idx_projects_updated_at ON projects(updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_diagrams_updated_at ON diagrams(updated_at DESC);
 
 -- 2. History snapshot entries (cross-device synchronization)
 CREATE TABLE IF NOT EXISTS history_entries (
@@ -367,7 +367,7 @@ CREATE TABLE IF NOT EXISTS history_entries (
 );
 CREATE INDEX IF NOT EXISTS idx_history_entries_time ON history_entries(time DESC);
 
--- 3. Workspaces (user-defined project groups; a sample workspace is seeded on first init)
+-- 3. Workspaces (user-defined diagram groups; a sample workspace is seeded on first init)
 CREATE TABLE IF NOT EXISTS workspaces (
     id TEXT PRIMARY KEY,                  -- UUID v4
     name TEXT NOT NULL,
@@ -381,5 +381,5 @@ Preview cache columns are added idempotently at startup (see `src/db/index.ts`) 
 `preview_light_svg`, `preview_light_hash`, `preview_dark_svg`, `preview_dark_hash` (TEXT) and
 `preview_updated_at` (INTEGER). Each `preview_*_hash` stores the SHA-256 of the diagram code the
 SVG was rendered from; a preview is considered fresh only while that hash matches the stored code.
-The `projects.workspace_id` column is likewise added idempotently at startup; any project without a
+The `diagrams.workspace_id` column is likewise added idempotently at startup; any diagram without a
 workspace is assigned to the oldest existing one.

@@ -71,9 +71,9 @@ export class WorkspaceModel {
   }
 
   /**
-   * Resolve a workspace id for a new project: the preferred id when it exists,
+   * Resolve a workspace id for a new diagram: the preferred id when it exists,
    * otherwise the oldest remaining workspace, otherwise a brand-new workspace.
-   * Guarantees every created project belongs to an existing workspace.
+   * Guarantees every created diagram belongs to an existing workspace.
    */
   static ensureUsableWorkspace(preferredId?: string | null): string {
     if (preferredId && WorkspaceModel.exists(preferredId)) {
@@ -87,9 +87,9 @@ export class WorkspaceModel {
   }
 
   /**
-   * Delete a workspace. Its projects move to the oldest remaining workspace.
+   * Delete a workspace. Its diagrams move to the oldest remaining workspace.
    * When the last workspace is deleted, a fresh Default workspace is recreated
-   * to hold its projects (or simply removed if it has no projects at all).
+   * to hold its diagrams (or simply removed if it has no diagrams at all).
    */
   static delete(id: string): boolean {
     const db = getDB();
@@ -99,12 +99,12 @@ export class WorkspaceModel {
         .get(workspaceId) as { id: string } | undefined;
 
       const row = db
-        .prepare("SELECT COUNT(*) AS count FROM projects WHERE workspace_id = ?")
+        .prepare("SELECT COUNT(*) AS count FROM diagrams WHERE workspace_id = ?")
         .get(workspaceId) as { count: number };
 
       if (remaining) {
-        // Move the projects out first so the foreign key allows the delete
-        db.prepare("UPDATE projects SET workspace_id = ? WHERE workspace_id = ?").run(
+        // Move the diagrams out first so the foreign key allows the delete
+        db.prepare("UPDATE diagrams SET workspace_id = ? WHERE workspace_id = ?").run(
           remaining.id,
           workspaceId
         );
@@ -113,14 +113,14 @@ export class WorkspaceModel {
       }
 
       if (row.count === 0) {
-        // Last workspace without projects: the list is simply empty now
+        // Last workspace without diagrams: the list is simply empty now
         db.prepare("DELETE FROM workspaces WHERE id = ?").run(workspaceId);
         return true;
       }
 
-      // Last workspace still had projects: a new workspace takes them over
+      // Last workspace still had diagrams: a new workspace takes them over
       const created = WorkspaceModel.create("My Workspace");
-      db.prepare("UPDATE projects SET workspace_id = ? WHERE workspace_id = ?").run(
+      db.prepare("UPDATE diagrams SET workspace_id = ? WHERE workspace_id = ?").run(
         created.id,
         workspaceId
       );
@@ -130,11 +130,11 @@ export class WorkspaceModel {
     return deleteTx(id);
   }
 
-  /** Number of projects that belong to the given workspace. */
-  static countProjects(id: string): number {
+  /** Number of diagrams that belong to the given workspace. */
+  static countDiagrams(id: string): number {
     const db = getDB();
     const row = db
-      .prepare("SELECT COUNT(*) AS count FROM projects WHERE workspace_id = ?")
+      .prepare("SELECT COUNT(*) AS count FROM diagrams WHERE workspace_id = ?")
       .get(id) as { count: number };
     return row.count;
   }

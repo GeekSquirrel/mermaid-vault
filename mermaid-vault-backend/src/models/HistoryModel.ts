@@ -11,7 +11,7 @@ import type {
 
 interface HistoryRow {
   id: string;
-  project_id?: string | null;
+  diagram_id?: string | null;
   name: string;
   state: string;
   time: number;
@@ -37,7 +37,7 @@ function rowToEntry(row: HistoryRow): HistoryEntry {
   }
   return {
     id: row.id,
-    project_id: row.project_id || null,
+    diagram_id: row.diagram_id || null,
     name: row.name,
     state: parsedState,
     time: row.time,
@@ -46,7 +46,7 @@ function rowToEntry(row: HistoryRow): HistoryEntry {
 }
 
 export class HistoryModel {
-  static getAll(type?: string, projectId?: string | null): HistoryEntry[] {
+  static getAll(type?: string, diagramId?: string | null): HistoryEntry[] {
     const db = getDB();
     const conditions: string[] = [];
     const params: (string | number)[] = [];
@@ -56,12 +56,12 @@ export class HistoryModel {
       params.push(type);
     }
 
-    if (projectId !== undefined) {
-      if (!projectId || projectId === "default" || projectId === "null") {
-        conditions.push("(project_id IS NULL OR project_id = '' OR project_id = 'default')");
-      } else if (projectId !== "all") {
-        conditions.push("project_id = ?");
-        params.push(projectId);
+    if (diagramId !== undefined) {
+      if (!diagramId || diagramId === "default" || diagramId === "null") {
+        conditions.push("(diagram_id IS NULL OR diagram_id = '' OR diagram_id = 'default')");
+      } else if (diagramId !== "all") {
+        conditions.push("diagram_id = ?");
+        params.push(diagramId);
       }
     }
 
@@ -82,11 +82,11 @@ export class HistoryModel {
   static create(data: CreateHistoryDto): HistoryEntry {
     const db = getDB();
     const id = data.id || crypto.randomUUID();
-    const projectId =
-      data.projectId !== undefined
-        ? data.projectId
-        : data.project_id !== undefined
-          ? data.project_id
+    const diagramId =
+      data.diagramId !== undefined
+        ? data.diagramId
+        : data.diagram_id !== undefined
+          ? data.diagram_id
           : null;
     const name = data.name.trim();
     const stateStr = JSON.stringify(data.state || {});
@@ -94,13 +94,13 @@ export class HistoryModel {
     const type = data.type || "manual";
 
     const stmt = db.prepare(
-      "INSERT INTO history_entries (id, project_id, name, state, time, type) VALUES (?, ?, ?, ?, ?, ?)"
+      "INSERT INTO history_entries (id, diagram_id, name, state, time, type) VALUES (?, ?, ?, ?, ?, ?)"
     );
-    stmt.run(id, projectId, name, stateStr, time, type);
+    stmt.run(id, diagramId, name, stateStr, time, type);
 
     return {
       id,
-      project_id: projectId,
+      diagram_id: diagramId,
       name,
       state: data.state || {},
       time,
@@ -125,9 +125,9 @@ export class HistoryModel {
       setClauses.push("state = ?");
       params.push(JSON.stringify(updates.state));
     }
-    if (updates.projectId !== undefined || updates.project_id !== undefined) {
-      const pId = updates.projectId !== undefined ? updates.projectId : updates.project_id;
-      setClauses.push("project_id = ?");
+    if (updates.diagramId !== undefined || updates.diagram_id !== undefined) {
+      const pId = updates.diagramId !== undefined ? updates.diagramId : updates.diagram_id;
+      setClauses.push("diagram_id = ?");
       params.push(pId || null);
     }
 
@@ -152,7 +152,7 @@ export class HistoryModel {
     return result.changes > 0;
   }
 
-  static clearAll(type?: string, projectId?: string | null): boolean {
+  static clearAll(type?: string, diagramId?: string | null): boolean {
     const db = getDB();
     const conditions: string[] = [];
     const params: (string | number)[] = [];
@@ -162,12 +162,12 @@ export class HistoryModel {
       params.push(type);
     }
 
-    if (projectId !== undefined) {
-      if (!projectId || projectId === "default" || projectId === "null") {
-        conditions.push("(project_id IS NULL OR project_id = '' OR project_id = 'default')");
-      } else if (projectId !== "all") {
-        conditions.push("project_id = ?");
-        params.push(projectId);
+    if (diagramId !== undefined) {
+      if (!diagramId || diagramId === "default" || diagramId === "null") {
+        conditions.push("(diagram_id IS NULL OR diagram_id = '' OR diagram_id = 'default')");
+      } else if (diagramId !== "all") {
+        conditions.push("diagram_id = ?");
+        params.push(diagramId);
       }
     }
 

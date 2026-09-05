@@ -54,18 +54,18 @@ describe("HistoryModel CRUD operations", () => {
     expect(HistoryModel.getAll("manual").length).toBe(0);
   });
 
-  it("should isolate history entries per project", () => {
-    const projA = "project-alpha-uuid";
-    const projB = "project-beta-uuid";
+  it("should isolate history entries per diagram", () => {
+    const projA = "diagram-alpha-uuid";
+    const projB = "diagram-beta-uuid";
 
-    HistoryModel.create({ name: "alpha-1", state: { code: "A1" }, projectId: projA });
-    HistoryModel.create({ name: "alpha-2", state: { code: "A2" }, projectId: projA });
-    HistoryModel.create({ name: "beta-1", state: { code: "B1" }, projectId: projB });
+    HistoryModel.create({ name: "alpha-1", state: { code: "A1" }, diagramId: projA });
+    HistoryModel.create({ name: "alpha-2", state: { code: "A2" }, diagramId: projA });
+    HistoryModel.create({ name: "beta-1", state: { code: "B1" }, diagramId: projB });
     HistoryModel.create({ name: "default-1", state: { code: "D1" } }); // draft
 
     const alphaEntries = HistoryModel.getAll("manual", projA);
     expect(alphaEntries).toHaveLength(2);
-    expect(alphaEntries.every((e) => e.project_id === projA)).toBe(true);
+    expect(alphaEntries.every((e) => e.diagram_id === projA)).toBe(true);
 
     const betaEntries = HistoryModel.getAll("manual", projB);
     expect(betaEntries).toHaveLength(1);

@@ -13,9 +13,9 @@ export class HistoryController {
             ? undefined
             : typeQuery
           : "manual";
-      const projectIdQuery = req.query.projectId;
-      const projectId = typeof projectIdQuery === "string" ? projectIdQuery : undefined;
-      const entries = HistoryModel.getAll(type, projectId);
+      const diagramIdQuery = req.query.diagramId;
+      const diagramId = typeof diagramIdQuery === "string" ? diagramIdQuery : undefined;
+      const entries = HistoryModel.getAll(type, diagramId);
       res.status(200).json({ success: true, data: entries });
     } catch (err) {
       res.status(500).json({
@@ -60,7 +60,7 @@ export class HistoryController {
 
   static createHistory(req: Request, res: Response): void {
     try {
-      const { id, projectId, project_id, name, state, time, type } =
+      const { id, diagramId, diagram_id, name, state, time, type } =
         req.body as CreateHistoryDto;
       if (!name || typeof name !== "string") {
         res.status(400).json({
@@ -77,10 +77,10 @@ export class HistoryController {
         return;
       }
 
-      const resolvedProjectId = projectId !== undefined ? projectId : project_id;
+      const resolvedDiagramId = diagramId !== undefined ? diagramId : diagram_id;
       const entry = HistoryModel.create({
         id,
-        projectId: resolvedProjectId,
+        diagramId: resolvedDiagramId,
         name: name.trim(),
         state,
         time,
@@ -178,9 +178,9 @@ export class HistoryController {
             ? undefined
             : typeQuery
           : "manual";
-      const projectIdQuery = req.query.projectId;
-      const projectId = typeof projectIdQuery === "string" ? projectIdQuery : undefined;
-      HistoryModel.clearAll(type, projectId);
+      const diagramIdQuery = req.query.diagramId;
+      const diagramId = typeof diagramIdQuery === "string" ? diagramIdQuery : undefined;
+      HistoryModel.clearAll(type, diagramId);
       res.status(200).json({ success: true, data: { cleared: true } });
     } catch (err) {
       res.status(500).json({

@@ -12,7 +12,7 @@ describe("Workspace Controller & API Integration Tests", () => {
   });
 
   it("should perform a complete workspace lifecycle via REST API", async () => {
-    // Oldest existing workspace receives projects without an explicit workspace_id
+    // Oldest existing workspace receives diagrams without an explicit workspace_id
     const listRes = await request(app).get("/api/workspaces");
     const oldestId = listRes.body.data[0].id;
 
@@ -35,42 +35,42 @@ describe("Workspace Controller & API Integration Tests", () => {
     expect(renameRes.status).toBe(200);
     expect(renameRes.body.data.name).toBe("Renamed WS");
 
-    // 4. Create a project inside the workspace
-    const projectRes = await request(app)
-      .post("/api/projects")
-      .send({ title: "WS Project", code: "graph TD; A-->B", workspace_id: workspaceId });
-    expect(projectRes.status).toBe(201);
-    expect(projectRes.body.data.workspace_id).toBe(workspaceId);
-    const projectId = projectRes.body.data.id;
+    // 4. Create a diagram inside the workspace
+    const diagramRes = await request(app)
+      .post("/api/diagrams")
+      .send({ title: "WS Diagram", code: "graph TD; A-->B", workspace_id: workspaceId });
+    expect(diagramRes.status).toBe(201);
+    expect(diagramRes.body.data.workspace_id).toBe(workspaceId);
+    const diagramId = diagramRes.body.data.id;
 
-    // 5. Unknown workspace on project create falls back to the oldest workspace
+    // 5. Unknown workspace on diagram create falls back to the oldest workspace
     const badRes = await request(app)
-      .post("/api/projects")
+      .post("/api/diagrams")
       .send({ title: "Bad", code: "graph TD; A-->B", workspace_id: "does-not-exist" });
     expect(badRes.status).toBe(201);
     expect(badRes.body.data.workspace_id).toBe(oldestId);
-    await request(app).delete(`/api/projects/${badRes.body.data.id}`);
+    await request(app).delete(`/api/diagrams/${badRes.body.data.id}`);
 
-    // 6. Delete workspace: project falls back to the oldest remaining workspace
+    // 6. Delete workspace: diagram falls back to the oldest remaining workspace
     const deleteRes = await request(app).delete(`/api/workspaces/${workspaceId}`);
     expect(deleteRes.status).toBe(200);
     expect(deleteRes.body.data.deleted).toBe(true);
 
-    const orphanRes = await request(app).get(`/api/projects/${projectId}`);
+    const orphanRes = await request(app).get(`/api/diagrams/${diagramId}`);
     expect(orphanRes.status).toBe(200);
     expect(orphanRes.body.data.workspace_id).toBe(oldestId);
 
     // Cleanup
-    await request(app).delete(`/api/projects/${projectId}`);
+    await request(app).delete(`/api/diagrams/${diagramId}`);
   });
 
   it("should allow deleting the seeded workspace and reject invalid names", async () => {
-    // Create a project (it lands in the oldest workspace) to verify the takeover
-    const projectRes = await request(app)
-      .post("/api/projects")
-      .send({ title: "Sample Project", code: "graph TD; A-->B" });
-    expect(projectRes.status).toBe(201);
-    const projectId = projectRes.body.data.id;
+    // Create a diagram (it lands in the oldest workspace) to verify the takeover
+    const diagramRes = await request(app)
+      .post("/api/diagrams")
+      .send({ title: "Sample Diagram", code: "graph TD; A-->B" });
+    expect(diagramRes.status).toBe(201);
+    const diagramId = diagramRes.body.data.id;
 
     const listRes = await request(app).get("/api/workspaces");
     const oldestId = listRes.body.data[0].id;
@@ -79,14 +79,14 @@ describe("Workspace Controller & API Integration Tests", () => {
     expect(deleteOldest.status).toBe(200);
     expect(deleteOldest.body.data.deleted).toBe(true);
 
-    // The project must still belong to an existing workspace
-    const movedRes = await request(app).get(`/api/projects/${projectId}`);
+    // The diagram must still belong to an existing workspace
+    const movedRes = await request(app).get(`/api/diagrams/${diagramId}`);
     expect(movedRes.status).toBe(200);
     expect(movedRes.body.data.workspace_id).not.toBe(oldestId);
     const workspaceRes = await request(app).get(`/api/workspaces/${movedRes.body.data.workspace_id}`);
     expect(workspaceRes.status).toBe(200);
 
-    await request(app).delete(`/api/projects/${projectId}`);
+    await request(app).delete(`/api/diagrams/${diagramId}`);
 
     const emptyName = await request(app).post("/api/workspaces").send({ name: "   " });
     expect(emptyName.status).toBe(400);

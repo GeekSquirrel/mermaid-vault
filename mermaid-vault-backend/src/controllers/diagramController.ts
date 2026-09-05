@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
-import { ProjectModel } from "../models/ProjectModel.js";
+import { DiagramModel } from "../models/DiagramModel.js";
 import { WorkspaceModel } from "../models/WorkspaceModel.js";
-import type { CreateProjectDto, SavePreviewDto, UpdateProjectDto } from "../types/index.js";
+import type { CreateDiagramDto, SavePreviewDto, UpdateDiagramDto } from "../types/index.js";
 import { parsePreviewTheme, validateSavePreviewBody } from "../util/preview.js";
 
 /** Returns an error message when the requested workspace does not exist; null otherwise. */
@@ -15,55 +15,55 @@ function validateWorkspaceId(workspaceId: string | null | undefined): string | n
   return null;
 }
 
-export class ProjectController {
-  static listProjects(_req: Request, res: Response): void {
+export class DiagramController {
+  static listDiagrams(_req: Request, res: Response): void {
     try {
-      const projects = ProjectModel.getAll();
-      res.status(200).json({ success: true, data: projects });
+      const diagrams = DiagramModel.getAll();
+      res.status(200).json({ success: true, data: diagrams });
     } catch (err) {
       res.status(500).json({
         success: false,
         error: {
           code: "INTERNAL_ERROR",
-          message: err instanceof Error ? err.message : "Failed to fetch projects",
+          message: err instanceof Error ? err.message : "Failed to fetch diagrams",
         },
       });
     }
   }
 
-  static getProject(req: Request, res: Response): void {
+  static getDiagram(req: Request, res: Response): void {
     try {
       const { id } = req.params;
       if (!id) {
         res.status(400).json({
           success: false,
-          error: { code: "INVALID_INPUT", message: "Project ID is required" },
+          error: { code: "INVALID_INPUT", message: "Diagram ID is required" },
         });
         return;
       }
-      const project = ProjectModel.getById(id);
-      if (!project) {
+      const diagram = DiagramModel.getById(id);
+      if (!diagram) {
         res.status(404).json({
           success: false,
-          error: { code: "NOT_FOUND", message: `Project with id ${id} not found` },
+          error: { code: "NOT_FOUND", message: `Diagram with id ${id} not found` },
         });
         return;
       }
-      res.status(200).json({ success: true, data: project });
+      res.status(200).json({ success: true, data: diagram });
     } catch (err) {
       res.status(500).json({
         success: false,
         error: {
           code: "INTERNAL_ERROR",
-          message: err instanceof Error ? err.message : "Failed to get project",
+          message: err instanceof Error ? err.message : "Failed to get diagram",
         },
       });
     }
   }
 
-  static createProject(req: Request, res: Response): void {
+  static createDiagram(req: Request, res: Response): void {
     try {
-      const { title, code } = req.body as CreateProjectDto;
+      const { title, code } = req.body as CreateDiagramDto;
       if (!title || typeof title !== "string") {
         res.status(400).json({
           success: false,
@@ -79,43 +79,43 @@ export class ProjectController {
         return;
       }
 
-      const { workspace_id } = req.body as CreateProjectDto;
+      const { workspace_id } = req.body as CreateDiagramDto;
       // Unknown/stale workspace ids (e.g. a deleted workspace) fall back instead of failing
       const resolvedWorkspaceId = WorkspaceModel.ensureUsableWorkspace(workspace_id);
 
-      const project = ProjectModel.create(title.trim(), code, resolvedWorkspaceId);
-      res.status(201).json({ success: true, data: project });
+      const diagram = DiagramModel.create(title.trim(), code, resolvedWorkspaceId);
+      res.status(201).json({ success: true, data: diagram });
     } catch (err) {
       res.status(500).json({
         success: false,
         error: {
           code: "INTERNAL_ERROR",
-          message: err instanceof Error ? err.message : "Failed to create project",
+          message: err instanceof Error ? err.message : "Failed to create diagram",
         },
       });
     }
   }
 
-  static updateProject(req: Request, res: Response): void {
+  static updateDiagram(req: Request, res: Response): void {
     try {
       const { id } = req.params;
       if (!id) {
         res.status(400).json({
           success: false,
-          error: { code: "INVALID_INPUT", message: "Project ID is required" },
+          error: { code: "INVALID_INPUT", message: "Diagram ID is required" },
         });
         return;
       }
-      const existing = ProjectModel.getById(id);
+      const existing = DiagramModel.getById(id);
       if (!existing) {
         res.status(404).json({
           success: false,
-          error: { code: "NOT_FOUND", message: `Project with id ${id} not found` },
+          error: { code: "NOT_FOUND", message: `Diagram with id ${id} not found` },
         });
         return;
       }
 
-      const { title, code, workspace_id } = req.body as UpdateProjectDto;
+      const { title, code, workspace_id } = req.body as UpdateDiagramDto;
       const workspaceError = validateWorkspaceId(workspace_id);
       if (workspaceError) {
         res.status(400).json({
@@ -125,11 +125,11 @@ export class ProjectController {
         return;
       }
 
-      const updated = ProjectModel.update(id, title?.trim(), code, workspace_id);
+      const updated = DiagramModel.update(id, title?.trim(), code, workspace_id);
       if (!updated) {
         res.status(404).json({
           success: false,
-          error: { code: "NOT_FOUND", message: `Project with id ${id} not found` },
+          error: { code: "NOT_FOUND", message: `Diagram with id ${id} not found` },
         });
         return;
       }
@@ -140,27 +140,27 @@ export class ProjectController {
         success: false,
         error: {
           code: "INTERNAL_ERROR",
-          message: err instanceof Error ? err.message : "Failed to update project",
+          message: err instanceof Error ? err.message : "Failed to update diagram",
         },
       });
     }
   }
 
-  static deleteProject(req: Request, res: Response): void {
+  static deleteDiagram(req: Request, res: Response): void {
     try {
       const { id } = req.params;
       if (!id) {
         res.status(400).json({
           success: false,
-          error: { code: "INVALID_INPUT", message: "Project ID is required" },
+          error: { code: "INVALID_INPUT", message: "Diagram ID is required" },
         });
         return;
       }
-      const success = ProjectModel.delete(id);
+      const success = DiagramModel.delete(id);
       if (!success) {
         res.status(404).json({
           success: false,
-          error: { code: "NOT_FOUND", message: `Project with id ${id} not found` },
+          error: { code: "NOT_FOUND", message: `Diagram with id ${id} not found` },
         });
         return;
       }
@@ -170,19 +170,19 @@ export class ProjectController {
         success: false,
         error: {
           code: "INTERNAL_ERROR",
-          message: err instanceof Error ? err.message : "Failed to delete project",
+          message: err instanceof Error ? err.message : "Failed to delete diagram",
         },
       });
     }
   }
 
-  static getProjectPreview(req: Request, res: Response): void {
+  static getDiagramPreview(req: Request, res: Response): void {
     try {
       const { id } = req.params;
       if (!id) {
         res.status(400).json({
           success: false,
-          error: { code: "INVALID_INPUT", message: "Project ID is required" },
+          error: { code: "INVALID_INPUT", message: "Diagram ID is required" },
         });
         return;
       }
@@ -194,13 +194,13 @@ export class ProjectController {
         });
         return;
       }
-      const preview = ProjectModel.getPreview(id, theme);
+      const preview = DiagramModel.getPreview(id, theme);
       if (!preview) {
         res.status(404).json({
           success: false,
           error: {
             code: "NOT_FOUND",
-            message: `No fresh preview for project ${id} (missing or outdated)`,
+            message: `No fresh preview for diagram ${id} (missing or outdated)`,
           },
         });
         return;
@@ -216,19 +216,19 @@ export class ProjectController {
         success: false,
         error: {
           code: "INTERNAL_ERROR",
-          message: err instanceof Error ? err.message : "Failed to get project preview",
+          message: err instanceof Error ? err.message : "Failed to get diagram preview",
         },
       });
     }
   }
 
-  static saveProjectPreview(req: Request, res: Response): void {
+  static saveDiagramPreview(req: Request, res: Response): void {
     try {
       const { id } = req.params;
       if (!id) {
         res.status(400).json({
           success: false,
-          error: { code: "INVALID_INPUT", message: "Project ID is required" },
+          error: { code: "INVALID_INPUT", message: "Diagram ID is required" },
         });
         return;
       }
@@ -241,13 +241,13 @@ export class ProjectController {
         });
         return;
       }
-      const saved = ProjectModel.savePreview(id, body.theme, body.svg, body.codeHash);
+      const saved = DiagramModel.savePreview(id, body.theme, body.svg, body.codeHash);
       if (!saved) {
         res.status(409).json({
           success: false,
           error: {
             code: "CONFLICT",
-            message: `Preview rejected: project ${id} not found or code changed since render`,
+            message: `Preview rejected: diagram ${id} not found or code changed since render`,
           },
         });
         return;
@@ -258,7 +258,7 @@ export class ProjectController {
         success: false,
         error: {
           code: "INTERNAL_ERROR",
-          message: err instanceof Error ? err.message : "Failed to save project preview",
+          message: err instanceof Error ? err.message : "Failed to save diagram preview",
         },
       });
     }

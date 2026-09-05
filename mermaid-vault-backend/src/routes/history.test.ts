@@ -98,14 +98,14 @@ describe("History Controller & API Integration Tests", () => {
     expect(listRes.body.data.length).toBe(0);
   });
 
-  it("should support projectId query filtering and scoping via REST API", async () => {
+  it("should support diagramId query filtering and scoping via REST API", async () => {
     const proj1 = "proj-1-uuid";
     const proj2 = "proj-2-uuid";
 
     await request(app)
       .post("/api/history")
       .send({
-        projectId: proj1,
+        diagramId: proj1,
         name: "proj1-diag",
         state: { code: "graph LR; P1" },
       });
@@ -113,31 +113,31 @@ describe("History Controller & API Integration Tests", () => {
     await request(app)
       .post("/api/history")
       .send({
-        projectId: proj2,
+        diagramId: proj2,
         name: "proj2-diag",
         state: { code: "graph LR; P2" },
       });
 
     // Fetch proj1
-    const res1 = await request(app).get(`/api/history?projectId=${proj1}`);
+    const res1 = await request(app).get(`/api/history?diagramId=${proj1}`);
     expect(res1.status).toBe(200);
     expect(res1.body.data).toHaveLength(1);
     expect(res1.body.data[0].name).toBe("proj1-diag");
 
     // Fetch proj2
-    const res2 = await request(app).get(`/api/history?projectId=${proj2}`);
+    const res2 = await request(app).get(`/api/history?diagramId=${proj2}`);
     expect(res2.status).toBe(200);
     expect(res2.body.data).toHaveLength(1);
     expect(res2.body.data[0].name).toBe("proj2-diag");
 
     // Clear proj1 only
-    const del1 = await request(app).delete(`/api/history?projectId=${proj1}`);
+    const del1 = await request(app).delete(`/api/history?diagramId=${proj1}`);
     expect(del1.status).toBe(200);
 
-    const res1After = await request(app).get(`/api/history?projectId=${proj1}`);
+    const res1After = await request(app).get(`/api/history?diagramId=${proj1}`);
     expect(res1After.body.data).toHaveLength(0);
 
-    const res2After = await request(app).get(`/api/history?projectId=${proj2}`);
+    const res2After = await request(app).get(`/api/history?diagramId=${proj2}`);
     expect(res2After.body.data).toHaveLength(1);
   });
 });

@@ -22,6 +22,25 @@ export function getDB(customPath?: string): DatabaseType {
   const db = new Database(absoluteDbPath);
   db.pragma("journal_mode = WAL");
 
+  // Rename the legacy `projects` table to `diagrams` (v2 naming). Must run
+  // BEFORE the migration files so 001_init.sql does not create an empty
+  // `diagrams` table that would block the rename; a no-op on fresh databases.
+  try {
+    const legacyProjects = db.pragma("table_info(projects)") as { name: string }[];
+    const currentDiagrams = db.pragma("table_info(diagrams)") as { name: string }[];
+    if (legacyProjects.length > 0 && currentDiagrams.length === 0) {
+      db.exec("ALTER TABLE projects RENAME TO diagrams;");
+      db.exec("DROP INDEX IF EXISTS idx_projects_updated_at;");
+      db.exec("CREATE INDEX IF NOT EXISTS idx_diagrams_updated_at ON diagrams(updated_at DESC);");
+      db.exec("DROP INDEX IF EXISTS idx_projects_workspace_id;");
+      db.exec(
+        "CREATE INDEX IF NOT EXISTS idx_diagrams_workspace_id ON diagrams(workspace_id, updated_at DESC);"
+      );
+    }
+  } catch {
+    // Ignore if table does not exist
+  }
+
   // Run migrations in order
   const migrationsDir = path.resolve(process.cwd(), "migrations");
   if (fs.existsSync(migrationsDir)) {
@@ -35,20 +54,26 @@ export function getDB(customPath?: string): DatabaseType {
       db.exec(sql);
     }
 
-    // Ensure history_entries has project_id column and index
+    // Ensure history_entries has diagram_id column and index; rename the
+    // legacy project_id column in place when upgrading an existing database
     try {
       const tableInfo = db.pragma("table_info(history_entries)") as { name: string }[];
       if (tableInfo.length > 0) {
-        if (!tableInfo.some((col) => col.name === "project_id")) {
-          db.exec("ALTER TABLE history_entries ADD COLUMN project_id TEXT;");
+        if (!tableInfo.some((col) => col.name === "diagram_id")) {
+          if (tableInfo.some((col) => col.name === "project_id")) {
+            db.exec("ALTER TABLE history_entries RENAME COLUMN project_id TO diagram_id;");
+          } else {
+            db.exec("ALTER TABLE history_entries ADD COLUMN diagram_id TEXT;");
+          }
         }
-        db.exec("CREATE INDEX IF NOT EXISTS idx_history_entries_project_id ON history_entries(project_id, time DESC);");
+        db.exec("DROP INDEX IF EXISTS idx_history_entries_project_id;");
+        db.exec("CREATE INDEX IF NOT EXISTS idx_history_entries_diagram_id ON history_entries(diagram_id, time DESC);");
       }
     } catch {
       // Ignore if table does not exist
     }
 
-    // Ensure preview columns exist on projects and history_entries (light/dark SVG + freshness hash)
+    // Ensure preview columns exist on diagrams and history_entries (light/dark SVG + freshness hash)
     const previewColumns: [string, string][] = [
       ["preview_light_svg", "TEXT"],
       ["preview_light_hash", "TEXT"],
@@ -56,7 +81,7 @@ export function getDB(customPath?: string): DatabaseType {
       ["preview_dark_hash", "TEXT"],
       ["preview_updated_at", "INTEGER"],
     ];
-    for (const table of ["projects", "history_entries"]) {
+    for (const table of ["diagrams", "history_entries"]) {
       try {
         const info = db.pragma(`table_info(${table})`) as { name: string }[];
         if (info.length === 0) {
@@ -72,18 +97,18 @@ export function getDB(customPath?: string): DatabaseType {
       }
     }
 
-    // Ensure projects have a workspace_id column (workspaces feature).
+    // Ensure diagrams have a workspace_id column (workspaces feature).
     // SQLite cannot ADD COLUMN IF NOT EXISTS, so guard via table_info.
     try {
-      const projectInfo = db.pragma("table_info(projects)") as { name: string }[];
-      if (projectInfo.length > 0 && !projectInfo.some((col) => col.name === "workspace_id")) {
-        db.exec("ALTER TABLE projects ADD COLUMN workspace_id TEXT REFERENCES workspaces(id);");
+      const diagramInfo = db.pragma("table_info(diagrams)") as { name: string }[];
+      if (diagramInfo.length > 0 && !diagramInfo.some((col) => col.name === "workspace_id")) {
+        db.exec("ALTER TABLE diagrams ADD COLUMN workspace_id TEXT REFERENCES workspaces(id);");
         db.exec(
-          "CREATE INDEX IF NOT EXISTS idx_projects_workspace_id ON projects(workspace_id, updated_at DESC);"
+          "CREATE INDEX IF NOT EXISTS idx_diagrams_workspace_id ON diagrams(workspace_id, updated_at DESC);"
         );
-        // Every project must belong to a workspace: assign strays to the oldest one
+        // Every diagram must belong to a workspace: assign strays to the oldest one
         db.exec(
-          "UPDATE projects SET workspace_id = " +
+          "UPDATE diagrams SET workspace_id = " +
           "(SELECT id FROM workspaces ORDER BY created_at ASC LIMIT 1) " +
           "WHERE workspace_id IS NULL AND EXISTS (SELECT 1 FROM workspaces);"
         );

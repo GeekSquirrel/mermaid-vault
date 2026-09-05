@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import { getDB } from "./db/index.js";
 import { historyRouter } from "./routes/history.js";
-import { projectRouter } from "./routes/projects.js";
+import { diagramRouter } from "./routes/diagrams.js";
 import { workspaceRouter } from "./routes/workspaces.js";
 
 dotenv.config();
@@ -41,8 +41,8 @@ app.get(["/health", "/api/health"], (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-// Mount project REST routes (support both /api/projects and /projects)
-app.use(["/api/projects", "/projects"], projectRouter);
+// Mount diagram REST routes (support both /api/diagrams and /diagrams)
+app.use(["/api/diagrams", "/diagrams"], diagramRouter);
 
 // Mount history REST routes (support both /api/history and /history)
 app.use(["/api/history", "/history"], historyRouter);

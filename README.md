@@ -2,13 +2,13 @@
 
 [简体中文](README.zh.md) | English
 
-This project extends the official [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) with a robust, persistent **Node.js (Express + better-sqlite3)** backend. It enables seamless cloud-persisted storage, cross-device editing, diagram project management, and automated debounced synchronization.
+This project extends the official [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) with a robust, persistent **Node.js (Express + better-sqlite3)** backend. It enables seamless cloud-persisted storage, cross-device editing, diagram management, and automated debounced synchronization.
 
 ---
 
 ## Architecture Overview
 
-- **Frontend (`mermaid-vault-frontend/`)**: Built with SvelteKit and TypeScript (official upstream submodule). Features a "My Projects" dashboard, automatic 1.5s debounced synchronization to backend storage, editable project titles, and visual save status indicators.
+- **Frontend (`mermaid-vault-frontend/`)**: Built with SvelteKit and TypeScript (official upstream submodule). Features a "My Diagrams" dashboard, automatic 1.5s debounced synchronization to backend storage, editable diagram titles, and visual save status indicators.
 - **Backend (`mermaid-vault-backend/`)**: Robust REST API powered by **Node.js (LTS)**, **Express**, and **`better-sqlite3`**. Includes automatic migration on startup, CORS headers, single-file SQLite database storage, and automated Vitest test suite.
 
 ```
@@ -28,22 +28,22 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 
 ## Features
 
-- **Project Dashboard (`/dashboard`)**:
+- **Diagram Dashboard (`/dashboard`)**:
   - Collapsible workspace sidebar: create, rename, delete and switch workspaces;
-    a built-in `Default` workspace receives unassigned projects.
+    a built-in `Default` workspace receives unassigned diagrams.
   - View all saved Mermaid diagrams and flowcharts in SQLite.
   - Real-time client-side search by diagram title or code snippet (search box in the navbar).
-  - Multi-select with select-all / batch delete; new projects belong to the
+  - Multi-select with select-all / batch delete; new diagrams belong to the
     workspace they were created from.
 - **Server-Cached Diagram Previews**:
-  - Project cards and bookmark cards load a cached preview SVG from the backend
+  - Diagram cards and bookmark cards load a cached preview SVG from the backend
     (light & dark themes stored separately, keyed by a SHA-256 hash of the code).
   - When the code has changed or no preview exists, the client falls back to live
     rendering and backfills the backend preview automatically.
 - **Bookmark Cards with Previews**:
   - The Bookmarks panel renders entries as cards with diagram previews, plus the
     existing rename / restore / open / delete actions.
-- **Auto-Syncing Cloud Storage (`/edit?projectId=xxx`)**:
+- **Auto-Syncing Cloud Storage (`/diagram?id=xxx`)**:
   - Real-time debounced save (1.5s) on diagram code or title edits.
   - Save status indicators: *Saving...*, *Saved*, or *Save failed (Click to retry)*.
   - Dynamic URL synchronization without page reload.
@@ -143,7 +143,7 @@ You can easily select one of three deployment modes via the `API_BASE_URL` envir
 |---|---|---|
 | **1. Same-Origin Internal Proxy (Default)** | Leave empty / unset | Frontend uses relative path `/api`, proxied by frontend Nginx directly to backend container. No CORS required, single exposed port. |
 | **2. Shared Domain / Gateway** | `API_BASE_URL=https://example.com/api` | Frontend directly requests this absolute URL, suitable for unified reverse proxy or gateway configurations. |
-| **3. Standalone API Domain (CORS)** | `API_BASE_URL=https://api.example.com` | Frontend sends cross-origin requests to independent backend domain. Set `CORS_ORIGIN` on the backend to the frontend origin. Backend supports both `/api/projects` and `/projects`. |
+| **3. Standalone API Domain (CORS)** | `API_BASE_URL=https://api.example.com` | Frontend sends cross-origin requests to independent backend domain. Set `CORS_ORIGIN` on the backend to the frontend origin. Backend supports both `/api/diagrams` and `/diagrams`. |
 
 ---
 

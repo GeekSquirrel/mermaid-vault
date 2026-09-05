@@ -1,4 +1,4 @@
-export interface Project {
+export interface Diagram {
   id: string;
   title: string;
   code: string;
@@ -7,13 +7,13 @@ export interface Project {
   updated_at: number;
 }
 
-export interface CreateProjectDto {
+export interface CreateDiagramDto {
   title: string;
   code: string;
   workspace_id?: string | null;
 }
 
-export interface UpdateProjectDto {
+export interface UpdateDiagramDto {
   title?: string;
   code?: string;
   workspace_id?: string | null;
@@ -50,7 +50,7 @@ export interface ApiResponse<T = unknown> {
 
 export interface HistoryEntry {
   id: string;
-  project_id?: string | null;
+  diagram_id?: string | null;
   name: string;
   state: Record<string, unknown>;
   time: number;
@@ -60,8 +60,8 @@ export interface HistoryEntry {
 
 export interface CreateHistoryDto {
   id?: string;
-  project_id?: string | null;
-  projectId?: string | null;
+  diagram_id?: string | null;
+  diagramId?: string | null;
   name: string;
   state: Record<string, unknown>;
   time?: number;
@@ -71,8 +71,8 @@ export interface CreateHistoryDto {
 export interface UpdateHistoryDto {
   name?: string;
   state?: Record<string, unknown>;
-  project_id?: string | null;
-  projectId?: string | null;
+  diagram_id?: string | null;
+  diagramId?: string | null;
 }
 
 export type PreviewTheme = "light" | "dark";

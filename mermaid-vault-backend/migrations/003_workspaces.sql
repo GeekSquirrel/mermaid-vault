@@ -1,4 +1,4 @@
--- Workspaces: user-defined project groups; all workspaces are equivalent.
+-- Workspaces: user-defined diagram groups; all workspaces are equivalent.
 -- A sample workspace is seeded on first initialization and can be renamed or
 -- deleted like any other.
 CREATE TABLE IF NOT EXISTS workspaces (

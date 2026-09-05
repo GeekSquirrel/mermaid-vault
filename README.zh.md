@@ -2,13 +2,13 @@
 
 [English](README.md) | 简体中文
 
-本项目为官方 [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) 增加了基于 **Node.js (Express + better-sqlite3)** 的云端持久化存储后端，实现个人图表项目的多端同步、持久化管理与实时防抖自动保存。
+本项目为官方 [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) 增加了基于 **Node.js (Express + better-sqlite3)** 的云端持久化存储后端，实现个人图表的多端同步、持久化管理与实时防抖自动保存。
 
 ---
 
 ## 架构概览
 
-- **前端 (`mermaid-vault-frontend/`)**: 基于 SvelteKit 与 TypeScript（官方 Git 子模块）。包含“我的项目”管理面板、1.5 秒防抖自动云端同步、自定义项目标题编辑及可视化保存状态提示。
+- **前端 (`mermaid-vault-frontend/`)**: 基于 SvelteKit 与 TypeScript（官方 Git 子模块）。包含“我的图表”管理面板、1.5 秒防抖自动云端同步、自定义图表标题编辑及可视化保存状态提示。
 - **后端 (`mermaid-vault-backend/`)**: 基于 **Node.js (LTS)**、**Express** 与 **`better-sqlite3`** 构建的稳健 REST API 服务，包含启动时自动数据库迁移、CORS 支持、单文件 SQLite 持久化存储及自动化 Vitest 测试套件。
 
 ```
@@ -28,23 +28,23 @@
 
 ## 功能特性
 
-- **项目管理面板 (`/dashboard`)**:
+- **图表管理面板 (`/dashboard`)**:
   - 可折叠的工作区侧边栏：支持工作区的新建、重命名、删除与切换；
-    内置 `Default` 工作区接收未分配的项目。
+    内置 `Default` 工作区接收未分配的图表。
   - 浏览保存在 SQLite 数据库中的所有 Mermaid 图表。
   - 支持按标题或代码内容进行实时前端模糊搜索过滤（搜索框位于顶部导航栏中央）。
-  - 支持多选、全选与批量删除；新建项目自动归属于创建时所在的工作区。
+  - 支持多选、全选与批量删除；新建图表自动归属于创建时所在的工作区。
 - **后端缓存图表预览**:
-  - 项目卡片与书签卡片优先从后端加载缓存的预览 SVG（深浅主题分别存储，
+  - 图表卡片与书签卡片优先从后端加载缓存的预览 SVG（深浅主题分别存储，
     以代码 SHA-256 哈希作为新鲜度键）。
   - 当代码已变更或暂无预览时，前端自动回退到实时渲染，并将新预览回填至后端。
 - **书签卡片化与预览图**:
   - Bookmarks 面板以卡片网格展示每个书签并附带图表预览，
     同时保留原有的重命名 / 恢复 / 打开 / 删除操作。
-- **实时云端同步 (`/edit?projectId=xxx`)**:
+- **实时云端同步 (`/diagram?id=xxx`)**:
   - 编辑代码或修改标题时，防抖 1.5 秒自动同步保存至后端数据库。
   - 顶部保存状态清晰可见：*Saving...*、*Saved* 或 *Save failed (Click to retry)*。
-  - 新建项目保存后自动将 `projectId` 同步至浏览器地址栏（无须刷新页面）。
+  - 新建图表保存后自动将 `diagramId` 同步至浏览器地址栏（无须刷新页面）。
 - **全栈 Docker 编排部署**:
   - 一键式生产环境 Docker Compose 部署前端与后端，数据目录持久化挂载。
   - 提供开发环境 Compose 配置（支持源码热重载）。
@@ -141,7 +141,7 @@ git push origin v2.1.0
 |---|---|---|
 | **1. 同源内部代理模式（默认推荐）** | 留空 / 不设置 | 前端使用相对路径 `/api`，由前端 Nginx 直接反向代理到后端容器。无跨域问题，仅对外暴露单个前端端口。 |
 | **2. 共用外部域名/网关模式** | `API_BASE_URL=https://example.com/api` | 前端直接请求该绝对路径，适用于前后端挂在同一反向代理或统一网关下的场景。 |
-| **3. 独立 API 域名模式（跨域）** | `API_BASE_URL=https://api.example.com` | 前端直接向独立后端域名发起跨域请求。需将后端 `CORS_ORIGIN` 设置为前端来源。后端同时兼容 `/api/projects` 与 `/projects`。 |
+| **3. 独立 API 域名模式（跨域）** | `API_BASE_URL=https://api.example.com` | 前端直接向独立后端域名发起跨域请求。需将后端 `CORS_ORIGIN` 设置为前端来源。后端同时兼容 `/api/diagrams` 与 `/diagrams`。 |
 
 ---
 
