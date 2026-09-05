@@ -304,15 +304,44 @@ Base URL: `http://localhost:8080`
 - **DELETE `/api/history/:id`**
 - **Response** `200 OK`
 
-### 13. Clear History Entries
-- **DELETE `/api/history?type=manual`**
-- **Response** `200 OK`
+### 14. Workspaces
+All workspaces are equivalent — there is no privileged default. A sample workspace is seeded on
+first initialization and can be renamed or deleted like any other. Every project always belongs to
+an existing workspace: deleting a workspace moves its projects to the oldest remaining workspace;
+when the last workspace is deleted, a new workspace is created to hold its projects (or the list is
+simply left empty when it has none).
+
+- **GET `/api/workspaces`** — list workspaces
+- **GET `/api/workspaces/:id`** — get a single workspace
+- **POST `/api/workspaces`** — create a workspace
+  - Body: `{ "name": "Engineering" }`
+- **PUT `/api/workspaces/:id`** — rename a workspace
+  - Body: `{ "name": "Design" }`
+- **DELETE `/api/workspaces/:id`** — delete a workspace (projects move to the oldest remaining one)
+- **Response** `200 OK`:
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "default",
+        "name": "Default",
+        "created_at": 1788564470000,
+        "updated_at": 1788564470000
+      }
+    ]
+  }
+  ```
+
+`POST /api/projects` and `PUT /api/projects/:id` accept an optional `workspace_id` field to assign
+a project to a workspace. Unknown or missing workspace ids fall back to the oldest remaining
+workspace, so a project always ends up in an existing workspace.
 
 ---
 
 ## Database Schema
 
-Defined in `migrations/001_init.sql` and `migrations/002_history.sql`:
+Defined in `migrations/001_init.sql`, `migrations/002_history.sql` and `migrations/003_workspaces.sql`:
 
 ```sql
 -- 1. Projects table
@@ -320,6 +349,7 @@ CREATE TABLE IF NOT EXISTS projects (
     id TEXT PRIMARY KEY,                  -- UUID v4
     title TEXT NOT NULL,                  -- Project title
     code TEXT NOT NULL,                   -- Mermaid diagram code
+    workspace_id TEXT REFERENCES workspaces(id), -- Owning workspace (always set)
     created_at INTEGER NOT NULL,          -- Unix timestamp in ms
     updated_at INTEGER NOT NULL           -- Unix timestamp in ms
 );
@@ -334,9 +364,19 @@ CREATE TABLE IF NOT EXISTS history_entries (
     type TEXT NOT NULL DEFAULT 'manual'   -- Type ('manual' / 'auto')
 );
 CREATE INDEX IF NOT EXISTS idx_history_entries_time ON history_entries(time DESC);
+
+-- 3. Workspaces (user-defined project groups; a sample workspace is seeded on first init)
+CREATE TABLE IF NOT EXISTS workspaces (
+    id TEXT PRIMARY KEY,                  -- UUID v4
+    name TEXT NOT NULL,
+    created_at INTEGER NOT NULL,          -- Unix timestamp in ms
+    updated_at INTEGER NOT NULL           -- Unix timestamp in ms
+);
 ```
 
 Preview cache columns are added idempotently at startup (see `src/db/index.ts`) to both tables:
 `preview_light_svg`, `preview_light_hash`, `preview_dark_svg`, `preview_dark_hash` (TEXT) and
 `preview_updated_at` (INTEGER). Each `preview_*_hash` stores the SHA-256 of the diagram code the
 SVG was rendered from; a preview is considered fresh only while that hash matches the stored code.
+The `projects.workspace_id` column is likewise added idempotently at startup; any project without a
+workspace is assigned to the oldest existing one.

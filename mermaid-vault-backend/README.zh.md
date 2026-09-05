@@ -303,15 +303,43 @@ docker compose up -d
 - **DELETE `/api/history/:id`**
 - **响应** `200 OK`
 
-### 13. 清空历史记录
-- **DELETE `/api/history?type=manual`**
-- **响应** `200 OK`
+### 14. 工作区（Workspaces）
+所有工作区都是等价的——不存在特权的默认工作区。首次初始化时会自动创建一个示例工作区
+（Sample Workspace），它可以像其他工作区一样被重命名或删除。每个项目始终属于某个已存在的
+工作区：删除工作区时，其项目会移动到剩余工作区中最早创建的一个；当删除最后一个工作区时，
+若其中仍有项目，会自动创建一个新工作区接管这些项目（若没有项目则工作区列表直接为空）。
+
+- **GET `/api/workspaces`** — 获取工作区列表
+- **GET `/api/workspaces/:id`** — 获取单个工作区
+- **POST `/api/workspaces`** — 创建工作区
+  - 请求体：`{ "name": "Engineering" }`
+- **PUT `/api/workspaces/:id`** — 重命名工作区
+  - 请求体：`{ "name": "Design" }`
+- **DELETE `/api/workspaces/:id`** — 删除工作区（其项目移动到最早的剩余工作区）
+- **响应** `200 OK`：
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": "default",
+        "name": "Default",
+        "created_at": 1788564470000,
+        "updated_at": 1788564470000
+      }
+    ]
+  }
+  ```
+
+`POST /api/projects` 与 `PUT /api/projects/:id` 接受可选的 `workspace_id` 字段，用于将项目
+归属到指定工作区。未知或缺失的工作区 id 会回退到最早的剩余工作区，确保项目总是归属到
+某个已存在的工作区。
 
 ---
 
 ## 数据库表结构
 
-定义位于 `migrations/001_init.sql` 与 `migrations/002_history.sql`：
+定义位于 `migrations/001_init.sql`、`migrations/002_history.sql` 与 `migrations/003_workspaces.sql`：
 
 ```sql
 -- 1. 项目主表
@@ -319,6 +347,7 @@ CREATE TABLE IF NOT EXISTS projects (
     id TEXT PRIMARY KEY,                  -- UUID v4
     title TEXT NOT NULL,                  -- 项目标题
     code TEXT NOT NULL,                   -- Mermaid 代码
+    workspace_id TEXT REFERENCES workspaces(id), -- 所属工作区 (始终有值)
     created_at INTEGER NOT NULL,          -- Unix 时间戳 (毫秒)
     updated_at INTEGER NOT NULL           -- Unix 时间戳 (毫秒)
 );
@@ -333,10 +362,20 @@ CREATE TABLE IF NOT EXISTS history_entries (
     type TEXT NOT NULL DEFAULT 'manual'   -- 类型 ('manual' / 'auto')
 );
 CREATE INDEX IF NOT EXISTS idx_history_entries_time ON history_entries(time DESC);
+
+-- 3. 工作区表 (用户自定义的项目分组；首次初始化时创建示例工作区)
+CREATE TABLE IF NOT EXISTS workspaces (
+    id TEXT PRIMARY KEY,                  -- UUID v4
+    name TEXT NOT NULL,
+    created_at INTEGER NOT NULL,          -- Unix 时间戳 (毫秒)
+    updated_at INTEGER NOT NULL           -- Unix 时间戳 (毫秒)
+);
 ```
 
 预览缓存列在启动时以幂等方式添加到两张表中（见 `src/db/index.ts`）：
 `preview_light_svg`、`preview_light_hash`、`preview_dark_svg`、`preview_dark_hash`（TEXT）与
 `preview_updated_at`（INTEGER）。每个 `preview_*_hash` 记录渲染该 SVG 所用图表代码的
 SHA-256 哈希；只有哈希与当前存储代码一致时，预览才被视为最新。
+`projects.workspace_id` 列同样在启动时以幂等方式添加；没有归属工作区的项目会被分配到
+最早的已存在工作区。
 
