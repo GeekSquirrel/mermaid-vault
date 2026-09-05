@@ -318,6 +318,8 @@ simply left empty when it has none).
 - **PUT `/api/workspaces/:id`** — rename a workspace
   - Body: `{ "name": "Design" }`
 - **DELETE `/api/workspaces/:id`** — delete a workspace (projects move to the oldest remaining one)
+- **PUT `/api/workspaces/order`** — persist manual (drag) ordering
+  - Body: `{ "order": ["<workspace-id>", ...] }` containing every workspace id exactly once
 - **Response** `200 OK`:
   ```json
   {
@@ -369,6 +371,7 @@ CREATE INDEX IF NOT EXISTS idx_history_entries_time ON history_entries(time DESC
 CREATE TABLE IF NOT EXISTS workspaces (
     id TEXT PRIMARY KEY,                  -- UUID v4
     name TEXT NOT NULL,
+    position INTEGER,                     -- manual (drag) ordering; backfilled on upgrade
     created_at INTEGER NOT NULL,          -- Unix timestamp in ms
     updated_at INTEGER NOT NULL           -- Unix timestamp in ms
 );

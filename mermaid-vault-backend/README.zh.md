@@ -316,6 +316,8 @@ docker compose up -d
 - **PUT `/api/workspaces/:id`** — 重命名工作区
   - 请求体：`{ "name": "Design" }`
 - **DELETE `/api/workspaces/:id`** — 删除工作区（其项目移动到最早的剩余工作区）
+- **PUT `/api/workspaces/order`** — 保存手动（拖拽）排序
+  - 请求体：`{ "order": ["<工作区 id>", ...] }`，需包含每个工作区 id 且各出现一次
 - **响应** `200 OK`：
   ```json
   {
@@ -367,6 +369,7 @@ CREATE INDEX IF NOT EXISTS idx_history_entries_time ON history_entries(time DESC
 CREATE TABLE IF NOT EXISTS workspaces (
     id TEXT PRIMARY KEY,                  -- UUID v4
     name TEXT NOT NULL,
+    position INTEGER,                     -- 手动（拖拽）排序；升级时自动回填
     created_at INTEGER NOT NULL,          -- Unix 时间戳 (毫秒)
     updated_at INTEGER NOT NULL           -- Unix 时间戳 (毫秒)
 );
