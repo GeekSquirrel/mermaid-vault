@@ -41,6 +41,14 @@
 - **书签卡片化与预览图**:
   - Bookmarks 面板以卡片网格展示每个书签并附带图表预览，
     同时保留原有的重命名 / 恢复 / 打开 / 删除操作。
+- **自托管的分享与导出面板**:
+  - Share 按钮改为打开右侧面板（与 Bookmarks/Timeline 一致的布局），
+    并合并了原 Actions 卡片：PNG/SVG 导出、复制图片、复制 Markdown、
+    加载 Gist 与 Embed 代码全部集中在一处。
+  - 面板中的分享链接（PNG/SVG/Markdown 缩略图）均指向当前页面域名，
+    由后端渲染端点（`GET /api/render/svg/:state`、
+    `GET /api/render/img/:state?type=png`）通过无头 Chromium 提供，
+    不再依赖 mermaid.ai / mermaid.ink / Kroki 等外部服务。
 - **实时云端同步 (`/diagram?id=xxx`)**:
   - 编辑代码或修改标题时，防抖 1.5 秒自动同步保存至后端数据库。
   - 顶部保存状态清晰可见：*Saving...*、*Saved* 或 *Save failed (Click to retry)*。

@@ -1,7 +1,9 @@
 # Stage 1: Build application and compile TypeScript
 FROM node:22-alpine AS builder
 
-RUN apk add --no-cache python3 make g++
+# chromium is needed at runtime in the dev compose (which targets this stage)
+RUN apk add --no-cache python3 make g++ chromium
+ENV CHROMIUM_PATH=/usr/bin/chromium-browser
 
 RUN corepack enable pnpm
 
@@ -27,13 +29,14 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 
-# Install curl for healthcheck
-RUN apk add --no-cache curl
+# Install curl for healthcheck and Chromium for the /api/render endpoints
+RUN apk add --no-cache curl chromium
 
 # Set runtime environment variables
 ENV NODE_ENV=production
 ENV PORT=8080
 ENV DB_PATH=/app/data/mermaid.db
+ENV CHROMIUM_PATH=/usr/bin/chromium-browser
 
 # Create directory for persistent SQLite data
 RUN mkdir -p /app/data

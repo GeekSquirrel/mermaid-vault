@@ -5,6 +5,14 @@ import { getDB } from "./db/index.js";
 import { historyRouter } from "./routes/history.js";
 import { diagramRouter } from "./routes/diagrams.js";
 import { workspaceRouter } from "./routes/workspaces.js";
+import { renderRouter } from "./routes/render.js";
+import {
+  RENDER_ASSETS_ROUTE,
+  RENDER_PAGE_ROUTE,
+  mermaidDistPath,
+  renderPageHtml,
+} from "./util/renderer.js";
+import path from "path";
 
 dotenv.config();
 
@@ -49,6 +57,17 @@ app.use(["/api/history", "/history"], historyRouter);
 
 // Mount workspace REST routes (support both /api/workspaces and /workspaces)
 app.use(["/api/workspaces", "/workspaces"], workspaceRouter);
+
+// Mount diagram rendering routes (support both /api/render and /render)
+app.use(["/api/render", "/render"], renderRouter);
+
+// Internal renderer page + mermaid ESM bundle, consumed by headless Chromium
+// during /api/render requests. Intentionally not under /api so the reverse
+// proxy does not expose them publicly.
+app.get(RENDER_PAGE_ROUTE, (_req, res) => {
+  res.type("html").send(renderPageHtml());
+});
+app.use(RENDER_ASSETS_ROUTE, express.static(mermaidDistPath()));
 
 // 404 handler
 app.use((req, res) => {

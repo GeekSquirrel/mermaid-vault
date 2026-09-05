@@ -43,6 +43,15 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 - **Bookmark Cards with Previews**:
   - The Bookmarks panel renders entries as cards with diagram previews, plus the
     existing rename / restore / open / delete actions.
+- **Self-Hosted Share & Export Panel**:
+  - The Share button opens a right-side panel (same layout as
+    Bookmarks/Timeline) that merges the former Actions card: PNG/SVG export,
+    Copy Image, Copy Markdown, Gist loading and embed snippets in one place.
+  - Share-panel URLs (PNG/SVG/markdown thumbnails) point to the current page
+    domain and are served by the backend rendering endpoints
+    (`GET /api/render/svg/:state`, `GET /api/render/img/:state?type=png`) via
+    headless Chromium — no external services like mermaid.ai / mermaid.ink /
+    Kroki are involved.
 - **Auto-Syncing Cloud Storage (`/diagram?id=xxx`)**:
   - Real-time debounced save (1.5s) on diagram code or title edits.
   - Save status indicators: *Saving...*, *Saved*, or *Save failed (Click to retry)*.
