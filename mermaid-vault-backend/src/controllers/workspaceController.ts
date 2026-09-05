@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import { WorkspaceModel } from "../models/WorkspaceModel.js";
-import type { CreateWorkspaceDto, UpdateWorkspaceDto } from "../types/index.js";
+import type {
+  CreateWorkspaceDto,
+  UpdateWorkspaceDto,
+  UpdateWorkspaceOrderDto,
+} from "../types/index.js";
 
 function validateName(name: unknown): string | null {
   if (!name || typeof name !== "string" || !name.trim()) {
@@ -118,6 +122,56 @@ export class WorkspaceController {
         error: {
           code: "INTERNAL_ERROR",
           message: err instanceof Error ? err.message : "Failed to update workspace",
+        },
+      });
+    }
+  }
+
+  static updateWorkspaceOrder(req: Request, res: Response): void {
+    try {
+      const { order } = req.body as UpdateWorkspaceOrderDto;
+      if (!Array.isArray(order) || order.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: {
+            code: "INVALID_INPUT",
+            message: "order must be a non-empty array of workspace ids",
+          },
+        });
+        return;
+      }
+
+      const existingIds = WorkspaceModel.getAll().map((w) => w.id);
+      const unknown = order.filter((id) => !existingIds.includes(id));
+      if (unknown.length > 0) {
+        res.status(400).json({
+          success: false,
+          error: { code: "INVALID_INPUT", message: `Unknown workspace ids: ${unknown.join(", ")}` },
+        });
+        return;
+      }
+      if (
+        order.length !== existingIds.length ||
+        new Set(order).size !== order.length
+      ) {
+        res.status(400).json({
+          success: false,
+          error: {
+            code: "INVALID_INPUT",
+            message: "order must contain every workspace id exactly once",
+          },
+        });
+        return;
+      }
+
+      WorkspaceModel.updateOrder(order);
+      res.status(200).json({ success: true, data: { updated: true } });
+    } catch (err) {
+      res.status(500).json({
+        success: false,
+        error: {
+          code: "INTERNAL_ERROR",
+          message: err instanceof Error ? err.message : "Failed to update workspace order",
         },
       });
     }

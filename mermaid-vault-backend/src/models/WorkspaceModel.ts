@@ -5,8 +5,19 @@ import type { Workspace } from "../types/index.js";
 export class WorkspaceModel {
   static getAll(): Workspace[] {
     const db = getDB();
-    const stmt = db.prepare("SELECT * FROM workspaces ORDER BY created_at ASC");
+    const stmt = db.prepare(
+      "SELECT * FROM workspaces ORDER BY position ASC, created_at DESC, rowid ASC"
+    );
     return stmt.all() as Workspace[];
+  }
+
+  /** Id of the earliest-created workspace; independent of the manual display order. */
+  static getOldestId(): string | null {
+    const db = getDB();
+    const row = db
+      .prepare("SELECT id FROM workspaces ORDER BY created_at ASC, rowid ASC LIMIT 1")
+      .get() as { id: string } | undefined;
+    return row?.id ?? null;
   }
 
   static getById(id: string): Workspace | null {
@@ -24,13 +35,28 @@ export class WorkspaceModel {
     const db = getDB();
     const id = crypto.randomUUID();
     const now = Date.now();
+    // New workspaces appear at the top of the manual ordering
+    const row = db.prepare("SELECT MIN(position) AS min FROM workspaces").get() as {
+      min: number | null;
+    };
+    const position = (row.min ?? 0) - 1;
 
     const stmt = db.prepare(
-      "INSERT INTO workspaces (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
+      "INSERT INTO workspaces (id, name, position, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
     );
-    stmt.run(id, name, now, now);
+    stmt.run(id, name, position, now, now);
 
-    return { id, name, created_at: now, updated_at: now };
+    return { id, name, position, created_at: now, updated_at: now };
+  }
+
+  /** Persist a manual ordering: positions are assigned by list index. */
+  static updateOrder(ids: string[]): void {
+    const db = getDB();
+    const update = db.prepare("UPDATE workspaces SET position = ? WHERE id = ?");
+    const tx = db.transaction((orderedIds: string[]) => {
+      orderedIds.forEach((id, index) => update.run(index, id));
+    });
+    tx(ids);
   }
 
   static update(id: string, name: string): Workspace | null {
@@ -53,9 +79,9 @@ export class WorkspaceModel {
     if (preferredId && WorkspaceModel.exists(preferredId)) {
       return preferredId;
     }
-    const oldest = WorkspaceModel.getAll()[0];
+    const oldest = WorkspaceModel.getOldestId();
     if (oldest) {
-      return oldest.id;
+      return oldest;
     }
     return WorkspaceModel.create("My Workspace").id;
   }

@@ -22,8 +22,13 @@ export interface UpdateProjectDto {
 export interface Workspace {
   id: string;
   name: string;
+  position?: number | null;
   created_at: number;
   updated_at: number;
+}
+
+export interface UpdateWorkspaceOrderDto {
+  order: string[];
 }
 
 export interface CreateWorkspaceDto {

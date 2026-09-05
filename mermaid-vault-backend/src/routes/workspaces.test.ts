@@ -94,4 +94,28 @@ describe("Workspace Controller & API Integration Tests", () => {
     const missing = await request(app).get("/api/workspaces/no-such-workspace");
     expect(missing.status).toBe(404);
   });
+
+  it("PUT /api/workspaces/order should persist manual ordering and validate input", async () => {
+    await request(app).post("/api/workspaces").send({ name: "Order WS 1" });
+    await request(app).post("/api/workspaces").send({ name: "Order WS 2" });
+
+    const listRes = await request(app).get("/api/workspaces");
+    const ids: string[] = listRes.body.data.map((w: { id: string }) => w.id);
+    expect(ids.length).toBeGreaterThanOrEqual(2);
+
+    const reversed = [...ids].reverse();
+    const putRes = await request(app).put("/api/workspaces/order").send({ order: reversed });
+    expect(putRes.status).toBe(200);
+
+    const after = await request(app).get("/api/workspaces");
+    expect(after.body.data.map((w: { id: string }) => w.id)).toEqual(reversed);
+
+    const unknown = await request(app).put("/api/workspaces/order").send({ order: ["nope"] });
+    expect(unknown.status).toBe(400);
+
+    const partial = await request(app)
+      .put("/api/workspaces/order")
+      .send({ order: [reversed[0]] });
+    expect(partial.status).toBe(400);
+  });
 });

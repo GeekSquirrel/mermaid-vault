@@ -76,6 +76,18 @@ describe("WorkspaceModel CRUD operations", () => {
     expect(WorkspaceModel.exists(wsId)).toBe(true);
   });
 
+  it("should persist manual workspace ordering", () => {
+    resetToEmpty();
+    const a = WorkspaceModel.create("A");
+    const b = WorkspaceModel.create("B");
+    const c = WorkspaceModel.create("C");
+    // New workspaces appear at the top of the list
+    expect(WorkspaceModel.getAll().map((w) => w.name)).toEqual(["C", "B", "A"]);
+
+    WorkspaceModel.updateOrder([a.id, b.id, c.id]);
+    expect(WorkspaceModel.getAll().map((w) => w.name)).toEqual(["A", "B", "C"]);
+  });
+
   it("should fall back to an existing workspace for new projects when the preferred one is missing", () => {
     const wsId = WorkspaceModel.ensureUsableWorkspace("no-such-workspace");
     expect(wsId).not.toBe("no-such-workspace");

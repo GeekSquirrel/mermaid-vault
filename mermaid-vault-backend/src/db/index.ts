@@ -91,6 +91,23 @@ export function getDB(customPath?: string): DatabaseType {
     } catch {
       // Ignore if table does not exist
     }
+
+    // Ensure workspaces have a position column for manual (drag) ordering;
+    // backfill newest-first to preserve the pre-ordering display order
+    try {
+      const wsInfo = db.pragma("table_info(workspaces)") as { name: string }[];
+      if (wsInfo.length > 0 && !wsInfo.some((col) => col.name === "position")) {
+        db.exec("ALTER TABLE workspaces ADD COLUMN position INTEGER;");
+        db.exec(
+          "UPDATE workspaces SET position = " +
+          "(SELECT COUNT(*) FROM workspaces w2 " +
+          "WHERE w2.created_at > workspaces.created_at " +
+          "OR (w2.created_at = workspaces.created_at AND w2.rowid > workspaces.rowid));"
+        );
+      }
+    } catch {
+      // Ignore if table does not exist
+    }
   }
 
   if (!customPath) {
