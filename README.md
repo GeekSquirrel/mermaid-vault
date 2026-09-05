@@ -28,10 +28,13 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 
 ## Features
 
-- **Project Dashboard (`/projects`)**:
+- **Project Dashboard (`/dashboard`)**:
+  - Collapsible workspace sidebar: create, rename, delete and switch workspaces;
+    a built-in `Default` workspace receives unassigned projects.
   - View all saved Mermaid diagrams and flowcharts in SQLite.
-  - Real-time client-side search by diagram title or code snippet.
-  - Create new projects and delete existing ones with instant confirmation.
+  - Real-time client-side search by diagram title or code snippet (search box in the navbar).
+  - Multi-select with select-all / batch delete; new projects belong to the
+    workspace they were created from.
 - **Server-Cached Diagram Previews**:
   - Project cards and bookmark cards load a cached preview SVG from the backend
     (light & dark themes stored separately, keyed by a SHA-256 hash of the code).
