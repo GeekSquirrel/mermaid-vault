@@ -1,7 +1,19 @@
 import type { Request, Response } from "express";
 import { ProjectModel } from "../models/ProjectModel.js";
+import { WorkspaceModel } from "../models/WorkspaceModel.js";
 import type { CreateProjectDto, SavePreviewDto, UpdateProjectDto } from "../types/index.js";
 import { parsePreviewTheme, validateSavePreviewBody } from "../util/preview.js";
+
+/** Returns an error message when the requested workspace does not exist; null otherwise. */
+function validateWorkspaceId(workspaceId: string | null | undefined): string | null {
+  if (workspaceId === undefined || workspaceId === null) {
+    return null;
+  }
+  if (!WorkspaceModel.exists(workspaceId)) {
+    return `Workspace with id ${workspaceId} not found`;
+  }
+  return null;
+}
 
 export class ProjectController {
   static listProjects(_req: Request, res: Response): void {
@@ -67,7 +79,11 @@ export class ProjectController {
         return;
       }
 
-      const project = ProjectModel.create(title.trim(), code);
+      const { workspace_id } = req.body as CreateProjectDto;
+      // Unknown/stale workspace ids (e.g. a deleted workspace) fall back instead of failing
+      const resolvedWorkspaceId = WorkspaceModel.ensureUsableWorkspace(workspace_id);
+
+      const project = ProjectModel.create(title.trim(), code, resolvedWorkspaceId);
       res.status(201).json({ success: true, data: project });
     } catch (err) {
       res.status(500).json({
@@ -99,8 +115,17 @@ export class ProjectController {
         return;
       }
 
-      const { title, code } = req.body as UpdateProjectDto;
-      const updated = ProjectModel.update(id, title?.trim(), code);
+      const { title, code, workspace_id } = req.body as UpdateProjectDto;
+      const workspaceError = validateWorkspaceId(workspace_id);
+      if (workspaceError) {
+        res.status(400).json({
+          success: false,
+          error: { code: "INVALID_INPUT", message: workspaceError },
+        });
+        return;
+      }
+
+      const updated = ProjectModel.update(id, title?.trim(), code, workspace_id);
       if (!updated) {
         res.status(404).json({
           success: false,

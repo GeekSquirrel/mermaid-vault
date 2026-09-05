@@ -4,6 +4,7 @@ import express from "express";
 import { getDB } from "./db/index.js";
 import { historyRouter } from "./routes/history.js";
 import { projectRouter } from "./routes/projects.js";
+import { workspaceRouter } from "./routes/workspaces.js";
 
 dotenv.config();
 
@@ -45,6 +46,9 @@ app.use(["/api/projects", "/projects"], projectRouter);
 
 // Mount history REST routes (support both /api/history and /history)
 app.use(["/api/history", "/history"], historyRouter);
+
+// Mount workspace REST routes (support both /api/workspaces and /workspaces)
+app.use(["/api/workspaces", "/workspaces"], workspaceRouter);
 
 // 404 handler
 app.use((req, res) => {

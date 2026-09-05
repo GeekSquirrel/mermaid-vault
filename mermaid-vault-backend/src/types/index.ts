@@ -2,6 +2,7 @@ export interface Project {
   id: string;
   title: string;
   code: string;
+  workspace_id?: string | null;
   created_at: number;
   updated_at: number;
 }
@@ -9,11 +10,28 @@ export interface Project {
 export interface CreateProjectDto {
   title: string;
   code: string;
+  workspace_id?: string | null;
 }
 
 export interface UpdateProjectDto {
   title?: string;
   code?: string;
+  workspace_id?: string | null;
+}
+
+export interface Workspace {
+  id: string;
+  name: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface CreateWorkspaceDto {
+  name: string;
+}
+
+export interface UpdateWorkspaceDto {
+  name: string;
 }
 
 export interface ApiResponse<T = unknown> {

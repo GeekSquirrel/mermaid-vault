@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { getDB } from "../db/index.js";
 import { codeHash } from "../util/hash.js";
+import { WorkspaceModel } from "./WorkspaceModel.js";
 import type { PreviewSvg, PreviewTheme, Project } from "../types/index.js";
 
 export class ProjectModel {
@@ -17,26 +18,33 @@ export class ProjectModel {
     return result || null;
   }
 
-  static create(title: string, code: string): Project {
+  static create(title: string, code: string, workspaceId?: string | null): Project {
     const db = getDB();
     const id = crypto.randomUUID();
     const now = Date.now();
+    const workspace_id = WorkspaceModel.ensureUsableWorkspace(workspaceId);
 
     const stmt = db.prepare(
-      "INSERT INTO projects (id, title, code, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
+      "INSERT INTO projects (id, title, code, workspace_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
     );
-    stmt.run(id, title, code, now, now);
+    stmt.run(id, title, code, workspace_id, now, now);
 
     return {
       id,
       title,
       code,
+      workspace_id,
       created_at: now,
       updated_at: now,
     };
   }
 
-  static update(id: string, title?: string, code?: string): Project | null {
+  static update(
+    id: string,
+    title?: string,
+    code?: string,
+    workspaceId?: string | null
+  ): Project | null {
     const existing = ProjectModel.getById(id);
     if (!existing) {
       return null;
@@ -52,6 +60,10 @@ export class ProjectModel {
     if (code !== undefined) {
       updates.push("code = ?");
       params.push(code);
+    }
+    if (workspaceId !== undefined) {
+      updates.push("workspace_id = ?");
+      params.push(WorkspaceModel.ensureUsableWorkspace(workspaceId));
     }
 
     if (updates.length === 0) {

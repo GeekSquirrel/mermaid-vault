@@ -71,6 +71,26 @@ export function getDB(customPath?: string): DatabaseType {
         // Ignore if table does not exist
       }
     }
+
+    // Ensure projects have a workspace_id column (workspaces feature).
+    // SQLite cannot ADD COLUMN IF NOT EXISTS, so guard via table_info.
+    try {
+      const projectInfo = db.pragma("table_info(projects)") as { name: string }[];
+      if (projectInfo.length > 0 && !projectInfo.some((col) => col.name === "workspace_id")) {
+        db.exec("ALTER TABLE projects ADD COLUMN workspace_id TEXT REFERENCES workspaces(id);");
+        db.exec(
+          "CREATE INDEX IF NOT EXISTS idx_projects_workspace_id ON projects(workspace_id, updated_at DESC);"
+        );
+        // Every project must belong to a workspace: assign strays to the oldest one
+        db.exec(
+          "UPDATE projects SET workspace_id = " +
+          "(SELECT id FROM workspaces ORDER BY created_at ASC LIMIT 1) " +
+          "WHERE workspace_id IS NULL AND EXISTS (SELECT 1 FROM workspaces);"
+        );
+      }
+    } catch {
+      // Ignore if table does not exist
+    }
   }
 
   if (!customPath) {
