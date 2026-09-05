@@ -6,3 +6,6 @@ mermaid-vault-backend/data/*.db
 mermaid-vault-backend/dist/
 mermaid-vault-frontend/docs/
 
+
+# ZCode session artifacts
+.zcode/
