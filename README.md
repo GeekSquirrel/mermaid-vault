@@ -82,7 +82,7 @@ cd mermaid-vault-frontend
 pnpm install
 pnpm dev
 ```
-The frontend editor starts at `http://localhost:3000` (or `:5173`).
+The frontend editor starts at `http://localhost:3000`.
 
 Or start both from the repository root at once:
 ```bash

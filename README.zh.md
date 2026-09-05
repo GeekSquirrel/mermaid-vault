@@ -80,7 +80,7 @@ cd mermaid-vault-frontend
 pnpm install
 pnpm dev
 ```
-前端编辑器默认启动于 `http://localhost:3000` (或 `:5173`)。
+前端编辑器默认启动于 `http://localhost:3000`。
 
 也可以在仓库根目录一键同时启动前后端：
 ```bash

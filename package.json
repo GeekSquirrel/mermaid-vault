@@ -6,6 +6,7 @@
   "packageManager": "pnpm@11.17.0",
   "scripts": {
     "dev": "pnpm --parallel --filter mermaid-vault-backend --filter mermaid-vault-frontend dev",
+    "dev:clean:port": "pnpm --parallel --filter mermaid-vault-backend --filter mermaid-vault-frontend dev:clean:port",
     "dev:backend": "pnpm --filter mermaid-vault-backend dev",
     "dev:frontend": "pnpm --filter mermaid-vault-frontend dev",
     "build": "pnpm --recursive build",
