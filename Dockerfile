@@ -4,8 +4,11 @@
 FROM node:24-bookworm-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable pnpm && \
-    corepack prepare pnpm@12.3.4 --activate
+# Install pnpm as a fixed global package instead of corepack: corepack's cache
+# lives in the container filesystem, so containers re-downloaded pnpm from the
+# registry on every start. Must match the `packageManager` fields in package.json.
+RUN npm install -g pnpm@12.3.4 && \
+    pnpm --version
 
 # Install build dependencies for native modules (better-sqlite3) and git
 RUN apt-get update && apt-get install -y --no-install-recommends \
