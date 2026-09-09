@@ -26,7 +26,7 @@ PORT=8080
 DB_PATH=./data/mermaid.db
 NODE_ENV=production
 MERMAID_VAULT_URL=http://127.0.0.1:8080
-MERMAID_VAULT_FRONTEND_URL=http://localhost:3000
+MERMAID_VAULT_FRONTEND_URL=http://localhost:8081
 MCP_ENABLED=true
 ```
 
@@ -36,7 +36,7 @@ MCP_ENABLED=true
 | `DB_PATH` | `./data/mermaid.db` | SQLite 数据库文件存储路径 |
 | `NODE_ENV` | `development` / `production` | 运行环境模式 |
 | `MERMAID_VAULT_URL` | `http://127.0.0.1:8080` | MCP 服务器调用的 REST API 基础地址（stdio 模式默认值；HTTP 端点默认指向自身监听地址） |
-| `MERMAID_VAULT_FRONTEND_URL` | `http://localhost:3000` | MCP 服务器构造查看/编辑分享链接时使用的前端基础地址 |
+| `MERMAID_VAULT_FRONTEND_URL` | `http://localhost:8081` | MCP 服务器构造查看/编辑分享链接时使用的前端基础地址 |
 | `MCP_ENABLED` | `true` | 设为 `false` 可从 API 服务器移除 `/api/mcp` MCP 端点 |
 
 ---

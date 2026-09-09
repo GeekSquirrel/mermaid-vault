@@ -1,0 +1,17 @@
+node_modules
+packages/*/node_modules
+packages/*/dist
+packages/*/docs
+packages/mermaid-vault-backend/data
+.git
+.github
+.idea
+.vscode
+.env
+.env.*
+!.env.example
+*.log
+*.local
+.DS_Store
+coverage
+test-results

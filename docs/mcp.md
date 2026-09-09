@@ -38,7 +38,7 @@ Then register the MCP server with your client. Common configurations:
       "args": ["/absolute/path/to/packages/mermaid-vault-backend/dist/mcp/stdio.js"],
       "env": {
         "MERMAID_VAULT_URL": "http://127.0.0.1:8080",
-        "MERMAID_VAULT_FRONTEND_URL": "http://localhost:3000"
+        "MERMAID_VAULT_FRONTEND_URL": "http://localhost:8081"
       }
     }
   }
@@ -87,7 +87,7 @@ Set `MCP_ENABLED=false` to disable the endpoint (see §4).
 | Variable | Used by | Default | Description |
 |---|---|---|---|
 | `MERMAID_VAULT_URL` | stdio + HTTP | `http://127.0.0.1:8080` (stdio) / own listener (HTTP) | Base URL of the vault REST API the tools call |
-| `MERMAID_VAULT_FRONTEND_URL` | stdio + HTTP | `http://localhost:3000` | Frontend base URL used to build view/edit share links |
+| `MERMAID_VAULT_FRONTEND_URL` | stdio + HTTP | `http://localhost:8081` | Frontend base URL used to build view/edit share links |
 | `MCP_ENABLED` | API server | `true` | Set to `false` to remove the `/api/mcp` endpoint |
 
 ---

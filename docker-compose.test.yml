@@ -1,0 +1,13 @@
+services:
+  # Disable production single-container in test compose
+  app:
+    profiles:
+      - prod
+
+  app-test:
+    build:
+      context: .
+      target: backend-builder
+    command: ["pnpm", "--filter", "mermaid-vault-backend", "test"]
+    environment:
+      - NODE_ENV=test

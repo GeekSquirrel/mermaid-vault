@@ -9,18 +9,29 @@ export function getDB(customPath?: string): DatabaseType {
     return dbInstance;
   }
 
-  const dbPath = customPath || process.env.DB_PATH || "./data/mermaid.db";
-  const absoluteDbPath = path.isAbsolute(dbPath)
-    ? dbPath
-    : path.resolve(process.cwd(), dbPath);
+  const defaultPath =
+    process.env.NODE_ENV === "test" ? ":memory:" : "./data/mermaid.db";
+  const rawPath =
+    customPath || process.env.DATABASE_URL || process.env.DB_PATH || defaultPath;
+  const dbPath = rawPath.startsWith("file:") ? rawPath.slice(5) : rawPath;
+  const isMemory = dbPath === ":memory:" || dbPath === "";
 
-  const dir = path.dirname(absoluteDbPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  let db: DatabaseType;
+  if (isMemory) {
+    db = new Database(":memory:");
+  } else {
+    const absoluteDbPath = path.isAbsolute(dbPath)
+      ? dbPath
+      : path.resolve(process.cwd(), dbPath);
+
+    const dir = path.dirname(absoluteDbPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    db = new Database(absoluteDbPath);
+    db.pragma("journal_mode = WAL");
   }
-
-  const db = new Database(absoluteDbPath);
-  db.pragma("journal_mode = WAL");
 
   // Rename the legacy `projects` table to `diagrams` (v2 naming). Must run
   // BEFORE the migration files so 001_init.sql does not create an empty

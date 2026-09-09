@@ -25,7 +25,7 @@
 | **根目录** | 包含 `packages/mermaid-vault-frontend/`（子模块）和 `packages/mermaid-vault-backend/` |
 | **前端技术栈** | Svelte + TypeScript + Vite（基于官方 `mermaid-vault-frontend`） |
 | **后端技术栈** | Node.js + Express + better-sqlite3，TypeScript，pnpm |
-| **端口** | 前端默认 `:3000`（开发/预览，见 `vite.config.js` 的 `server.port`）或 `:80`（Docker），后端 `:8080` |
+| **端口** | 前端开发 `:8081`（Docker 开发环境），生产 `:8080`（单容器一体化），后端开发 `:8080` |
 | **数据库** | `packages/mermaid-vault-backend/data/mermaid.db`，通过迁移文件初始化 |
 | **API 前缀** | `/api`，所有端点需支持 CORS |
 | **计划文档** | 根目录 `ROADMAP.md` 包含所有任务清单（Checkbox） |

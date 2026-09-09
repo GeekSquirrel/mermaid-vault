@@ -14,7 +14,7 @@
 ```
 +--------------------------+       HTTP REST API       +-------------------------+
 |   Mermaid Live Editor    | <-----------------------> |   Node.js API Server    |
-|   (前端 :80/:3000)       |   (CORS / JSON DTOs)      |     (后端 :8080)        |
+|   (前端 :80/:8081)       |   (CORS / JSON DTOs)      |     (后端 :8080)        |
 +--------------------------+                           +-------------------------+
                                                                     |
                                                                     v
@@ -94,7 +94,7 @@ cd packages/mermaid-vault-frontend
 pnpm install
 pnpm dev
 ```
-前端编辑器默认启动于 `http://localhost:3000`。
+前端编辑器默认启动于 `http://localhost:8081`。
 
 也可以在仓库根目录一键同时启动前后端：
 ```bash
@@ -107,155 +107,106 @@ pnpm run dev
 
 ### 方式二：使用 Docker 部署
 
-默认情况下，**仅前端容器向宿主机暴露端口**（端口 `80`）。后端容器仅在 Docker 内部网络中进行通信，外部无法直接访问，增强了后端服务的安全性与隔离性。
+Mermaid Vault 在生产环境中采用统一的单容器全栈架构：后端 Express 同时托管 REST API 以及 SvelteKit 前端静态资源，仅暴露单个端口（默认 `8080`），彻底消除跨域问题与反向代理开销。
 
-#### 生产模式（全栈一键启动）
+#### 生产模式（单容器全栈启动）
+
 ```bash
-# 一次性：从模板生成生产环境变量文件并按需修改
-cp .env.example .env.prod
+# 一次性：从模板生成环境变量文件
+cp .env.example .env
 
-# 启动前端与后端服务（自动持久化数据）
-docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml up -d
+# 启动单一全栈容器（Express + SvelteKit 静态构建产物 + SQLite 持久化）
+docker compose up -d
 
 # 查看容器日志
-docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml logs -f
+docker compose logs -f
 ```
 
-Compose 文件采用「基准 + 覆盖」的组织方式：
+启动后，在浏览器访问 `http://localhost:8080`（或 `http://<主机IP>:${PORT}`）即可直接使用。
 
-| 文件 | 用途 | 是否提交 Git |
-|---|---|---|
-| `compose.yaml` | 所有栈共用的通用基准 | 是 |
-| `compose.override.yaml` | 开发专用覆盖（源码挂载、热重载）；`docker compose` 会自动合并 | 是 |
-| `compose.prod.yaml` | 生产专用覆盖（生产容器名、端口 `80`、健康检查门控启动）；**不提交 Git**，按部署环境单独创建 | 否 |
-| `compose.ghcr.yaml` | GHCR 预构建镜像覆盖（免本地构建的生产布局） | 是 |
-
-由于 `compose.prod.yaml` 不入库，需在部署主机上按以下模板重建：
-
-```yaml
-# compose.prod.yaml
-services:
-  backend:
-    image: mermaid-vault-backend:prod
-    container_name: mermaid-vault-backend
-    environment:
-      - NODE_ENV=production
-      - CORS_ORIGIN=${CORS_ORIGIN:-}
-      - MCP_ENABLED=${MCP_ENABLED:-true}
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
-
-  frontend:
-    image: mermaid-vault-frontend:prod
-    container_name: mermaid-vault-frontend
-    ports:
-      - "${APP_FRONTEND_PORT:-80}:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-    environment:
-      - BACKEND_UPSTREAM=${BACKEND_UPSTREAM:-http://backend:8080}
-      - API_BASE_URL=${API_BASE_URL:-}
-```
-启动后，可在浏览器中通过 `http://localhost`（或使用 `APP_FRONTEND_PORT` 自定义的 `http://<主机IP>:<端口>`）直接访问，局域网访问开箱即用。前端 Nginx 会将 `/api/*` 反向代理到后端容器（`BACKEND_UPSTREAM`，默认 `http://backend:8080`），无需额外配置。
-
-**反向代理部署**：将您的 Nginx/Caddy/Traefik 指向前端暴露的端口并正常转发即可（如 `proxy_pass http://127.0.0.1:<APP_FRONTEND_PORT>;`）。全程同源，前后端均无需 CORS 配置。
+**反向代理部署**：将您的 Nginx/Caddy/Traefik 指向端口 8080 正常转发即可（如 `proxy_pass http://127.0.0.1:8080;`）。由于前端与 API 完全同源，无需任何 CORS 跨域配置。
 
 #### 开发模式（源码挂载与热重载）
-```bash
-# 一次性：从模板生成开发环境变量文件
-cp .env.example .env.dev
 
-docker compose --env-file .env.dev up
+在本地开发时，技术栈仍然会自动拆分为两个容器（Vite 开发服务器 + Express 后端），以支持热重载（HMR）：
+
+```bash
+# 使用 pnpm 快捷脚本启动开发环境
+pnpm dev
+
+# 或直接使用 Docker Compose 启动
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+# 查看开发日志
+pnpm dev:logs
+
+# 停止开发环境
+pnpm dev:down
 ```
-开发栈（`compose.yaml` + `compose.override.yaml`）读取 `.env.dev`（不提交 Git，从模板生成），与生产使用的 `.env.prod` 完全隔离。
+
+前端 Vite 开发服务器运行于 `http://localhost:8081`，并自动将 `/api` 请求代理到后端容器（`http://localhost:8080`）。
+
+#### 容器化测试
+
+在独立的测试容器中运行全量自动化测试套件：
+
+```bash
+pnpm test
+# 或：docker compose -f docker-compose.yml -f docker-compose.test.yml run --build --rm app-test
+```
+
+#### 工作区常用脚本 (`package.json`)
+
+| 命令 | 说明 |
+|---|---|
+| `pnpm dev` | 在后台启动开发容器（`backend` + `frontend`） |
+| `pnpm dev:logs` | 实时查看开发容器日志 |
+| `pnpm dev:down` | 停止并移除开发容器 |
+| `pnpm dev:reset` | 重置容器、重新执行迁移并重启开发栈 |
+| `pnpm migrate` | 通过一次性容器执行数据库迁移 |
+| `pnpm test` | 在 Docker 容器中执行自动化测试套件 |
+| `pnpm build:image` | 本地构建单一生产镜像（`mermaid-vault:local`） |
+| `pnpm build:test` | 本地构建测试镜像目标（`backend-builder`） |
+| `pnpm clean` | 停止容器并清理关联数据卷 |
+| `pnpm clean:dev:port` | 读取 `.env` 并自动清除开发环境端口占用（8081、8080、9229 等） |
+| `pnpm shell` | 进入运行中的后端容器 Shell 环境 |
 
 #### 预构建镜像 (GHCR)
 
-镜像通过 GitHub Container Registry (`ghcr.io`) 发布：
+单一全栈多架构镜像发布在 GitHub Container Registry (`ghcr.io`)：
+`ghcr.io/geeksquirrel/mermaid-vault:latest`
 
-- **前端镜像**：`ghcr.io/geeksquirrel/mermaid-vault-frontend`
-- **后端镜像**：`ghcr.io/geeksquirrel/mermaid-vault-backend`
-
-| 通道 | 触发方式 | 镜像标签 | 支持架构 |
-|---|---|---|---|
-| **Dev** | 手动（**Actions** → **Publish Dev Docker Images to GHCR** → **Run workflow**） | `dev`、commit SHA、可选自定义标签 | 默认 `linux/amd64`，可通过 `platforms` 输入追加 `linux/arm64` |
-| **Release** | 自动，推送 `v*` 标签时触发（如 `v2.1.0`） | `X.Y.Z`、`X.Y`、`latest` | `linux/amd64`、`linux/arm64` |
-
-发布新版本时，只需推送版本标签，即可自动构建多架构镜像：
+如需直接使用预构建镜像，`docker-compose.yml` 默认已配置拉取 GHCR 镜像：
 
 ```bash
-git tag v2.1.0
-git push origin v2.1.0
+cp .env.example .env
+docker compose pull
+docker compose up -d
 ```
-
-#### 使用 Compose 运行预构建镜像
-
-完全跳过本地构建：已提交的 `compose.ghcr.yaml` 会把基准栈中的构建定义替换为已发布的 GHCR 镜像，同时保留生产布局（仅前端暴露端口、健康检查门控启动）：
-
-```bash
-# 一次性：生成环境变量文件，可选固定镜像通道/版本
-cp .env.example .env.prod
-
-# 使用预构建镜像启动（拉取 ghcr.io/geeksquirrel/mermaid-vault-{frontend,backend}）
-docker compose --env-file .env.prod -f compose.yaml -f compose.ghcr.yaml up -d
-
-# 后续：更新到更新的镜像
-docker compose --env-file .env.prod -f compose.yaml -f compose.ghcr.yaml pull
-docker compose --env-file .env.prod -f compose.yaml -f compose.ghcr.yaml up -d
-```
-
-通过 `.env.prod` 中的 `MERMAID_IMAGE_TAG` 选择镜像标签：`latest`（默认，正式发布通道）、具体版本号（如 `2.1.0`），或开发通道 `dev`。在推送第一个 `v*` 发布标签之前，仅存在 `dev` 通道，请使用 `MERMAID_IMAGE_TAG=dev`。需要 Docker Compose v2.24+（覆盖文件使用了 `build: !reset null` 标签）。
 
 ---
 
-## 部署模式与环境变量配置
+## 生产环境变量与配置
 
-您可以通过配置 `API_BASE_URL` 环境变量，轻松在三种部署模式之间切换：
+生产环境中前后端已实现一体化运行（由单一容器托管 Express REST API 与前端静态 SPA），因此生产环境只需提供 **`BASE_URL`** 环境变量即可满足所有对外路由与链接生成需求：
 
-| 部署模式 | `API_BASE_URL` 设置 | 说明 |
-|---|---|---|
-| **1. 同源内部代理模式（默认推荐）** | 留空 / 不设置 | 前端使用相对路径 `/api`，由前端 Nginx 直接反向代理到后端容器。无跨域问题，仅对外暴露单个前端端口。 |
-| **2. 共用外部域名/网关模式** | `API_BASE_URL=https://example.com/api` | 前端直接请求该绝对路径，适用于前后端挂在同一反向代理或统一网关下的场景。 |
-| **3. 独立 API 域名模式（跨域）** | `API_BASE_URL=https://api.example.com` | 前端直接向独立后端域名发起跨域请求。需将后端 `CORS_ORIGIN` 设置为前端来源。后端同时兼容 `/api/diagrams` 与 `/diagrams`。 |
-
----
-
-## 环境变量配置
-
-复制 `.env.example` 为 `.env.dev`（开发）和/或 `.env.prod`（生产），再按需配置：
-
-| 变量名 | 目标服务 | 默认值 | 说明 |
+| 变量名 | 作用范围 | 默认值 | 说明 |
 |---|---|---|---|
-| `APP_FRONTEND_PORT` | 前端容器 | 生产 `80` / 开发 `3000` | 前端映射到宿主机的端口（替代原 `FRONTEND_PORT`）。 |
-| `API_BASE_URL` | 前端容器 | *(留空)* | 运行时 API 基础 URL。留空则启用前端 Nginx 内部反向代理。 |
-| `BACKEND_UPSTREAM` | 前端容器 | `http://backend:8080` | 前端 Nginx 将 `/api/` 代理到的后端源地址。当后端不在同一 Docker Compose 网络时修改此项。 |
-| `CORS_ORIGIN` | 后端容器 *(可选)* | `*` | 逗号分隔的来源白名单，如 `https://example.com,https://app.example.com`。仅跨域访问 API（模式 3）时需要配置。 |
-| `MCP_ENABLED` | 后端容器 *(可选)* | `true` | 设为 `false` 可移除面向 AI Agent 的 `/api/mcp` MCP 端点（见 [docs/mcp.zh.md](docs/mcp.zh.md)）。 |
-| `MERMAID_IMAGE_TAG` | 预构建镜像 *(可选)* | `latest` | `compose.ghcr.yaml` 使用的镜像标签：`latest`、具体版本号（如 `2.1.0`）或 `dev`。 |
-| `APP_BACKEND_PORT` | 后端容器 *(可选)* | *(未设置)* | 调试时可选的宿主机端口映射（如设置为 `8080`）。仅开发栈会暴露后端端口，生产栈保持后端仅内网可达。 |
+| `BASE_URL` | 生产容器 | *(留空)* | 统一对外服务的基准 URL（如 `https://mermaid.example.com` 或 `http://localhost:8080`）。用于 MCP 生成图表编辑/查看分享链接，以及前端 SPA 运行时配置。留空时默认使用浏览器当前同源相对路径 `/api`。 |
+| `PORT` | 宿主机端口 | `8080` | 映射到宿主机的服务端口。 |
+| `TAG` | 镜像版本 | `latest` | GHCR 镜像标签。 |
 
-`PORT`、`DB_PATH` 与 `NODE_ENV` 由 compose 文件直接设定（分别为 `8080`、`/app/data/mermaid.db`，以及开发栈 `development` / 生产栈 `production`），无需写入 `.env.*`。
+开发环境（`docker-compose.dev.yml`）可选配置：
+| 变量名 | 作用范围 | 默认值 | 说明 |
+|---|---|---|---|
+| `FRONTEND_PORT` | 开发前端 | `8081` | Vite 开发服务器映射端口。 |
+| `BACKEND_PORT` | 开发后端 | `8080` | Node.js Express 后端端口。 |
+| `DEBUG_PORT` | 调试端口 | `9229` | Node.js Inspector 调试端口。 |
 
-`MERMAID_API_PROXY_TARGET`（仅开发环境）用于覆盖 Vite 开发代理 `/api` 的目标地址，本地默认 `http://localhost:8080`；开发 Compose 中已设置为 `http://backend:8080`。
-
-配置示例（`.env.prod`）：
+配置示例（`.env`）：
 ```env
-# 前端服务配置
-APP_FRONTEND_PORT=80
-API_BASE_URL=
-# 可选：覆盖前端 Nginx 代理的后端源地址
-# BACKEND_UPSTREAM=http://backend:8080
-
-# 可选：限制跨域 API 访问来源（逗号分隔白名单）
-# CORS_ORIGIN=https://example.com
-
-# 可选：设为 false 可移除 /api/mcp MCP 端点
-# MCP_ENABLED=true
+PORT=8080
+BASE_URL=https://mermaid.example.com
 ```
 
 ---

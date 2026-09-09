@@ -38,7 +38,7 @@ pnpm dev            # API 监听 :8080
       "args": ["/绝对路径/packages/mermaid-vault-backend/dist/mcp/stdio.js"],
       "env": {
         "MERMAID_VAULT_URL": "http://127.0.0.1:8080",
-        "MERMAID_VAULT_FRONTEND_URL": "http://localhost:3000"
+        "MERMAID_VAULT_FRONTEND_URL": "http://localhost:8081"
       }
     }
   }
@@ -87,7 +87,7 @@ curl -X POST http://localhost:8080/api/mcp \
 | 变量 | 使用方 | 默认值 | 说明 |
 |---|---|---|---|
 | `MERMAID_VAULT_URL` | stdio + HTTP | `http://127.0.0.1:8080`（stdio）/ 自身监听地址（HTTP） | 工具调用的 Vault REST API 基础地址 |
-| `MERMAID_VAULT_FRONTEND_URL` | stdio + HTTP | `http://localhost:3000` | 用于构造查看/编辑分享链接的前端基础地址 |
+| `MERMAID_VAULT_FRONTEND_URL` | stdio + HTTP | `http://localhost:8081` | 用于构造查看/编辑分享链接的前端基础地址 |
 | `MCP_ENABLED` | API 服务器 | `true` | 设为 `false` 可移除 `/api/mcp` 端点 |
 
 ---

@@ -1,0 +1,59 @@
+services:
+  # Disable production single-container in development override
+  app:
+    profiles:
+      - prod
+
+  backend:
+    build:
+      context: .
+      target: base
+    command: ["pnpm", "--filter", "mermaid-vault-backend", "dev"]
+    volumes:
+      - ./packages/mermaid-vault-backend:/app/packages/mermaid-vault-backend
+      - /app/packages/mermaid-vault-backend/node_modules
+      - /app/node_modules
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+      - "${DEBUG_PORT:-9229}:9229"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - DATABASE_URL=./data/mermaid.db
+      - DB_PATH=./data/mermaid.db
+      - CORS_ORIGIN=${CORS_ORIGIN:-}
+      - MCP_ENABLED=${MCP_ENABLED:-true}
+
+  frontend:
+    build:
+      context: .
+      target: base
+    command: ["pnpm", "--filter", "mermaid-vault-frontend", "dev"]
+    volumes:
+      - ./packages/mermaid-vault-frontend:/app/packages/mermaid-vault-frontend
+      - /app/packages/mermaid-vault-frontend/node_modules
+      - /app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-8081}:3000"
+    environment:
+      - MERMAID_API_PROXY_TARGET=http://backend:8080
+      - VITE_API_URL=http://localhost:${BACKEND_PORT:-8080}
+    depends_on:
+      - backend
+
+  migrate:
+    build:
+      context: .
+      target: base
+    command: ["pnpm", "--filter", "mermaid-vault-backend", "run", "migrate:up"]
+    volumes:
+      - ./packages/mermaid-vault-backend:/app/packages/mermaid-vault-backend
+      - /app/packages/mermaid-vault-backend/node_modules
+      - /app/node_modules
+    environment:
+      - DATABASE_URL=./data/mermaid.db
+      - DB_PATH=./data/mermaid.db
+    depends_on:
+      - backend
+    profiles:
+      - tools

@@ -26,7 +26,7 @@ PORT=8080
 DB_PATH=./data/mermaid.db
 NODE_ENV=production
 MERMAID_VAULT_URL=http://127.0.0.1:8080
-MERMAID_VAULT_FRONTEND_URL=http://localhost:3000
+MERMAID_VAULT_FRONTEND_URL=http://localhost:8081
 MCP_ENABLED=true
 ```
 
@@ -36,7 +36,7 @@ MCP_ENABLED=true
 | `DB_PATH` | `./data/mermaid.db` | Path to the SQLite database file |
 | `NODE_ENV` | `development` / `production` | Environment mode |
 | `MERMAID_VAULT_URL` | `http://127.0.0.1:8080` | REST API base URL used by the MCP server (stdio default; the HTTP endpoint defaults to its own listener) |
-| `MERMAID_VAULT_FRONTEND_URL` | `http://localhost:3000` | Frontend base URL used by the MCP server to build view/edit share links |
+| `MERMAID_VAULT_FRONTEND_URL` | `http://localhost:8081` | Frontend base URL used by the MCP server to build view/edit share links |
 | `MCP_ENABLED` | `true` | Set to `false` to remove the `/api/mcp` MCP endpoint from the API server |
 
 ---

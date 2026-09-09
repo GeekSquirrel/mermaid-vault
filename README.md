@@ -14,7 +14,7 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 ```
 +--------------------------+       HTTP REST API       +-------------------------+
 |   Mermaid Live Editor    | <-----------------------> |   Node.js API Server    |
-|   (Frontend :80/:3000)   |   (CORS / JSON DTOs)      |     (Backend :8080)     |
+|   (Frontend :80/:8081)   |   (CORS / JSON DTOs)      |     (Backend :8080)     |
 +--------------------------+                           +-------------------------+
                                                                     |
                                                                     v
@@ -97,7 +97,7 @@ cd packages/mermaid-vault-frontend
 pnpm install
 pnpm dev
 ```
-The frontend editor starts at `http://localhost:3000`.
+The frontend editor starts at `http://localhost:8081`.
 
 Or start both from the repository root at once:
 ```bash
@@ -110,155 +110,106 @@ pnpm run dev
 
 ### Method 2: Docker Deployment
 
-By default, **only the frontend container exposes a port to the host** (port `80`). The backend container communicates exclusively over Docker's internal network, enhancing security and isolating backend services.
+Mermaid Vault uses a unified single-container architecture for production: Express hosts both the REST API and the static SvelteKit frontend on a single port (default `8080`), eliminating cross-origin issues and reverse proxy overhead.
 
-#### Production Mode (Full-Stack)
+#### Production Mode (Single-Container Full-Stack)
+
 ```bash
-# One-time: create the production env file from the template and edit it
-cp .env.example .env.prod
+# One-time: copy environment template
+cp .env.example .env
 
-# Start frontend and backend services with persistent storage
-docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml up -d
+# Start the unified container (Express + SvelteKit static build + SQLite)
+docker compose up -d
 
 # View service logs
-docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml logs -f
+docker compose logs -f
 ```
 
-The Compose files follow a base + override scheme:
+The editor is accessible at `http://localhost:8080` (or `http://<host-ip>:${PORT}`).
 
-| File | Purpose | Committed to Git |
-|---|---|---|
-| `compose.yaml` | Common base for all stacks | Yes |
-| `compose.override.yaml` | Development overrides (source mounts, hot reload); merged automatically by `docker compose` | Yes |
-| `compose.prod.yaml` | Production overrides (production names, port `80`, health-gated startup); **not committed** — created per deployment | No |
-| `compose.ghcr.yaml` | Pre-built GHCR image overrides (production layout without a local build) | Yes |
-
-Since `compose.prod.yaml` stays out of Git, recreate it on the deployment host from this template:
-
-```yaml
-# compose.prod.yaml
-services:
-  backend:
-    image: mermaid-vault-backend:prod
-    container_name: mermaid-vault-backend
-    environment:
-      - NODE_ENV=production
-      - CORS_ORIGIN=${CORS_ORIGIN:-}
-      - MCP_ENABLED=${MCP_ENABLED:-true}
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
-
-  frontend:
-    image: mermaid-vault-frontend:prod
-    container_name: mermaid-vault-frontend
-    ports:
-      - "${APP_FRONTEND_PORT:-80}:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-    environment:
-      - BACKEND_UPSTREAM=${BACKEND_UPSTREAM:-http://backend:8080}
-      - API_BASE_URL=${API_BASE_URL:-}
-```
-The editor will be accessible at `http://localhost` (or `http://<host-ip>` with `APP_FRONTEND_PORT`), so it works out of the box for LAN access. The frontend Nginx proxies `/api/*` to the backend container (`BACKEND_UPSTREAM`, default `http://backend:8080`) — no extra configuration is needed.
-
-**Behind a reverse proxy**: point your Nginx/Caddy/Traefik at the frontend's exposed port and forward normally (e.g. `proxy_pass http://127.0.0.1:<APP_FRONTEND_PORT>;`). Everything is same-origin, so no CORS configuration is required on either side.
+**Behind a reverse proxy**: point your Nginx/Caddy/Traefik at port 8080 (e.g. `proxy_pass http://127.0.0.1:8080;`). Since the frontend and API are served from the same origin, no CORS configuration is required.
 
 #### Development Mode (with Source Mount & Hot Reload)
-```bash
-# One-time: create the dev env file from the template
-cp .env.example .env.dev
 
-docker compose --env-file .env.dev up
+In development, the stack splits into separate hot-reloading containers (Vite dev server + Express backend with nodemon/tsx):
+
+```bash
+# Start development stack via pnpm script
+pnpm dev
+
+# Or directly with Docker Compose
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+# View dev logs
+pnpm dev:logs
+
+# Stop dev stack
+pnpm dev:down
 ```
-The dev stack (`compose.yaml` + `compose.override.yaml`) reads `.env.dev` (not committed, created from the template), fully isolated from the production `.env.prod`.
+
+The frontend Vite dev server runs at `http://localhost:8081` with hot module replacement (HMR), proxying `/api` requests to the backend container at `http://localhost:8080`.
+
+#### Testing in Docker
+
+Run the full automated test suite inside an isolated container:
+
+```bash
+pnpm test
+# Or: docker compose -f docker-compose.yml -f docker-compose.test.yml run --build --rm app-test
+```
+
+#### Monorepo Workflow Scripts (`package.json`)
+
+| Command | Description |
+|---|---|
+| `pnpm dev` | Start development containers (`backend` + `frontend`) in background |
+| `pnpm dev:logs` | Stream logs from development containers |
+| `pnpm dev:down` | Stop development containers |
+| `pnpm dev:reset` | Reset containers, rerun migrations, and restart dev stack |
+| `pnpm migrate` | Run database migrations via one-off container |
+| `pnpm test` | Run automated test suite inside Docker container |
+| `pnpm build:image` | Build the single production Docker image (`mermaid-vault:local`) |
+| `pnpm build:test` | Build the test target Docker image |
+| `pnpm clean` | Stop containers and remove volumes |
+| `pnpm clean:dev:port` | Read `.env` and automatically kill processes holding dev ports (8081, 8080, 9229, etc.) |
+| `pnpm shell` | Open a shell inside the running backend container |
 
 #### Pre-Built Images (GHCR)
 
-Images are published to GitHub Container Registry (`ghcr.io`):
+Unified multi-arch images are published to GitHub Container Registry (`ghcr.io`):
+`ghcr.io/geeksquirrel/mermaid-vault:latest`
 
-- **Frontend Image**: `ghcr.io/geeksquirrel/mermaid-vault-frontend`
-- **Backend Image**: `ghcr.io/geeksquirrel/mermaid-vault-backend`
-
-| Channel | Trigger | Tags | Platforms |
-|---|---|---|---|
-| **Dev** | Manual (**Actions** → **Publish Dev Docker Images to GHCR** → **Run workflow**) | `dev`, commit SHA, optional custom tag | `linux/amd64` by default; `linux/arm64` can be added via the `platforms` input |
-| **Release** | Automatic, on pushing a `v*` tag (e.g. `v2.1.0`) | `X.Y.Z`, `X.Y`, `latest` | `linux/amd64`, `linux/arm64` |
-
-To cut a release, push a version tag and the multi-arch images build automatically:
+To run using the pre-built image, `docker-compose.yml` pulls directly from GHCR by default:
 
 ```bash
-git tag v2.1.0
-git push origin v2.1.0
+cp .env.example .env
+docker compose pull
+docker compose up -d
 ```
-
-#### Running the Pre-Built Images with Compose
-
-Skip the local build entirely: the committed `compose.ghcr.yaml` swaps the base stack's build definitions for the published GHCR images while keeping the production layout (frontend-only port, health-gated startup):
-
-```bash
-# One-time: create the env file, optionally pin the image channel/version
-cp .env.example .env.prod
-
-# Start from pre-built images (pulls ghcr.io/geeksquirrel/mermaid-vault-{frontend,backend})
-docker compose --env-file .env.prod -f compose.yaml -f compose.ghcr.yaml up -d
-
-# Later: update to newer images
-docker compose --env-file .env.prod -f compose.yaml -f compose.ghcr.yaml pull
-docker compose --env-file .env.prod -f compose.yaml -f compose.ghcr.yaml up -d
-```
-
-Set `MERMAID_IMAGE_TAG` in `.env.prod` to pick the tag: `latest` (default, release channel), a concrete version such as `2.1.0`, or `dev` for the dev channel. Until the first `v*` release tag is pushed, only the `dev` channel exists — use `MERMAID_IMAGE_TAG=dev`. Requires Docker Compose v2.24+ (the override uses the `build: !reset null` tag).
 
 ---
 
-## Deployment Modes & Configuration
+## Production Environment Variables & Configuration
 
-You can easily select one of three deployment modes via the `API_BASE_URL` environment variable:
+In production, frontend and backend run unified in a single container (with Express serving both the REST API and the frontend SPA). Therefore, production deployments only require a single environment variable, **`BASE_URL`**:
 
-| Mode | `API_BASE_URL` Setting | Description |
-|---|---|---|
-| **1. Same-Origin Internal Proxy (Default)** | Leave empty / unset | Frontend uses relative path `/api`, proxied by frontend Nginx directly to backend container. No CORS required, single exposed port. |
-| **2. Shared Domain / Gateway** | `API_BASE_URL=https://example.com/api` | Frontend directly requests this absolute URL, suitable for unified reverse proxy or gateway configurations. |
-| **3. Standalone API Domain (CORS)** | `API_BASE_URL=https://api.example.com` | Frontend sends cross-origin requests to independent backend domain. Set `CORS_ORIGIN` on the backend to the frontend origin. Backend supports both `/api/diagrams` and `/diagrams`. |
-
----
-
-## Environment Variables
-
-Copy `.env.example` to `.env.dev` (development) and/or `.env.prod` (production), then edit as needed:
-
-| Variable | Target | Default | Description |
+| Variable | Scope | Default | Description |
 |---|---|---|---|
-| `APP_FRONTEND_PORT` | Frontend | `80` (prod) / `3000` (dev) | Host port mapped to frontend container (replaces `FRONTEND_PORT`). |
-| `API_BASE_URL` | Frontend | *(Empty)* | Runtime API base URL. Empty uses internal Nginx reverse proxy. |
-| `BACKEND_UPSTREAM` | Frontend | `http://backend:8080` | Backend origin the frontend Nginx proxies `/api/` to. Change it when the backend is not in the same Docker compose network. |
-| `CORS_ORIGIN` | Backend *(Optional)* | `*` | Comma-separated origin whitelist, e.g. `https://example.com,https://app.example.com`. Only relevant for cross-origin API access (Mode 3). |
-| `MCP_ENABLED` | Backend *(Optional)* | `true` | Set to `false` to remove the `/api/mcp` MCP endpoint for AI agents (see [docs/mcp.md](docs/mcp.md)). |
-| `MERMAID_IMAGE_TAG` | Pre-built images *(Optional)* | `latest` | Image tag used by `compose.ghcr.yaml`: `latest`, a version (e.g. `2.1.0`), or `dev`. |
-| `APP_BACKEND_PORT` | Backend *(Optional)* | *(Unset)* | Optional host port mapping for backend debugging (e.g. `8080`). Only the dev stack exposes the backend; the production stack keeps it internal. |
+| `BASE_URL` | Production container | *(Empty)* | Public base URL of the unified application (e.g. `https://mermaid.example.com` or `http://localhost:8080`). Used for generating MCP view/edit links and client runtime API routing. Defaults to browser same-origin relative `/api` when left empty. |
+| `PORT` | Host port | `8080` | Port mapped to the host machine. |
+| `TAG` | Image tag | `latest` | GHCR image tag. |
 
-`PORT`, `DB_PATH` and `NODE_ENV` are set by the compose files themselves (`8080`, `/app/data/mermaid.db`, and development/production per stack) — no need to put them in `.env.*`.
+Development optional configurations (`docker-compose.dev.yml`):
+| Variable | Scope | Default | Description |
+|---|---|---|---|
+| `FRONTEND_PORT` | Dev frontend | `8081` | Port mapped for the Vite dev server. |
+| `BACKEND_PORT` | Dev backend | `8080` | Node.js Express backend port. |
+| `DEBUG_PORT` | Debug port | `9229` | Node.js Inspector debug port. |
 
-`MERMAID_API_PROXY_TARGET` (dev only) overrides the Vite dev-proxy target for `/api`, defaulting to `http://localhost:8080` locally; the dev compose sets it to `http://backend:8080`.
-
-Example `.env.prod`:
+Example `.env`:
 ```env
-# Frontend Service Configuration
-APP_FRONTEND_PORT=80
-API_BASE_URL=
-# Optional: override the backend origin used by the frontend Nginx proxy
-# BACKEND_UPSTREAM=http://backend:8080
-
-# Optional: restrict cross-origin API access (comma-separated whitelist)
-# CORS_ORIGIN=https://example.com
-
-# Optional: set to false to remove the /api/mcp MCP endpoint
-# MCP_ENABLED=true
+PORT=8080
+BASE_URL=https://mermaid.example.com
 ```
 
 ---

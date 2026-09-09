@@ -13,7 +13,12 @@ import {
   mermaidDistPath,
   renderPageHtml,
 } from "./util/renderer.js";
+import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const publicDir = path.join(__dirname, "public");
 
 dotenv.config();
 
@@ -85,6 +90,41 @@ app.get(RENDER_PAGE_ROUTE, (_req, res) => {
   res.type("html").send(renderPageHtml());
 });
 app.use(RENDER_ASSETS_ROUTE, express.static(mermaidDistPath()));
+
+// Static frontend hosting (Express hosts SPA in production when publicDir exists)
+if (fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+
+  // Dynamic runtime frontend configuration
+  app.get("/config.js", (_req, res) => {
+    const apiBaseUrl =
+      process.env.API_BASE_URL ||
+      (process.env.BASE_URL ? `${process.env.BASE_URL.replace(/\/+$/, "")}/api` : "");
+    res
+      .type("application/javascript")
+      .send(`window.APP_CONFIG = { apiBaseUrl: ${JSON.stringify(apiBaseUrl)} };`);
+  });
+
+  // SPA fallback for non-API GET routes (send index.html for client-side routing)
+  app.use((req, res, next) => {
+    if (req.method !== "GET") {
+      return next();
+    }
+    if (
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/health") ||
+      req.path === RENDER_PAGE_ROUTE ||
+      req.path.startsWith(RENDER_ASSETS_ROUTE)
+    ) {
+      return next();
+    }
+    const indexPath = path.join(publicDir, "index.html");
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+    next();
+  });
+}
 
 // 404 handler
 app.use((req, res) => {

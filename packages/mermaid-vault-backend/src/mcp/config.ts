@@ -10,7 +10,7 @@ export interface McpConfig {
   frontendBaseUrl: string;
 }
 
-export const DEFAULT_FRONTEND_BASE_URL = "http://localhost:3000";
+export const DEFAULT_FRONTEND_BASE_URL = "http://localhost:8081";
 
 const stripTrailingSlash = (url: string): string => url.replace(/\/+$/, "");
 
@@ -22,11 +22,16 @@ const stripTrailingSlash = (url: string): string => url.replace(/\/+$/, "");
  *   endpoint passes its own listening address.
  */
 export const resolveMcpConfig = (fallbackApiBaseUrl: string): McpConfig => {
+  const baseUrl = process.env.BASE_URL?.trim();
   const apiBaseUrl = process.env.MERMAID_VAULT_URL?.trim()
     ? stripTrailingSlash(process.env.MERMAID_VAULT_URL.trim())
-    : stripTrailingSlash(fallbackApiBaseUrl);
+    : baseUrl
+      ? `${stripTrailingSlash(baseUrl)}/api`
+      : stripTrailingSlash(fallbackApiBaseUrl);
   const frontendBaseUrl = process.env.MERMAID_VAULT_FRONTEND_URL?.trim()
     ? stripTrailingSlash(process.env.MERMAID_VAULT_FRONTEND_URL.trim())
-    : DEFAULT_FRONTEND_BASE_URL;
+    : baseUrl
+      ? stripTrailingSlash(baseUrl)
+      : DEFAULT_FRONTEND_BASE_URL;
   return { apiBaseUrl, frontendBaseUrl };
 };
