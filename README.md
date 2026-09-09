@@ -56,6 +56,14 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
   - Real-time debounced save (1.5s) on diagram code or title edits.
   - Save status indicators: *Saving...*, *Saved*, or *Save failed (Click to retry)*.
   - Dynamic URL synchronization without page reload.
+- **Installable as a Desktop / Mobile App (PWA)**:
+  - Ships a fixed web app manifest and an offline-capable service worker, so
+    browsers offer "Install app" (Chrome/Edge address bar) and mobile
+    "Add to Home Screen" — the app then launches in a standalone window like a
+    native app.
+  - Pages load network-first with a cached offline fallback, hashed build
+    assets use stale-while-revalidate, and `/api` requests are never cached,
+    so diagram data always stays fresh.
 - **MCP Server for AI Agents**:
   - The backend wraps its REST API as Model Context Protocol tools (stdio +
     streamable HTTP at `/api/mcp`) so AI agents can save, organize, render and
@@ -147,7 +155,7 @@ pnpm dev:logs
 pnpm dev:down
 ```
 
-The frontend Vite dev server runs at `http://localhost:8081` with hot module replacement (HMR), proxying `/api` requests to the backend container at `http://localhost:8080`.
+The frontend Vite dev server runs at `http://localhost:8081` with hot module replacement (HMR), proxying `/api` requests to the backend container at `http://localhost:8080`. Because API calls stay same-origin (relative `/api` through the Vite proxy), other devices on your LAN can test the dev stack by opening `http://<host-ip>:8081` — no absolute API URL or CORS configuration is needed.
 
 #### Testing in Docker
 

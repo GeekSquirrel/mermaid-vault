@@ -53,6 +53,12 @@
   - 编辑代码或修改标题时，防抖 1.5 秒自动同步保存至后端数据库。
   - 顶部保存状态清晰可见：*Saving...*、*Saved* 或 *Save failed (Click to retry)*。
   - 新建图表保存后自动将 `diagramId` 同步至浏览器地址栏（无须刷新页面）。
+- **可安装为桌面 / 移动应用 (PWA)**:
+  - 提供修复后的 Web App Manifest 与支持离线缓存的 Service Worker，
+    浏览器会出现“安装应用”入口（Chrome/Edge 地址栏），移动端支持
+    “添加到主屏幕”，安装后以独立窗口（standalone）像原生应用一样启动。
+  - 页面导航采用网络优先并回退到离线缓存，构建资源采用
+    stale-while-revalidate 策略；`/api` 请求永不缓存，图表数据始终最新。
 - **面向 AI Agent 的 MCP 服务器**:
   - 后端将自身 REST API 封装为 Model Context Protocol 工具（stdio +
     Streamable HTTP `/api/mcp`），让 AI Agent 能够代替用户保存、整理、
@@ -144,7 +150,7 @@ pnpm dev:logs
 pnpm dev:down
 ```
 
-前端 Vite 开发服务器运行于 `http://localhost:8081`，并自动将 `/api` 请求代理到后端容器（`http://localhost:8080`）。
+前端 Vite 开发服务器运行于 `http://localhost:8081`，并自动将 `/api` 请求代理到后端容器（`http://localhost:8080`）。由于 API 调用始终保持同源（相对路径 `/api` 经 Vite 代理转发），局域网内其他设备直接访问 `http://<主机IP>:8081` 即可参与测试，无需配置绝对 API 地址或 CORS。
 
 #### 容器化测试
 
