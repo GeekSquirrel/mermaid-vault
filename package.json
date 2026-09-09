@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.17.0",
+  "packageManager": "pnpm@12.3.4",
   "scripts": {
     "dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d",
     "dev:logs": "docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f",
@@ -26,7 +26,3 @@
     "@typescript-eslint/types": "8.60.1"
   }
 }
-
-
-
-

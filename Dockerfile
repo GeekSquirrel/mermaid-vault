@@ -5,8 +5,7 @@ FROM node:24-bookworm-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable pnpm && \
-    corepack prepare pnpm@10.34.5 --activate && \
-    corepack prepare pnpm@11.17.0 --activate
+    corepack prepare pnpm@12.3.4 --activate
 
 # Install build dependencies for native modules (better-sqlite3) and git
 RUN apt-get update && apt-get install -y --no-install-recommends \

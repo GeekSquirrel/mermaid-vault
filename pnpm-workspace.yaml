@@ -15,6 +15,7 @@ allowBuilds:
   better-sqlite3: true
   esbuild: true
   svelte-preprocess: true
+  deasync: true
 
 onlyBuiltDependencies:
   - better-sqlite3
