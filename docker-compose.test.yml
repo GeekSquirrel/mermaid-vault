@@ -1,9 +1,4 @@
 services:
-  # Disable production single-container in test compose
-  app:
-    profiles:
-      - prod
-
   app-test:
     build:
       context: .
