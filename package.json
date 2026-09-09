@@ -5,17 +5,20 @@
   "type": "module",
   "packageManager": "pnpm@12.3.4",
   "scripts": {
-    "dev": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d",
-    "dev:logs": "docker compose -f docker-compose.yml -f docker-compose.dev.yml logs -f",
-    "dev:down": "docker compose -f docker-compose.yml -f docker-compose.dev.yml down",
+    "dev": "docker compose -f docker-compose.dev.yml up -d",
+    "dev:rebuild": "pnpm run dev:down && pnpm run clean:dev:volumes && pnpm run dev --build",
+    "dev:logs": "docker compose -f docker-compose.dev.yml logs -f",
+    "dev:down": "docker compose -f docker-compose.dev.yml down",
     "dev:reset": "pnpm run dev:down && pnpm run migrate && pnpm run dev",
-    "migrate": "docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm --profile tools migrate",
-    "test": "docker compose -f docker-compose.yml -f docker-compose.test.yml run --build --rm app-test",
+    "migrate": "docker compose -f docker-compose.dev.yml run --rm --profile tools migrate",
+    "test": "docker compose -f docker-compose.test.yml run --build --rm app-test",
     "build:image": "docker build --target production -t mermaid-vault:local .",
     "build:test": "docker build --target backend-builder -t mermaid-vault-test:local .",
-    "clean": "docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v",
+    "clean": "docker compose -f docker-compose.dev.yml down -v",
     "clean:dev:port": "node scripts/clean-dev-ports.js",
-    "shell": "docker compose -f docker-compose.yml -f docker-compose.dev.yml exec backend /bin/sh"
+    "clean:dev:volumes": "docker volume rm -f mermaid-vault_backend-node-modules mermaid-vault_frontend-svelte-kit mermaid-vault_frontend-node-modules",
+    "shell:backend": "docker compose -f docker-compose.dev.yml exec backend /bin/sh",
+    "shell:frontend": "docker compose -f docker-compose.dev.yml exec frontend /bin/sh"
   },
   "overrides": {
     "svelte": "5.56.4",

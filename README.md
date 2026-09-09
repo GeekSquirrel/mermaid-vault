@@ -138,7 +138,7 @@ In development, the stack splits into separate hot-reloading containers (Vite de
 pnpm dev
 
 # Or directly with Docker Compose
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml up -d
 
 # View dev logs
 pnpm dev:logs
@@ -155,7 +155,7 @@ Run the full automated test suite inside an isolated container:
 
 ```bash
 pnpm test
-# Or: docker compose -f docker-compose.yml -f docker-compose.test.yml run --build --rm app-test
+# Or: docker compose -f docker-compose.test.yml run --build --rm app-test
 ```
 
 #### Monorepo Workflow Scripts (`package.json`)
@@ -165,6 +165,7 @@ pnpm test
 | `pnpm dev` | Start development containers (`backend` + `frontend`) in background |
 | `pnpm dev:logs` | Stream logs from development containers |
 | `pnpm dev:down` | Stop development containers |
+| `pnpm dev:rebuild` | Rebuild images, reset the dependency volumes, and restart the dev stack (use after changing dependencies) |
 | `pnpm dev:reset` | Reset containers, rerun migrations, and restart dev stack |
 | `pnpm migrate` | Run database migrations via one-off container |
 | `pnpm test` | Run automated test suite inside Docker container |
@@ -172,7 +173,9 @@ pnpm test
 | `pnpm build:test` | Build the test target Docker image |
 | `pnpm clean` | Stop containers and remove volumes |
 | `pnpm clean:dev:port` | Read `.env` and automatically kill processes holding dev ports (8081, 8080, 9229, etc.) |
-| `pnpm shell` | Open a shell inside the running backend container |
+| `pnpm clean:dev:volumes` | Remove the named dependency volumes (`node_modules`, `.svelte-kit`) so the next start re-seeds them from the image |
+| `pnpm shell:backend` | Open a shell inside the running backend container |
+| `pnpm shell:frontend` | Open a shell inside the running frontend container |
 
 #### Pre-Built Images (GHCR)
 

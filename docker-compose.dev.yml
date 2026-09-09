@@ -1,9 +1,4 @@
 services:
-  # Disable production single-container in development override
-  app:
-    profiles:
-      - prod
-
   backend:
     build:
       context: .
@@ -11,8 +6,7 @@ services:
     command: ["pnpm", "--filter", "mermaid-vault-backend", "dev"]
     volumes:
       - ./packages/mermaid-vault-backend:/app/packages/mermaid-vault-backend
-      - /app/packages/mermaid-vault-backend/node_modules
-      - /app/node_modules
+      - backend-node-modules:/app/packages/mermaid-vault-backend/node_modules
     ports:
       - "${BACKEND_PORT:-8080}:8080"
       - "${DEBUG_PORT:-9229}:9229"
@@ -31,8 +25,11 @@ services:
     command: ["pnpm", "--filter", "mermaid-vault-frontend", "dev"]
     volumes:
       - ./packages/mermaid-vault-frontend:/app/packages/mermaid-vault-frontend
-      - /app/packages/mermaid-vault-frontend/node_modules
-      - /app/node_modules
+      # Keep host and container SvelteKit artifacts separate: a host-side
+      # `svelte-kit sync` would otherwise overwrite the container's generated
+      # files with paths from the host pnpm store and break SSR module loads.
+      - frontend-svelte-kit:/app/packages/mermaid-vault-frontend/.svelte-kit
+      - frontend-node-modules:/app/packages/mermaid-vault-frontend/node_modules
     ports:
       - "${FRONTEND_PORT:-8081}:3000"
     environment:
@@ -48,8 +45,7 @@ services:
     command: ["pnpm", "--filter", "mermaid-vault-backend", "run", "migrate:up"]
     volumes:
       - ./packages/mermaid-vault-backend:/app/packages/mermaid-vault-backend
-      - /app/packages/mermaid-vault-backend/node_modules
-      - /app/node_modules
+      - backend-node-modules:/app/packages/mermaid-vault-backend/node_modules
     environment:
       - DATABASE_URL=./data/mermaid.db
       - DB_PATH=./data/mermaid.db
@@ -57,3 +53,8 @@ services:
       - backend
     profiles:
       - tools
+
+volumes:
+  backend-node-modules:
+  frontend-node-modules:
+  frontend-svelte-kit:

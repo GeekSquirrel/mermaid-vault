@@ -135,7 +135,7 @@ docker compose logs -f
 pnpm dev
 
 # 或直接使用 Docker Compose 启动
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml up -d
 
 # 查看开发日志
 pnpm dev:logs
@@ -152,7 +152,7 @@ pnpm dev:down
 
 ```bash
 pnpm test
-# 或：docker compose -f docker-compose.yml -f docker-compose.test.yml run --build --rm app-test
+# 或：docker compose -f docker-compose.test.yml run --build --rm app-test
 ```
 
 #### 工作区常用脚本 (`package.json`)
@@ -162,6 +162,7 @@ pnpm test
 | `pnpm dev` | 在后台启动开发容器（`backend` + `frontend`） |
 | `pnpm dev:logs` | 实时查看开发容器日志 |
 | `pnpm dev:down` | 停止并移除开发容器 |
+| `pnpm dev:rebuild` | 重建镜像、重置依赖卷并重启开发栈（依赖变更后使用） |
 | `pnpm dev:reset` | 重置容器、重新执行迁移并重启开发栈 |
 | `pnpm migrate` | 通过一次性容器执行数据库迁移 |
 | `pnpm test` | 在 Docker 容器中执行自动化测试套件 |
@@ -169,7 +170,9 @@ pnpm test
 | `pnpm build:test` | 本地构建测试镜像目标（`backend-builder`） |
 | `pnpm clean` | 停止容器并清理关联数据卷 |
 | `pnpm clean:dev:port` | 读取 `.env` 并自动清除开发环境端口占用（8081、8080、9229 等） |
-| `pnpm shell` | 进入运行中的后端容器 Shell 环境 |
+| `pnpm clean:dev:volumes` | 删除命名依赖卷（`node_modules`、`.svelte-kit`），下次启动时从镜像重新播种 |
+| `pnpm shell:backend` | 进入运行中的后端容器 Shell 环境 |
+| `pnpm shell:frontend` | 进入运行中的前端容器 Shell 环境 |
 
 #### 预构建镜像 (GHCR)
 
