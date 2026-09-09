@@ -5,6 +5,7 @@ import type {
   UpdateWorkspaceDto,
   UpdateWorkspaceOrderDto,
 } from "../types/index.js";
+import { stringParam } from "../util/params.js";
 
 function validateName(name: unknown): string | null {
   if (!name || typeof name !== "string" || !name.trim()) {
@@ -34,7 +35,7 @@ export class WorkspaceController {
 
   static getWorkspace(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,
@@ -89,7 +90,7 @@ export class WorkspaceController {
 
   static updateWorkspace(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,
@@ -179,7 +180,7 @@ export class WorkspaceController {
 
   static deleteWorkspace(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,

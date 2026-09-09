@@ -9,6 +9,7 @@ Mermaid Live Editor 的持久化存储后端服务，基于 **Node.js**、**Expr
 ## 功能特性
 
 - **RESTful API**：基于 Express 的标准 Mermaid 图表图表增删改查 (CRUD) 接口。
+- **面向 AI Agent 的 MCP 服务器**：将 REST API 封装为 Model Context Protocol 工具，支持 stdio 与 Streamable HTTP (`/api/mcp`) 双传输，并内置 Agent 使用说明——见 [MCP 服务器](#mcp-服务器ai-agent)。
 - **内置 SQLite 存储**：全自动数据库迁移与表初始化 (`migrations/001_init.sql`)，单文件零额外数据库依赖。
 - **跨域资源共享 (CORS)**：原生支持预检 `OPTIONS` 请求及自定义跨域来源。
 - **严格类型安全**：基于 TypeScript 严格模式 (`strict: true`)，并配备完整的 Vitest 自动化测试套件。
@@ -24,6 +25,9 @@ Mermaid Live Editor 的持久化存储后端服务，基于 **Node.js**、**Expr
 PORT=8080
 DB_PATH=./data/mermaid.db
 NODE_ENV=production
+MERMAID_VAULT_URL=http://127.0.0.1:8080
+MERMAID_VAULT_FRONTEND_URL=http://localhost:3000
+MCP_ENABLED=true
 ```
 
 | 变量名 | 默认值 | 说明 |
@@ -31,6 +35,9 @@ NODE_ENV=production
 | `PORT` | `8080` | 后端服务 HTTP 监听端口 |
 | `DB_PATH` | `./data/mermaid.db` | SQLite 数据库文件存储路径 |
 | `NODE_ENV` | `development` / `production` | 运行环境模式 |
+| `MERMAID_VAULT_URL` | `http://127.0.0.1:8080` | MCP 服务器调用的 REST API 基础地址（stdio 模式默认值；HTTP 端点默认指向自身监听地址） |
+| `MERMAID_VAULT_FRONTEND_URL` | `http://localhost:3000` | MCP 服务器构造查看/编辑分享链接时使用的前端基础地址 |
+| `MCP_ENABLED` | `true` | 设为 `false` 可从 API 服务器移除 `/api/mcp` MCP 端点 |
 
 ---
 
@@ -336,6 +343,31 @@ docker compose up -d
 `POST /api/diagrams` 与 `PUT /api/diagrams/:id` 接受可选的 `workspace_id` 字段，用于将图表
 归属到指定工作区。未知或缺失的工作区 id 会回退到最早的剩余工作区，确保图表总是归属到
 某个已存在的工作区。
+
+---
+
+## MCP 服务器（AI Agent）
+
+后端内置 MCP（Model Context Protocol）服务器，将 REST API 封装后供 AI Agent（ZCode、
+Claude Desktop、Cursor 等）使用。共暴露 15 个工具，覆盖图表增删改查、工作区管理、编辑器
+历史（只读）以及图表渲染/分享，并在连接时向 Agent 下发内置的使用说明。
+
+提供两种传输方式：
+
+- **stdio**——供以子进程方式拉起服务器的本地 Agent 使用：
+  ```bash
+  pnpm build
+  pnpm mcp        # 运行 dist/mcp/stdio.js（pnpm mcp:dev 为 tsx 免构建模式）
+  ```
+- **Streamable HTTP**——挂载在 API 服务器的 `/api/mcp` 路径（默认启用，`MCP_ENABLED=false`
+  可禁用）。先用 JSON-RPC `initialize` 请求完成初始化，之后的每个请求都带上返回的
+  `mcp-session-id` 请求头。
+
+面向 Agent 的完整文档——客户端配置、工具参考、工作流与故障排查——见
+[docs/mcp.zh.md](../docs/mcp.zh.md)（[English](../docs/mcp.md)）。
+
+> **安全提示**：MCP 端点与其封装的 REST API 一样没有鉴权。当后端暴露在 localhost 之外时，
+> 请通过支持鉴权的反向代理保护该端点，或使用 `MCP_ENABLED=false` 禁用它。
 
 ---
 

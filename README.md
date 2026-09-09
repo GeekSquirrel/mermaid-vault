@@ -56,6 +56,12 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
   - Real-time debounced save (1.5s) on diagram code or title edits.
   - Save status indicators: *Saving...*, *Saved*, or *Save failed (Click to retry)*.
   - Dynamic URL synchronization without page reload.
+- **MCP Server for AI Agents**:
+  - The backend wraps its REST API as Model Context Protocol tools (stdio +
+    streamable HTTP at `/api/mcp`) so AI agents can save, organize, render and
+    share diagrams on the user's behalf.
+  - Ships with built-in agent usage instructions; see
+    [docs/mcp.md](docs/mcp.md) ([简体中文](docs/mcp.zh.md)).
 - **Full-Stack Docker Compose Orchestration**:
   - One-click production deployment for both frontend and backend with persistent data volumes.
   - Hot-reloading development compose configuration.
@@ -108,11 +114,53 @@ By default, **only the frontend container exposes a port to the host** (port `80
 
 #### Production Mode (Full-Stack)
 ```bash
-# Start frontend and backend services with persistent volume
-docker compose up -d
+# One-time: create the production env file from the template and edit it
+cp .env.example .env.prod
+
+# Start frontend and backend services with persistent storage
+docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml up -d
 
 # View service logs
-docker compose logs -f
+docker compose --env-file .env.prod -f compose.yaml -f compose.prod.yaml logs -f
+```
+
+The Compose files follow a base + override scheme:
+
+| File | Purpose | Committed to Git |
+|---|---|---|
+| `compose.yaml` | Common base for all stacks | Yes |
+| `compose.override.yaml` | Development overrides (source mounts, hot reload); merged automatically by `docker compose` | Yes |
+| `compose.prod.yaml` | Production overrides (production names, port `80`, health-gated startup); **not committed** — created per deployment | No |
+| `compose.ghcr.yaml` | Pre-built GHCR image overrides (production layout without a local build) | Yes |
+
+Since `compose.prod.yaml` stays out of Git, recreate it on the deployment host from this template:
+
+```yaml
+# compose.prod.yaml
+services:
+  backend:
+    container_name: mermaid-vault-backend
+    environment:
+      - NODE_ENV=production
+      - CORS_ORIGIN=${CORS_ORIGIN:-}
+      - MCP_ENABLED=${MCP_ENABLED:-true}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  frontend:
+    container_name: mermaid-vault-frontend
+    ports:
+      - "${APP_FRONTEND_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - BACKEND_UPSTREAM=${BACKEND_UPSTREAM:-http://backend:8080}
+      - API_BASE_URL=${API_BASE_URL:-}
 ```
 The editor will be accessible at `http://localhost` (or `http://<host-ip>` with `APP_FRONTEND_PORT`), so it works out of the box for LAN access. The frontend Nginx proxies `/api/*` to the backend container (`BACKEND_UPSTREAM`, default `http://backend:8080`) — no extra configuration is needed.
 
@@ -120,8 +168,12 @@ The editor will be accessible at `http://localhost` (or `http://<host-ip>` with 
 
 #### Development Mode (with Source Mount & Hot Reload)
 ```bash
-docker compose -f docker-compose.dev.yml up
+# One-time: create the dev env file from the template
+cp .env.example .env.dev
+
+docker compose --env-file .env.dev up
 ```
+The dev stack (`compose.yaml` + `compose.override.yaml`) reads `.env.dev` (not committed, created from the template), fully isolated from the production `.env.prod`.
 
 #### Pre-Built Images (GHCR)
 
@@ -142,6 +194,24 @@ git tag v2.1.0
 git push origin v2.1.0
 ```
 
+#### Running the Pre-Built Images with Compose
+
+Skip the local build entirely: the committed `compose.ghcr.yaml` swaps the base stack's build definitions for the published GHCR images while keeping the production layout (frontend-only port, health-gated startup):
+
+```bash
+# One-time: create the env file, optionally pin the image channel/version
+cp .env.example .env.prod
+
+# Start from pre-built images (pulls ghcr.io/geeksquirrel/mermaid-vault-{frontend,backend})
+docker compose --env-file .env.prod -f compose.yaml -f compose.ghcr.yaml up -d
+
+# Later: update to newer images
+docker compose --env-file .env.prod -f compose.yaml -f compose.ghcr.yaml pull
+docker compose --env-file .env.prod -f compose.yaml -f compose.ghcr.yaml up -d
+```
+
+Set `MERMAID_IMAGE_TAG` in `.env.prod` to pick the tag: `latest` (default, release channel), a concrete version such as `2.1.0`, or `dev` for the dev channel. Until the first `v*` release tag is pushed, only the `dev` channel exists — use `MERMAID_IMAGE_TAG=dev`. Requires Docker Compose v2.24+ (the override uses the `build: !reset null` tag).
+
 ---
 
 ## Deployment Modes & Configuration
@@ -158,22 +228,23 @@ You can easily select one of three deployment modes via the `API_BASE_URL` envir
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` or configure directly:
+Copy `.env.example` to `.env.dev` (development) and/or `.env.prod` (production), then edit as needed:
 
 | Variable | Target | Default | Description |
 |---|---|---|---|
-| `APP_FRONTEND_PORT` | Frontend | `80` | Host port mapped to frontend container (replaces `FRONTEND_PORT`). |
+| `APP_FRONTEND_PORT` | Frontend | `80` (prod) / `3000` (dev) | Host port mapped to frontend container (replaces `FRONTEND_PORT`). |
 | `API_BASE_URL` | Frontend | *(Empty)* | Runtime API base URL. Empty uses internal Nginx reverse proxy. |
-| `BACKEND_UPSTREAM` | Frontend X Backend origin the frontend Nginx proxies `/api/` to. Change it when the backend is not in the same Docker compose network. |
-| `PORT` | Backend | `8080` | Internal listening port inside the backend container. |
-| `DB_PATH` | Backend | `/app/data/mermaid.db` | SQLite database file path. |
-| `NODE_ENV` | Backend | `production` | Node.js execution environment. |
+| `BACKEND_UPSTREAM` | Frontend | `http://backend:8080` | Backend origin the frontend Nginx proxies `/api/` to. Change it when the backend is not in the same Docker compose network. |
 | `CORS_ORIGIN` | Backend *(Optional)* | `*` | Comma-separated origin whitelist, e.g. `https://example.com,https://app.example.com`. Only relevant for cross-origin API access (Mode 3). |
-| `APP_BACKEND_PORT` | Backend *(Optional)* | *(Unset)* | Optional host port mapping for backend debugging (e.g. `8080`). |
+| `MCP_ENABLED` | Backend *(Optional)* | `true` | Set to `false` to remove the `/api/mcp` MCP endpoint for AI agents (see [docs/mcp.md](docs/mcp.md)). |
+| `MERMAID_IMAGE_TAG` | Pre-built images *(Optional)* | `latest` | Image tag used by `compose.ghcr.yaml`: `latest`, a version (e.g. `2.1.0`), or `dev`. |
+| `APP_BACKEND_PORT` | Backend *(Optional)* | *(Unset)* | Optional host port mapping for backend debugging (e.g. `8080`). Only the dev stack exposes the backend; the production stack keeps it internal. |
+
+`PORT`, `DB_PATH` and `NODE_ENV` are set by the compose files themselves (`8080`, `/app/data/mermaid.db`, and development/production per stack) — no need to put them in `.env.*`.
 
 `MERMAID_API_PROXY_TARGET` (dev only) overrides the Vite dev-proxy target for `/api`, defaulting to `http://localhost:8080` locally; the dev compose sets it to `http://backend:8080`.
 
-Example `.env`:
+Example `.env.prod`:
 ```env
 # Frontend Service Configuration
 APP_FRONTEND_PORT=80
@@ -181,16 +252,11 @@ API_BASE_URL=
 # Optional: override the backend origin used by the frontend Nginx proxy
 # BACKEND_UPSTREAM=http://backend:8080
 
-# Backend Configuration (Internal container settings)
-PORT=8080
-DB_PATH=/app/data/mermaid.db
-NODE_ENV=production
-
 # Optional: restrict cross-origin API access (comma-separated whitelist)
 # CORS_ORIGIN=https://example.com
 
-# Optional: Host port mapping for backend debugging
-# APP_BACKEND_PORT=8080
+# Optional: set to false to remove the /api/mcp MCP endpoint
+# MCP_ENABLED=true
 ```
 
 ---
@@ -198,6 +264,7 @@ NODE_ENV=production
 ## Documentation Links
 
 - [Backend API Documentation (English)](mermaid-vault-backend/README.md) | [后端 API 文档 (中文)](mermaid-vault-backend/README.zh.md)
+- [MCP Server — AI Agent Guide (English)](docs/mcp.md) | [MCP 服务器 — AI Agent 使用指南 (中文)](docs/mcp.zh.md)
 - [Contributing Guidelines (English)](CONTRIBUTING.md) | [贡献指南 (中文)](CONTRIBUTING.zh.md)
 - [Development Roadmap](ROADMAP.md)
 

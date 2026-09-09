@@ -89,6 +89,16 @@ describe("Diagram Controller & API Integration Tests", () => {
     expect(missingCodeRes.body.success).toBe(false);
   });
 
+  it("should reject a request without a body with 400 (Express 5 req.body compatibility)", async () => {
+    // No .send() at all: express.json() never parses a body. Express 4 left
+    // req.body as {}, Express 5 leaves it undefined — either way the API must
+    // answer 400 INVALID_INPUT, not a 500 from destructuring undefined.
+    const res = await request(app).post("/api/diagrams");
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe("INVALID_INPUT");
+  });
+
   it("should return 404 for non-existent routes", async () => {
     const res = await request(app).get("/api/unknown-endpoint");
     expect(res.status).toBe(404);

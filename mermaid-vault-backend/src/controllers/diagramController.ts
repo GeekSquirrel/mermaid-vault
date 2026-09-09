@@ -3,6 +3,7 @@ import { DiagramModel } from "../models/DiagramModel.js";
 import { WorkspaceModel } from "../models/WorkspaceModel.js";
 import type { CreateDiagramDto, SavePreviewDto, UpdateDiagramDto } from "../types/index.js";
 import { parsePreviewTheme, validateSavePreviewBody } from "../util/preview.js";
+import { stringParam } from "../util/params.js";
 
 /** Returns an error message when the requested workspace does not exist; null otherwise. */
 function validateWorkspaceId(workspaceId: string | null | undefined): string | null {
@@ -33,7 +34,7 @@ export class DiagramController {
 
   static getDiagram(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,
@@ -98,7 +99,7 @@ export class DiagramController {
 
   static updateDiagram(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,
@@ -148,7 +149,7 @@ export class DiagramController {
 
   static deleteDiagram(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,
@@ -178,7 +179,7 @@ export class DiagramController {
 
   static getDiagramPreview(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,
@@ -224,7 +225,7 @@ export class DiagramController {
 
   static saveDiagramPreview(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,

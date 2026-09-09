@@ -6,6 +6,7 @@ import { historyRouter } from "./routes/history.js";
 import { diagramRouter } from "./routes/diagrams.js";
 import { workspaceRouter } from "./routes/workspaces.js";
 import { renderRouter } from "./routes/render.js";
+import { registerMcpHttp } from "./mcp/http.js";
 import {
   RENDER_ASSETS_ROUTE,
   RENDER_PAGE_ROUTE,
@@ -44,6 +45,16 @@ app.use(
 // Body parser (larger limit to accommodate preview SVG uploads)
 app.use(express.json({ limit: "5mb" }));
 
+// Express 5 compatibility: req.body is undefined (not {}) when no JSON body
+// was parsed. Default it back to {} so controllers keep rejecting missing
+// bodies with 400 INVALID_INPUT instead of crashing with a 500.
+app.use((req: express.Request, _res: express.Response, next: express.NextFunction) => {
+  if (req.body === undefined) {
+    req.body = {};
+  }
+  next();
+});
+
 // Health check endpoint (support both /health and /api/health)
 app.get(["/health", "/api/health"], (_req, res) => {
   res.status(200).json({ status: "ok" });
@@ -60,6 +71,12 @@ app.use(["/api/workspaces", "/workspaces"], workspaceRouter);
 
 // Mount diagram rendering routes (support both /api/render and /render)
 app.use(["/api/render", "/render"], renderRouter);
+
+// MCP (Model Context Protocol) endpoint over streamable HTTP, for remote AI
+// agents. Opt out with MCP_ENABLED=false. Must stay before the 404 handler.
+if (process.env.MCP_ENABLED !== "false") {
+  registerMcpHttp(app, `http://127.0.0.1:${PORT}`);
+}
 
 // Internal renderer page + mermaid ESM bundle, consumed by headless Chromium
 // during /api/render requests. Intentionally not under /api so the reverse
@@ -99,9 +116,15 @@ app.use(
   }
 );
 
-// Start listening if not running under test runner
+// Start listening if not running under test runner.
+// Express 5 passes listen errors (e.g. EADDRINUSE) to the callback instead of
+// throwing, so they must be handled here explicitly.
 if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
-  app.listen(PORT, () => {
+  app.listen(PORT, (error) => {
+    if (error) {
+      console.error(`Failed to listen on port ${PORT}:`, error);
+      process.exit(1);
+    }
     console.log(`Mermaid Vault Backend listening on http://localhost:${PORT}`);
   });
 }

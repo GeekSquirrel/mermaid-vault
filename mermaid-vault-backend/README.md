@@ -9,6 +9,7 @@ Persistent storage backend for Mermaid Live Editor, built with **Node.js**, **Ex
 ## Features
 
 - **RESTful API**: Standard CRUD operations for Mermaid diagrams with Express.
+- **MCP Server for AI Agents**: Wraps the REST API as Model Context Protocol tools over stdio and streamable HTTP (`/api/mcp`), with built-in agent usage instructions — see [MCP Server](#mcp-server-ai-agents).
 - **Embedded SQLite Storage**: Automatic database migrations (`migrations/001_init.sql`), zero external database dependencies.
 - **Cross-Origin Resource Sharing (CORS)**: Built-in support for preflight `OPTIONS` requests and configurable origins.
 - **Strict Type Safety**: Fully typed with TypeScript strict mode and automated Vitest test suite.
@@ -24,6 +25,9 @@ Create a `.env` file in `backend/` or copy from `.env.example`:
 PORT=8080
 DB_PATH=./data/mermaid.db
 NODE_ENV=production
+MERMAID_VAULT_URL=http://127.0.0.1:8080
+MERMAID_VAULT_FRONTEND_URL=http://localhost:3000
+MCP_ENABLED=true
 ```
 
 | Variable | Default | Description |
@@ -31,6 +35,9 @@ NODE_ENV=production
 | `PORT` | `8080` | HTTP port for the backend server |
 | `DB_PATH` | `./data/mermaid.db` | Path to the SQLite database file |
 | `NODE_ENV` | `development` / `production` | Environment mode |
+| `MERMAID_VAULT_URL` | `http://127.0.0.1:8080` | REST API base URL used by the MCP server (stdio default; the HTTP endpoint defaults to its own listener) |
+| `MERMAID_VAULT_FRONTEND_URL` | `http://localhost:3000` | Frontend base URL used by the MCP server to build view/edit share links |
+| `MCP_ENABLED` | `true` | Set to `false` to remove the `/api/mcp` MCP endpoint from the API server |
 
 ---
 
@@ -338,6 +345,33 @@ simply left empty when it has none).
 `POST /api/diagrams` and `PUT /api/diagrams/:id` accept an optional `workspace_id` field to assign
 a diagram to a workspace. Unknown or missing workspace ids fall back to the oldest remaining
 workspace, so a diagram always ends up in an existing workspace.
+
+---
+
+## MCP Server (AI Agents)
+
+The backend embeds an MCP (Model Context Protocol) server that wraps the REST API for AI agents
+(ZCode, Claude Desktop, Cursor, ...). It exposes 15 tools covering diagram CRUD, workspace
+management, editor history (read-only) and diagram rendering/sharing, plus built-in usage
+instructions agents receive on connect.
+
+Two transports are available:
+
+- **stdio** — for local agents that spawn the server as a subprocess:
+  ```bash
+  pnpm build
+  pnpm mcp        # runs dist/mcp/stdio.js (pnpm mcp:dev for tsx without build)
+  ```
+- **Streamable HTTP** — mounted on the API server at `/api/mcp` (enabled by default, opt out with
+  `MCP_ENABLED=false`). Initialize with a JSON-RPC `initialize` request, then send the returned
+  `mcp-session-id` header on every follow-up request.
+
+Full agent-facing documentation — client configurations, tool reference, workflows and
+troubleshooting — lives in [docs/mcp.md](../docs/mcp.md) ([简体中文](../docs/mcp.zh.md)).
+
+> **Security**: the MCP endpoint is unauthenticated, like the REST API it wraps. Protect it with
+> an authenticating reverse proxy when the backend is reachable from outside localhost, or disable
+> it with `MCP_ENABLED=false`.
 
 ---
 

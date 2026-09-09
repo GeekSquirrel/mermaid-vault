@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { HistoryModel } from "../models/HistoryModel.js";
 import type { CreateHistoryDto, SavePreviewDto, UpdateHistoryDto } from "../types/index.js";
 import { parsePreviewTheme, validateSavePreviewBody } from "../util/preview.js";
+import { stringParam } from "../util/params.js";
 
 export class HistoryController {
   static listHistory(req: Request, res: Response): void {
@@ -30,7 +31,7 @@ export class HistoryController {
 
   static getHistory(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,
@@ -100,7 +101,7 @@ export class HistoryController {
 
   static updateHistory(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,
@@ -141,7 +142,7 @@ export class HistoryController {
 
   static deleteHistory(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,
@@ -195,7 +196,7 @@ export class HistoryController {
 
   static getHistoryPreview(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,
@@ -241,7 +242,7 @@ export class HistoryController {
 
   static saveHistoryPreview(req: Request, res: Response): void {
     try {
-      const { id } = req.params;
+      const id = stringParam(req.params.id);
       if (!id) {
         res.status(400).json({
           success: false,

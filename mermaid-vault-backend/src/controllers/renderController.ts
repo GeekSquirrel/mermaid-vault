@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { inflate } from "pako";
+import { stringParam } from "../util/params.js";
 import {
   renderWithChromium,
   type RenderPayload,
@@ -62,7 +63,15 @@ export const getRenderSvg = async (
   res: Response
 ): Promise<void> => {
   try {
-    const payload = decodeState(req.params.state);
+    const state = stringParam(req.params.state);
+    if (!state) {
+      res.status(400).json({
+        success: false,
+        error: { code: "INVALID_INPUT", message: "Render state is required" },
+      });
+      return;
+    }
+    const payload = decodeState(state);
     const { svg } = await renderWithChromium(payload, { type: "svg" });
     res
       .status(200)
@@ -79,7 +88,15 @@ export const getRenderImage = async (
   res: Response
 ): Promise<void> => {
   try {
-    const payload = decodeState(req.params.state);
+    const state = stringParam(req.params.state);
+    if (!state) {
+      res.status(400).json({
+        success: false,
+        error: { code: "INVALID_INPUT", message: "Render state is required" },
+      });
+      return;
+    }
+    const payload = decodeState(state);
     const type = req.query.type === "svg" ? "svg" : "png";
     const scale = Number(req.query.scale) || undefined;
     const result = await renderWithChromium(payload, { type, scale });
