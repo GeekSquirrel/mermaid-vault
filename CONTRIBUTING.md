@@ -9,14 +9,14 @@ Thank you for contributing to Mermaid Live Editor with Persistent Storage! Pleas
 ## 1. Development & Git Workflow
 
 - **Branching**:
-  - The main repository manages the project root and `mermaid-vault-backend/`.
-  - The frontend is included as a Git submodule in `mermaid-vault-frontend/` pointing to your fork.
+  - The main repository manages the project root and `packages/mermaid-vault-backend/`.
+  - The frontend is included as a Git submodule in `packages/mermaid-vault-frontend/` pointing to your fork.
 - **Frontend Changes**:
-  - Make edits inside `mermaid-vault-frontend/`.
-  - Commit your changes inside `mermaid-vault-frontend/` on the `develop` branch.
-  - Return to the root repository and stage the updated submodule pointer (`git add mermaid-vault-frontend`).
+  - Make edits inside `packages/mermaid-vault-frontend/`.
+  - Commit your changes inside `packages/mermaid-vault-frontend/` on the `develop` branch.
+  - Return to the root repository and stage the updated submodule pointer (`git add packages/mermaid-vault-frontend`).
 - **Backend Changes**:
-  - Make edits directly inside `mermaid-vault-backend/` and commit from the root repository.
+  - Make edits directly inside `packages/mermaid-vault-backend/` and commit from the root repository.
 - **Commit Message Convention**:
   - Format: `<type>(<scope>): <subject>`
   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
@@ -29,7 +29,7 @@ Thank you for contributing to Mermaid Live Editor with Persistent Storage! Pleas
 
 All project documentation must be maintained in both **English** and **Simplified Chinese**:
 - Root documentation: `README.md` (English) ↔ `README.zh.md` (Chinese)
-- Backend documentation: `mermaid-vault-backend/README.md` (English) ↔ `mermaid-vault-backend/README.zh.md` (Chinese)
+- Backend documentation: `packages/mermaid-vault-backend/README.md` (English) ↔ `packages/mermaid-vault-backend/README.zh.md` (Chinese)
 - Contribution guidelines: `CONTRIBUTING.md` (English) ↔ `CONTRIBUTING.zh.md` (Chinese)
 
 Whenever you add, modify, or delete sections in any documentation file, you **must update both language versions simultaneously** to ensure parity.

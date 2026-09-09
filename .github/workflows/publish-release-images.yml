@@ -23,8 +23,8 @@ jobs:
     uses: ./.github/workflows/build-images.yml
     with:
       image-name: ghcr.io/${{ github.repository_owner }}/mermaid-vault-frontend
-      context: ./mermaid-vault-frontend
-      dockerfile: ./mermaid-vault-frontend/Dockerfile
+      context: ./packages/mermaid-vault-frontend
+      dockerfile: ./packages/mermaid-vault-frontend/Dockerfile
       target: mermaid
       platforms: linux/amd64,linux/arm64
       tags: |
@@ -32,15 +32,15 @@ jobs:
         type=semver,pattern={{major}}.{{minor}}
         type=raw,value=latest
       cache-scope: frontend
-    secrets: inherit
+      secrets: inherit
 
   backend:
     name: Build & Publish Backend
     uses: ./.github/workflows/build-images.yml
     with:
       image-name: ghcr.io/${{ github.repository_owner }}/mermaid-vault-backend
-      context: ./mermaid-vault-backend
-      dockerfile: ./mermaid-vault-backend/Dockerfile
+      context: ./packages/mermaid-vault-backend
+      dockerfile: ./packages/mermaid-vault-backend/Dockerfile
       target: runner
       platforms: linux/amd64,linux/arm64
       tags: |

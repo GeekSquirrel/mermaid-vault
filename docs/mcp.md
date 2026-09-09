@@ -8,7 +8,7 @@ Two transports are available:
 
 | Transport | Endpoint / command | Typical use |
 |---|---|---|
-| **stdio** | `pnpm mcp` (or `node dist/mcp/stdio.js`) in `mermaid-vault-backend/` | Local agents that spawn the server as a subprocess |
+| **stdio** | `pnpm mcp` (or `node dist/mcp/stdio.js`) in `packages/mermaid-vault-backend/` | Local agents that spawn the server as a subprocess |
 | **Streamable HTTP** | `http://<backend-host>:8080/api/mcp` | Remote agents, or agents that speak HTTP instead of spawning processes |
 
 Both transports expose the same 15 tools and the same usage instructions. Errors arrive as `isError` tool results with a vault error code (`NOT_FOUND`, `INVALID_INPUT`, `RENDER_UNAVAILABLE`, `CONNECTION_ERROR`, ...).
@@ -22,7 +22,7 @@ Both transports expose the same 15 tools and the same usage instructions. Errors
 The backend must be running first (the MCP server proxies it over HTTP):
 
 ```bash
-cd mermaid-vault-backend
+cd packages/mermaid-vault-backend
 pnpm dev            # API on :8080
 ```
 
@@ -35,7 +35,7 @@ Then register the MCP server with your client. Common configurations:
   "mcpServers": {
     "mermaid-vault": {
       "command": "node",
-      "args": ["/absolute/path/to/mermaid-vault-backend/dist/mcp/stdio.js"],
+      "args": ["/absolute/path/to/packages/mermaid-vault-backend/dist/mcp/stdio.js"],
       "env": {
         "MERMAID_VAULT_URL": "http://127.0.0.1:8080",
         "MERMAID_VAULT_FRONTEND_URL": "http://localhost:3000"
@@ -52,7 +52,7 @@ Then register the MCP server with your client. Common configurations:
   "mcpServers": {
     "mermaid-vault": {
       "command": "pnpm",
-      "args": ["--dir", "/absolute/path/to/mermaid-vault-backend", "mcp"],
+      "args": ["--dir", "/absolute/path/to/packages/mermaid-vault-backend", "mcp"],
       "env": {
         "MERMAID_VAULT_URL": "http://127.0.0.1:8080"
       }

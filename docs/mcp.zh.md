@@ -8,7 +8,7 @@ Mermaid Vault 后端内置了 **MCP（Model Context Protocol）服务器**，用
 
 | 传输方式 | 端点 / 命令 | 典型场景 |
 |---|---|---|
-| **stdio** | 在 `mermaid-vault-backend/` 下执行 `pnpm mcp`（或 `node dist/mcp/stdio.js`） | 以子进程方式拉起服务器的本地 Agent |
+| **stdio** | 在 `packages/mermaid-vault-backend/` 下执行 `pnpm mcp`（或 `node dist/mcp/stdio.js`） | 以子进程方式拉起服务器的本地 Agent |
 | **Streamable HTTP** | `http://<backend-host>:8080/api/mcp` | 远程 Agent，或通过 HTTP 而非子进程通信的 Agent |
 
 两种传输方式暴露相同的 15 个工具和相同的使用说明。错误以 `isError` 工具结果返回，并附带 Vault 错误码（`NOT_FOUND`、`INVALID_INPUT`、`RENDER_UNAVAILABLE`、`CONNECTION_ERROR` 等）。
@@ -22,7 +22,7 @@ Mermaid Vault 后端内置了 **MCP（Model Context Protocol）服务器**，用
 需要先启动后端（MCP 服务器通过 HTTP 代理它）：
 
 ```bash
-cd mermaid-vault-backend
+cd packages/mermaid-vault-backend
 pnpm dev            # API 监听 :8080
 ```
 
@@ -35,7 +35,7 @@ pnpm dev            # API 监听 :8080
   "mcpServers": {
     "mermaid-vault": {
       "command": "node",
-      "args": ["/绝对路径/mermaid-vault-backend/dist/mcp/stdio.js"],
+      "args": ["/绝对路径/packages/mermaid-vault-backend/dist/mcp/stdio.js"],
       "env": {
         "MERMAID_VAULT_URL": "http://127.0.0.1:8080",
         "MERMAID_VAULT_FRONTEND_URL": "http://localhost:3000"
@@ -52,7 +52,7 @@ pnpm dev            # API 监听 :8080
   "mcpServers": {
     "mermaid-vault": {
       "command": "pnpm",
-      "args": ["--dir", "/绝对路径/mermaid-vault-backend", "mcp"],
+      "args": ["--dir", "/绝对路径/packages/mermaid-vault-backend", "mcp"],
       "env": {
         "MERMAID_VAULT_URL": "http://127.0.0.1:8080"
       }

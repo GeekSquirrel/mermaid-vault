@@ -1,6 +1,5 @@
 packages:
-  - "mermaid-vault-backend"
-  - "mermaid-vault-frontend"
+  - "packages/*"
 
 overrides:
   svelte: "5.56.4"

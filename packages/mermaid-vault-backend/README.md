@@ -367,7 +367,7 @@ Two transports are available:
   `mcp-session-id` header on every follow-up request.
 
 Full agent-facing documentation — client configurations, tool reference, workflows and
-troubleshooting — lives in [docs/mcp.md](../docs/mcp.md) ([简体中文](../docs/mcp.zh.md)).
+troubleshooting — lives in [docs/mcp.md](../../docs/mcp.md) ([简体中文](../../docs/mcp.zh.md)).
 
 > **Security**: the MCP endpoint is unauthenticated, like the REST API it wraps. Protect it with
 > an authenticating reverse proxy when the backend is reachable from outside localhost, or disable

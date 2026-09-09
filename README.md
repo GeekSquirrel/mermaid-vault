@@ -8,8 +8,8 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 
 ## Architecture Overview
 
-- **Frontend (`mermaid-vault-frontend/`)**: Built with SvelteKit and TypeScript (official upstream submodule). Features a "My Diagrams" dashboard, automatic 1.5s debounced synchronization to backend storage, editable diagram titles, and visual save status indicators.
-- **Backend (`mermaid-vault-backend/`)**: Robust REST API powered by **Node.js (LTS)**, **Express**, and **`better-sqlite3`**. Includes automatic migration on startup, CORS headers, single-file SQLite database storage, and automated Vitest test suite.
+- **Frontend (`packages/mermaid-vault-frontend/`)**: Built with SvelteKit and TypeScript (official upstream submodule). Features a "My Diagrams" dashboard, automatic 1.5s debounced synchronization to backend storage, editable diagram titles, and visual save status indicators.
+- **Backend (`packages/mermaid-vault-backend/`)**: Robust REST API powered by **Node.js (LTS)**, **Express**, and **`better-sqlite3`**. Includes automatic migration on startup, CORS headers, single-file SQLite database storage, and automated Vitest test suite.
 
 ```
 +--------------------------+       HTTP REST API       +-------------------------+
@@ -85,15 +85,15 @@ This project extends the official [mermaid-live-editor](https://github.com/merma
 
 #### 1. Start the Backend API
 ```bash
-cd mermaid-vault-backend
+cd packages/mermaid-vault-backend
 pnpm install
 pnpm dev
 ```
-The backend API server starts at `http://localhost:8080`. On first run, it automatically initializes the SQLite database at `mermaid-vault-backend/data/mermaid.db`.
+The backend API server starts at `http://localhost:8080`. On first run, it automatically initializes the SQLite database at `packages/mermaid-vault-backend/data/mermaid.db`.
 
 #### 2. Start the Frontend Live Editor
 ```bash
-cd mermaid-vault-frontend
+cd packages/mermaid-vault-frontend
 pnpm install
 pnpm dev
 ```
@@ -139,6 +139,7 @@ Since `compose.prod.yaml` stays out of Git, recreate it on the deployment host f
 # compose.prod.yaml
 services:
   backend:
+    image: mermaid-vault-backend:prod
     container_name: mermaid-vault-backend
     environment:
       - NODE_ENV=production
@@ -152,6 +153,7 @@ services:
       start_period: 5s
 
   frontend:
+    image: mermaid-vault-frontend:prod
     container_name: mermaid-vault-frontend
     ports:
       - "${APP_FRONTEND_PORT:-80}:80"
@@ -263,7 +265,7 @@ API_BASE_URL=
 
 ## Documentation Links
 
-- [Backend API Documentation (English)](mermaid-vault-backend/README.md) | [后端 API 文档 (中文)](mermaid-vault-backend/README.zh.md)
+- [Backend API Documentation (English)](packages/mermaid-vault-backend/README.md) | [后端 API 文档 (中文)](packages/mermaid-vault-backend/README.zh.md)
 - [MCP Server — AI Agent Guide (English)](docs/mcp.md) | [MCP 服务器 — AI Agent 使用指南 (中文)](docs/mcp.zh.md)
 - [Contributing Guidelines (English)](CONTRIBUTING.md) | [贡献指南 (中文)](CONTRIBUTING.zh.md)
 - [Development Roadmap](ROADMAP.md)

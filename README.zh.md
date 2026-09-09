@@ -8,8 +8,8 @@
 
 ## 架构概览
 
-- **前端 (`mermaid-vault-frontend/`)**: 基于 SvelteKit 与 TypeScript（官方 Git 子模块）。包含“我的图表”管理面板、1.5 秒防抖自动云端同步、自定义图表标题编辑及可视化保存状态提示。
-- **后端 (`mermaid-vault-backend/`)**: 基于 **Node.js (LTS)**、**Express** 与 **`better-sqlite3`** 构建的稳健 REST API 服务，包含启动时自动数据库迁移、CORS 支持、单文件 SQLite 持久化存储及自动化 Vitest 测试套件。
+- **前端 (`packages/mermaid-vault-frontend/`)**: 基于 SvelteKit 与 TypeScript（官方 Git 子模块）。包含“我的图表”管理面板、1.5 秒防抖自动云端同步、自定义图表标题编辑及可视化保存状态提示。
+- **后端 (`packages/mermaid-vault-backend/`)**: 基于 **Node.js (LTS)**、**Express** 与 **`better-sqlite3`** 构建的稳健 REST API 服务，包含启动时自动数据库迁移、CORS 支持、单文件 SQLite 持久化存储及自动化 Vitest 测试套件。
 
 ```
 +--------------------------+       HTTP REST API       +-------------------------+
@@ -82,7 +82,7 @@
 
 #### 1. 启动后端 API 服务
 ```bash
-cd mermaid-vault-backend
+cd packages/mermaid-vault-backend
 pnpm install
 pnpm dev
 ```
@@ -90,7 +90,7 @@ pnpm dev
 
 #### 2. 启动前端编辑器
 ```bash
-cd mermaid-vault-frontend
+cd packages/mermaid-vault-frontend
 pnpm install
 pnpm dev
 ```
@@ -136,6 +136,7 @@ Compose 文件采用「基准 + 覆盖」的组织方式：
 # compose.prod.yaml
 services:
   backend:
+    image: mermaid-vault-backend:prod
     container_name: mermaid-vault-backend
     environment:
       - NODE_ENV=production
@@ -149,6 +150,7 @@ services:
       start_period: 5s
 
   frontend:
+    image: mermaid-vault-frontend:prod
     container_name: mermaid-vault-frontend
     ports:
       - "${APP_FRONTEND_PORT:-80}:80"
@@ -260,7 +262,7 @@ API_BASE_URL=
 
 ## 文档导航
 
-- [后端 API 文档 (中文)](mermaid-vault-backend/README.zh.md) | [Backend API Documentation (English)](mermaid-vault-backend/README.md)
+- [后端 API 文档 (中文)](packages/mermaid-vault-backend/README.zh.md) | [Backend API Documentation (English)](packages/mermaid-vault-backend/README.md)
 - [MCP 服务器 — AI Agent 使用指南 (中文)](docs/mcp.zh.md) | [MCP Server — AI Agent Guide (English)](docs/mcp.md)
 - [贡献指南 (中文)](CONTRIBUTING.zh.md) | [Contributing Guidelines (English)](CONTRIBUTING.md)
 - [开发路线图 (ROADMAP.md)](ROADMAP.md)

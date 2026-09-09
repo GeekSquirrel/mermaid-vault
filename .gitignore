@@ -1,10 +1,15 @@
 node_modules/
 .env
 .env.local
+.env.dev
+.env.prod
+
+# Production compose overrides are deployment-specific (see compose.yaml header)
+compose.prod.yaml
 .DS_Store
-mermaid-vault-backend/data/*.db
-mermaid-vault-backend/dist/
-mermaid-vault-frontend/docs/
+packages/mermaid-vault-backend/data/*.db
+packages/mermaid-vault-backend/dist/
+packages/mermaid-vault-frontend/docs/
 
 
 # ZCode session artifacts

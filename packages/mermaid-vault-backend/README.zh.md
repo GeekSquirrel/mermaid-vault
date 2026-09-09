@@ -364,7 +364,7 @@ Claude Desktop、Cursor 等）使用。共暴露 15 个工具，覆盖图表增�
   `mcp-session-id` 请求头。
 
 面向 Agent 的完整文档——客户端配置、工具参考、工作流与故障排查——见
-[docs/mcp.zh.md](../docs/mcp.zh.md)（[English](../docs/mcp.md)）。
+[docs/mcp.zh.md](../../docs/mcp.zh.md)（[English](../../docs/mcp.md)）。
 
 > **安全提示**：MCP 端点与其封装的 REST API 一样没有鉴权。当后端暴露在 localhost 之外时，
 > 请通过支持鉴权的反向代理保护该端点，或使用 `MCP_ENABLED=false` 禁用它。
