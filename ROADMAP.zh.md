@@ -47,7 +47,7 @@ timeline
 | **前端** | SvelteKit 2 + Svelte 5 + TailwindCSS + Monaco Editor + Vite | `packages/mermaid-vault-frontend/` |
 | **后端 API** | Node.js 22 LTS + Express + TypeScript + better-sqlite3 | `packages/mermaid-vault-backend/` |
 | **数据库** | SQLite（启用 WAL 模式与自动迁移） | `packages/mermaid-vault-backend/data/mermaid.db` |
-| **Monorepo 管理** | pnpm 11+ Workspaces | 根目录 `pnpm-workspace.yaml` |
+| **Monorepo 管理** | pnpm 12+ Workspaces | 根目录 `pnpm-workspace.yaml` |
 | **容器编排** | Docker Compose（多阶段 Node.js + Nginx Alpine） | `compose.yaml` |
 | **自动化测试** | Vitest + Supertest | `packages/mermaid-vault-backend/src/**/*.test.ts` |
 

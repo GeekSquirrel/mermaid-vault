@@ -2,6 +2,8 @@
 
 [English](README.md) | 简体中文
 
+[![CI](https://github.com/GeekSquirrel/mermaid-vault/actions/workflows/ci.yml/badge.svg)](https://github.com/GeekSquirrel/mermaid-vault/actions/workflows/ci.yml)
+
 本项目为官方 [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) 增加了基于 **Node.js (Express + better-sqlite3)** 的云端持久化存储后端，实现个人图表的多端同步、持久化管理与实时防抖自动保存。
 
 ---
@@ -217,6 +219,22 @@ docker compose up -d
 PORT=8080
 BASE_URL=https://mermaid.example.com
 ```
+
+---
+
+## 持续集成（CI）
+
+项目使用 GitHub Actions 进行持续集成。[CI workflow](.github/workflows/ci.yml) 会在每次推送到 `main` 分支以及每个 Pull Request 时自动运行（也可以在 *Actions* 页面手动触发）：
+
+1. **测试**：后端测试套件通过 Docker Compose 运行（`pnpm test`：冻结锁文件安装依赖、`tsc` 类型检查、Vitest），前端运行 svelte-check 类型检查与 vitest 单元测试套件（`pnpm run test:frontend`），两者均在 Docker 中运行，与本地执行完全一致。
+2. **生产镜像构建**：每次运行都会完整构建单容器生产镜像，确保前端构建或 Dockerfile 的破坏性变更在合并前就能被发现。push 事件还会将镜像发布到 GHCR（`ghcr.io/geeksquirrel/mermaid-vault`），标签规则如下：
+
+| 触发方式 | 镜像标签 |
+|---|---|
+| 推送到 `main` | `<short-commit-sha>`（不可变）与 `main`（滚动标签，始终指向最新提交） |
+| 推送版本标签（如 `v1.2.3`） | `v1.2.3`、`1.2.3` 与 `latest`（滚动标签，始终指向最新发布版本） |
+
+部署特定构建时，在 `.env` 中设置 `TAG`（如 `TAG=1.2.3`、`TAG=main` 或短 commit SHA），然后运行 `docker compose pull && docker compose up -d`。
 
 ---
 

@@ -2,6 +2,8 @@
 
 [简体中文](README.zh.md) | English
 
+[![CI](https://github.com/GeekSquirrel/mermaid-vault/actions/workflows/ci.yml/badge.svg)](https://github.com/GeekSquirrel/mermaid-vault/actions/workflows/ci.yml)
+
 This project extends the official [mermaid-live-editor](https://github.com/mermaid-js/mermaid-live-editor) with a robust, persistent **Node.js (Express + better-sqlite3)** backend. It enables seamless cloud-persisted storage, cross-device editing, diagram management, and automated debounced synchronization.
 
 ---
@@ -222,6 +224,22 @@ Example `.env`:
 PORT=8080
 BASE_URL=https://mermaid.example.com
 ```
+
+---
+
+## Continuous Integration
+
+The project uses GitHub Actions for CI. The [CI workflow](.github/workflows/ci.yml) runs automatically on every push to `main` and on every pull request (and can also be triggered manually from the *Actions* tab):
+
+1. **Tests**: the backend suite runs through Docker Compose (`pnpm test`: frozen-lockfile install, `tsc` type-check, Vitest), and the frontend runs svelte-check type-checking plus its vitest unit suite (`pnpm run test:frontend`). Both run in Docker, exactly like local execution.
+2. **Production image build**: the full single-container production image is built on every run, so frontend build or Dockerfile breakage is caught before merging. Push events also publish it to GHCR (`ghcr.io/geeksquirrel/mermaid-vault`) with the following tags:
+
+| Trigger | Image tags |
+|---|---|
+| Push to `main` | `<short-commit-sha>` (immutable) and `main` (rolling, always the newest commit) |
+| Push a version tag (e.g. `v1.2.3`) | `v1.2.3`, `1.2.3` and `latest` (rolling, always the newest release) |
+
+To deploy a specific build, set `TAG` in `.env` (e.g. `TAG=1.2.3`, `TAG=main` or a short commit SHA) and run `docker compose pull && docker compose up -d`.
 
 ---
 
