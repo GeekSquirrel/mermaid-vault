@@ -1,8 +1,20 @@
 services:
-  app-test:
+  backend-test:
     build:
       context: .
       target: backend-builder
     command: ["pnpm", "--filter", "mermaid-vault-backend", "test"]
+    environment:
+      - NODE_ENV=test
+
+  # Frontend checks in the frontend-builder stage, so the full Vite build is
+  # validated too: svelte-check type-check, then the vitest unit suite
+  # (test:unit is watch mode, so vitest is invoked with `run` directly;
+  # Playwright e2e is upstream-only and stays out of CI)
+  frontend-test:
+    build:
+      context: .
+      target: frontend-builder
+    command: ["sh", "-c", "pnpm --filter mermaid-vault-frontend check && pnpm --filter mermaid-vault-frontend exec vitest run"]
     environment:
       - NODE_ENV=test

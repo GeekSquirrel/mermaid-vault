@@ -1,45 +1,108 @@
 name: CI
 
+# Continuous Integration:
+# - Runs the test suite on every push to main and every pull request
+#   (Docker Compose builds the backend-builder stage: pnpm install --frozen-lockfile,
+#   tsc type-check, then the Vitest suite — the same pipeline as local `pnpm test`,
+#   plus frontend checks — svelte-check type-check and vitest unit tests —
+#   via `pnpm run test:frontend`).
+# - Builds the full production image on every run so frontend/Dockerfile breakage
+#   is caught before merging.
+# - Push events publish it to GHCR (image name lowercased by metadata-action):
+#   push to main → :<short-sha> + rolling :main; push of a v* tag → :<version>
+#   (raw and bare) + rolling :latest.
+# - Pull requests and manual dispatches build without publishing.
+
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
+    name: Tests (Docker Compose)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v7
         with:
           submodules: recursive
-      - uses: docker/setup-buildx-action@v3
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Run tests
-        run: |
-          cp .env.example .env
-          pnpm test
 
-  build-and-push:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # Host pnpm only drives the root `pnpm test` scripts (docker compose
+      # commands); the toolchains live inside the test images.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Backend tests
+        run: pnpm test
+
+      - name: Frontend checks (svelte-check + unit tests)
+        run: pnpm run test:frontend
+
+  build:
+    name: Production image build
     needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v7
         with:
           submodules: recursive
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push'
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push single image
-        run: |
-          docker build --target production -t ghcr.io/${{ github.repository }}:latest .
-          docker push ghcr.io/${{ github.repository }}:latest
+
+      # metadata-action lowercases the repository path, which GHCR requires
+      # (GeekSquirrel/mermaid-vault → geeksquirrel/mermaid-vault).
+      - name: Extract Docker metadata (branch push → :short-sha + :main)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/')
+        id: meta-branch
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=sha,format=short,prefix=
+
+      - name: Extract Docker metadata (version tag → :version + :latest)
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        id: meta-tag
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{raw}}
+            type=semver,pattern={{version}}
+            type=raw,value=latest
+
+      - name: Build (and publish on push events)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: production
+          platforms: linux/amd64
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta-branch.outputs.tags || steps.meta-tag.outputs.tags }}
+          labels: ${{ steps.meta-branch.outputs.labels || steps.meta-tag.outputs.labels }}
+          cache-from: type=gha,scope=ci-production-image
+          cache-to: type=gha,mode=max,scope=ci-production-image
