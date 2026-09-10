@@ -1,13 +1,28 @@
 services:
   app:
-    image: ghcr.io/geeksquirrel/mermaid-vault:${TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-geeksquirrel}/mermaid-vault:${TAG:-latest}
     ports:
       - "${PORT:-8080}:8080"
+    env_file:
+      - path: .env
+        required: false
     environment:
+      - PORT=8080
       - BASE_URL=${BASE_URL:-}
-      # 仅在需要 MCP 服务端导出图片 (render_diagram) 时开启：取消注释下一行及下方的 renderer 服务
-      # Only needed if MCP server-side image export (render_diagram) is required:
-      # - CHROMIUM_WS_ENDPOINT=ws://renderer:3000
+      - CORS_ORIGIN=${CORS_ORIGIN:-}
+      - MCP_ENABLED=${MCP_ENABLED:-true}
+      - CHROMIUM_WS_ENDPOINT=${CHROMIUM_WS_ENDPOINT:-}
+      - RENDER_TIMEOUT_MS=${RENDER_TIMEOUT_MS:-30000}
+      - AUTH_ENABLED=${AUTH_ENABLED:-true}
+      - AUTH_SESSION_TTL_HOURS=${AUTH_SESSION_TTL_HOURS:-720}
+      - AUTH_INTERNAL_TOKEN=${AUTH_INTERNAL_TOKEN:-}
+      - OIDC_AUTH_ENABLED=${OIDC_AUTH_ENABLED:-false}
+      - OIDC_ISSUER=${OIDC_ISSUER:-}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-}
+      - OIDC_SCOPES=${OIDC_SCOPES:-openid profile email}
+      - OIDC_REDIRECT_URI=${OIDC_REDIRECT_URI:-}
+      - AUTH_JWT_AUDIENCE=${AUTH_JWT_AUDIENCE:-}
     volumes:
       - app-data:/app/data
     healthcheck:
