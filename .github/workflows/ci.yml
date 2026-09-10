@@ -1,7 +1,7 @@
 name: CI
 
 # Continuous Integration:
-# - Runs the test suite on every push to main and every pull request
+# - Runs the test suite on every pull request and every v* tag push
 #   (Docker Compose builds the backend-builder stage: pnpm install --frozen-lockfile,
 #   tsc type-check, then the Vitest suite — the same pipeline as local `pnpm test`,
 #   plus frontend checks — svelte-check type-check and vitest unit tests —
@@ -11,6 +11,8 @@ name: CI
 # - Push events publish it to GHCR (image name lowercased by metadata-action):
 #   push to main → :<short-sha> + rolling :main; push of a v* tag → :<version>
 #   (raw and bare) + rolling :latest.
+# - A push to main skips the test job: the content was just validated by the
+#   checks of the PR that merged, so the run goes straight to build + publish.
 # - Pull requests and manual dispatches build without publishing.
 
 on:
@@ -27,6 +29,9 @@ concurrency:
 jobs:
   test:
     name: Tests (Docker Compose)
+    # Full suite on PRs and version tags; a push to main only publishes and
+    # relies on the checks of the PR that was just merged.
+    if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository with submodules
@@ -51,6 +56,8 @@ jobs:
   build:
     name: Production image build
     needs: test
+    # also run when the test job was skipped (push to main / manual dispatch)
+    if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
       contents: read

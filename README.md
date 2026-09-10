@@ -229,9 +229,9 @@ BASE_URL=https://mermaid.example.com
 
 ## Continuous Integration
 
-The project uses GitHub Actions for CI. The [CI workflow](.github/workflows/ci.yml) runs automatically on every push to `main` and on every pull request (and can also be triggered manually from the *Actions* tab):
+The project uses GitHub Actions for CI. The [CI workflow](.github/workflows/ci.yml) runs automatically on every pull request, on every push to `main`, and on `v*` version tags (and can also be triggered manually from the *Actions* tab):
 
-1. **Tests**: the backend suite runs through Docker Compose (`pnpm test`: frozen-lockfile install, `tsc` type-check, Vitest), and the frontend runs svelte-check type-checking plus its vitest unit suite (`pnpm run test:frontend`). Both run in Docker, exactly like local execution.
+1. **Tests**: the backend suite runs through Docker Compose (`pnpm test`: frozen-lockfile install, `tsc` type-check, Vitest), and the frontend runs svelte-check type-checking plus its vitest unit suite (`pnpm run test:frontend`). Both run in Docker, exactly like local execution. Tests run on pull requests and version tags; a push to `main` skips them — its content was just validated by the merged PR's checks.
 2. **Production image build**: the full single-container production image is built on every run, so frontend build or Dockerfile breakage is caught before merging. Push events also publish it to GHCR (`ghcr.io/geeksquirrel/mermaid-vault`) with the following tags:
 
 | Trigger | Image tags |

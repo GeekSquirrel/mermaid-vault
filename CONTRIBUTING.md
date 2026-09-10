@@ -59,8 +59,9 @@ Whenever you add, modify, or delete sections in any documentation file, you **mu
 
 ## 5. Continuous Integration
 
-- The `CI` workflow (`.github/workflows/ci.yml`) runs automatically on every push to `main` and on every pull request, and can also be triggered manually from the GitHub *Actions* tab.
-- It runs the backend test suite and the frontend checks (svelte-check type-check + vitest unit tests) through Docker Compose (`pnpm test` / `pnpm run test:frontend`), then builds the full production Docker image. Push events publish it to GHCR: pushes to `main` produce `:<short-sha>` plus a rolling `:main` tag, and pushing a `v*` tag produces `:<version>` plus a rolling `:latest` tag.
+- The `CI` workflow (`.github/workflows/ci.yml`) runs automatically on every pull request, on every push to `main`, and on `v*` version tags; it can also be triggered manually from the GitHub *Actions* tab.
+- Pull requests and version tags run the full suite — backend tests and frontend checks via Docker Compose (`pnpm test` / `pnpm run test:frontend`) — followed by the production image build. A push to `main` skips the tests (already validated by the merged PR) and goes straight to building and publishing.
+- Push events publish the image to GHCR: pushes to `main` produce `:<short-sha>` plus a rolling `:main` tag, and pushing a `v*` tag produces `:<version>` plus a rolling `:latest` tag.
 - Frontend Playwright e2e tests (`tests/*.spec.ts`) come from the upstream editor and are intentionally not wired into CI: they require a preview server and Chromium, and several scenarios no longer apply to this fork.
 - **Branch protection**: `main` is protected — changes land through pull requests, and a PR cannot merge unless both CI checks (`Tests (Docker Compose)` and `Production image build`) pass. Force pushes and branch deletion are rejected. If the rule ever needs to be re-created, configure it under *Settings → Branches → Branch protection rule*.
 - Run the same checks locally before pushing: `pnpm test` (backend tests), `pnpm run test:frontend` (frontend checks), and `pnpm run build:image` (production image).
