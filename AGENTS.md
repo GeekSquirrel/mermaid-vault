@@ -62,6 +62,7 @@
 1. **从 main 分叉分支（Branching）**：
    - 切换到本地 `main` 分支并同步最新代码：`git checkout main && git pull origin main`。
    - 创建并切换到功能/修复分叉分支：`git checkout -b <type>/<feature-name>`（例如 `feat/env-management`、`fix/preview-leak`）。
+   - **并行任务模式（多 Agent）**：若需要与其他任务并行开发，严禁共用主工作区或在其中来回切换分支，必须按 3.6 创建独立 worktree：`git worktree add -b <type>/<feature-name> ../mermaid-vault-<task-slug> main`，后续所有步骤均在该 worktree 内执行。
    - 所有代码修改、测试及本地 commit（遵循 4.4 规范）均在分叉分支上进行。
 2. **用户审批（Approval）**：
    - 修改完成且自测通过后，向用户提交详细的变更总结与验证报告。
@@ -69,11 +70,46 @@
 3. **推送与 PR 合并（Push & PR Merge）**：
    - 收到用户明确批准后，自动将分叉分支推送到 GitHub 远程仓库：`git push -u origin <type>/<feature-name>`。
    - 创建 Pull Request 指向 `main` 分支并合并（可通过 `gh pr create` 和 `gh pr merge --merge --delete-branch` 自动完成 PR 创建、合并与远程分支清理）。
-4. **清理分叉分支（Cleanup）**：
+4. **清理分叉分支与 worktree（Cleanup）**：
    - PR 成功合并后，切回本地 `main` 分支并拉取最新状态：`git checkout main && git pull origin main`。
+   - **删除任务对应的 worktree（若使用了 3.6 并行模式）**：在主工作区执行 `git worktree remove ../mermaid-vault-<task-slug>`（若有未提交修改，确认可丢弃后加 `--force`），再执行 `git worktree prune` 清理元数据。此步必须在删除本地分支之前完成（分支仍被 worktree 占用时无法删除）。
    - 删除本地分叉分支：`git branch -d <type>/<feature-name>`（若提示未合并可用 `-D` 确认已合并后强删）。
    - 若远程分支未被自动删除，执行清理：`git push origin --delete <type>/<feature-name>`。
    - 确保本地工作区处于纯净的最新 `main` 分支，进入下一个开发循环。
+
+### 3.6 并行开发与 Worktree 隔离（多 Agent 协作规范）
+当多个 Agent 需要并行推进多个任务时，必须使用 `git worktree` 为每个任务创建独立的物理工作区，实现完全隔离；严禁多个任务共用同一工作区或在其中来回切换分支。
+
+1. **隔离原则**：
+   - **一个任务 = 一个 worktree + 一个分支**。Git 限制同一分支同时只能被一个 worktree 检出，因此并行任务天然要求使用不同分支。
+   - worktree 目录统一创建在主仓库同级目录下，命名与分支对应：分支 `<type>/<feature-name>` 对应目录 `../mermaid-vault-<task-slug>`（例如 `feat/env-management` → `../mermaid-vault-env-management`）。
+   - 随时可用 `git worktree list` 查看现存工作区及其分支的对应关系。
+2. **创建 worktree（标准步骤）**：
+
+   ```bash
+   # 在主工作区执行：先同步 main，再从最新 main 创建分支与独立工作区
+   git checkout main && git pull origin main
+   git worktree add -b <type>/<feature-name> ../mermaid-vault-<task-slug> main
+   cd ../mermaid-vault-<task-slug>
+   git submodule update --init   # 关键：新 worktree 不会自动初始化子模块，必须手动执行
+   pnpm install                  # node_modules 不共享：主仓库与子模块需各自安装依赖
+   cp .env.example .env          # .env 等本地配置不共享，需按 worktree 单独准备
+   ```
+3. **Worktree 中的子模块行为**：
+   - 每个 worktree 的子模块拥有独立 gitdir（位于主仓库 `.git/worktrees/<name>/modules/`），可在不同 worktree 中将子模块检出为不同 commit/分支，互不干扰；子模块的提交与推送流程不变（见第 6 节第 1 条）。
+   - 在 worktree 内切换主仓库分支后，需执行 `git submodule update` 使子模块与当前 gitlink 指针同步。
+   - **严禁**通过软链接等方式让多个 worktree 共享同一份子模块目录或 `node_modules`（会互相覆盖检出状态，导致冲突）。
+   - 后端数据库 `data/` 目录同样按 worktree 隔离，各工作区的测试数据不互通。
+4. **合并后的 worktree 自动清理**：
+   - 任务对应 PR 合并入 `main` 后，**必须删除该任务的 worktree**（在主工作区或另一 worktree 中执行，不能在待删除的 worktree 内部执行）：
+
+   ```bash
+   git worktree remove ../mermaid-vault-<task-slug>          # 有未提交修改或未跟踪文件时会拒绝执行
+   git worktree remove --force ../mermaid-vault-<task-slug>  # 确认修改可丢弃后再强制删除
+   git worktree prune                                        # 清理失效的 worktree 元数据
+   ```
+   - 删除前必须确认该 worktree 无未推送提交（用 `git status` 和 `git log origin/<branch>..<branch>` 检查），避免丢失工作成果。
+   - 清理完成后，本地仅保留主工作区及仍在进行中的任务 worktree，进入下一个开发循环。
 
 ---
 
@@ -136,6 +172,7 @@
 4. **迁移前后端**：在 M6 期间，确保前后端分离开发（前端仍可指向原 Bun 后端进行对比测试），直至迁移完成。
 5. **Docker 构建**：在 M7 中，确保镜像构建不包含源码中的敏感信息（如 `.env`），使用构建参数传递。
 6. **main 分支保护与分叉生命周期**：仓库启用了 `main` 分支保护，严禁直推 `main`。开发须严格遵循：从最新 `main` 分叉 -> 开发测试 -> 用户批准 -> 推送远程并 PR 合并到 `main` -> 删除分叉分支并切回 `main` 的闭环流程。
+7. **Worktree 并行开发**：使用 `git worktree` 并行开发时，每个新 worktree 必须单独执行 `git submodule update --init` 初始化子模块；各 worktree 的子模块相互独立，严禁跨 worktree 共享子模块目录；任务 PR 合并后必须按 3.6 删除对应 worktree。
 
 ---
 
@@ -161,10 +198,11 @@
 | **CORS 报错** | 确认后端响应头包含 `Access-Control-Allow-Origin` 且允许 `OPTIONS` 方法。 |
 | **API 返回 404** | 检查路由前缀和路径拼接，使用 `curl` 直接测试后端端点。 |
 | **Docker 构建超时** | 检查网络，考虑使用国内镜像源，或增加 `--network=host` 等参数。 |
+| **Worktree 残留或无法删除** | 用 `git worktree list` 排查现存工作区；确认无未推送提交后用 `git worktree remove --force` 删除，再执行 `git worktree prune` 清理元数据。 |
 
 ---
 
 **最后提醒**：保持耐心，逐步推进，每完成一个小节都做自我检查。你不仅是执行者，更是项目的质量把关者。如有任何不确定，立即与用户沟通。
 
-**版本**：2.0  
+**版本**：2.1  
 **关联计划**：`ROADMAP.md`
