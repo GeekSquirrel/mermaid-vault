@@ -1,10 +1,28 @@
 services:
   app:
-    image: ghcr.io/geeksquirrel/mermaid-vault:${TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE:-geeksquirrel}/mermaid-vault:${TAG:-latest}
     ports:
       - "${PORT:-8080}:8080"
+    env_file:
+      - path: .env
+        required: false
     environment:
+      - PORT=8080
       - BASE_URL=${BASE_URL:-}
+      - CORS_ORIGIN=${CORS_ORIGIN:-}
+      - MCP_ENABLED=${MCP_ENABLED:-true}
+      - CHROMIUM_WS_ENDPOINT=${CHROMIUM_WS_ENDPOINT:-}
+      - RENDER_TIMEOUT_MS=${RENDER_TIMEOUT_MS:-30000}
+      - AUTH_ENABLED=${AUTH_ENABLED:-true}
+      - AUTH_SESSION_TTL_HOURS=${AUTH_SESSION_TTL_HOURS:-720}
+      - AUTH_INTERNAL_TOKEN=${AUTH_INTERNAL_TOKEN:-}
+      - OIDC_AUTH_ENABLED=${OIDC_AUTH_ENABLED:-false}
+      - OIDC_ISSUER=${OIDC_ISSUER:-}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-}
+      - OIDC_SCOPES=${OIDC_SCOPES:-openid profile email}
+      - OIDC_REDIRECT_URI=${OIDC_REDIRECT_URI:-}
+      - AUTH_JWT_AUDIENCE=${AUTH_JWT_AUDIENCE:-}
     volumes:
       - app-data:/app/data
     healthcheck:
@@ -14,6 +32,14 @@ services:
       retries: 3
       start_period: 5s
     restart: unless-stopped
+
+  # 可选渲染容器：仅在需要 MCP 导出 SVG/PNG 图片功能时开启，日常使用及链接分享无需开启
+  # Optional: Only needed for MCP image rendering (render_diagram), not needed for normal use
+  # renderer:
+  #   image: browserless/chrome:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     - MAX_CONCURRENT_SESSIONS=5
 
 volumes:
   app-data:

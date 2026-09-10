@@ -200,6 +200,15 @@ docker compose pull
 docker compose up -d
 ```
 
+#### Optional: Server-Side Rendering (Headless Chromium)
+
+By default, Mermaid Vault adopts **Mermaid source code + client-side browser rendering / instant share links (`build_diagram_links`)** as its primary workflow, keeping the main image minimal (~150MB) and lightweight with zero server-side rendering overhead.
+
+If your use case requires the server to generate and export static images (`/api/render/img`, `/api/render/svg`, or the MCP `render_diagram` tool):
+1. In `docker-compose.yml`, uncomment the `renderer` service block (`browserless/chrome`).
+2. In the `app` service environment, uncomment `CHROMIUM_WS_ENDPOINT=ws://renderer:3000`.
+3. Run `docker compose up -d` to start the dedicated rendering container alongside the main application.
+
 ---
 
 ## Production Environment Variables & Configuration

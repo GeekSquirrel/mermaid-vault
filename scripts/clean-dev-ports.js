@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 const envPath = path.join(rootDir, '.env');
+const envDevPath = path.join(rootDir, '.env.dev');
 
 // Parse .env file without external dependencies
 function parseEnv(filePath) {
@@ -35,7 +36,7 @@ function parseEnv(filePath) {
   return env;
 }
 
-const env = parseEnv(envPath);
+const env = { ...parseEnv(envPath), ...parseEnv(envDevPath) };
 
 const devPortKeys = [
   { key: 'FRONTEND_PORT', defaultVal: 8081, desc: 'Frontend dev server' },

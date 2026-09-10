@@ -23,10 +23,16 @@ interface McpHttpSession {
   server: McpServer;
 }
 
-const sessionError = (res: Response, message: string): void => {
-  res.status(400).json({
-    success: false,
-    error: { code: "INVALID_INPUT", message },
+const jsonRpcError = (
+  res: Response,
+  status: number,
+  code: number,
+  message: string
+): void => {
+  res.status(status).json({
+    jsonrpc: "2.0",
+    error: { code, message },
+    id: null,
   });
 };
 
@@ -53,9 +59,13 @@ export const registerMcpHttp = (app: Express, fallbackApiBaseUrl: string): void 
 
         if (!session) {
           if (!isInitializeRequest(req.body)) {
-            sessionError(
+            jsonRpcError(
               res,
-              "No valid MCP session: send an initialize request first"
+              sessionId ? 404 : 400,
+              sessionId ? -32001 : -32600,
+              sessionId
+                ? "Session not found"
+                : "No valid MCP session: send an initialize request first"
             );
             return;
           }
@@ -83,13 +93,12 @@ export const registerMcpHttp = (app: Express, fallbackApiBaseUrl: string): void 
 
         await session.transport.handleRequest(req, res, req.body);
       } catch (error) {
-        res.status(500).json({
-          success: false,
-          error: {
-            code: "INTERNAL_ERROR",
-            message: error instanceof Error ? error.message : "MCP endpoint error",
-          },
-        });
+        jsonRpcError(
+          res,
+          500,
+          -32603,
+          error instanceof Error ? error.message : "MCP endpoint error"
+        );
       }
     })();
   });
@@ -99,7 +108,12 @@ export const registerMcpHttp = (app: Express, fallbackApiBaseUrl: string): void 
     const sessionId = typeof header === "string" ? header : undefined;
     const session = sessionId ? sessions.get(sessionId) : undefined;
     if (!session) {
-      sessionError(res, "Invalid or missing mcp-session-id header");
+      jsonRpcError(
+        res,
+        sessionId ? 404 : 400,
+        sessionId ? -32001 : -32600,
+        sessionId ? "Session not found" : "Invalid or missing mcp-session-id header"
+      );
     }
     return session;
   };
@@ -113,13 +127,12 @@ export const registerMcpHttp = (app: Express, fallbackApiBaseUrl: string): void 
           await session.transport.handleRequest(req, res);
         }
       } catch (error) {
-        res.status(500).json({
-          success: false,
-          error: {
-            code: "INTERNAL_ERROR",
-            message: error instanceof Error ? error.message : "MCP endpoint error",
-          },
-        });
+        jsonRpcError(
+          res,
+          500,
+          -32603,
+          error instanceof Error ? error.message : "MCP endpoint error"
+        );
       }
     })();
   };

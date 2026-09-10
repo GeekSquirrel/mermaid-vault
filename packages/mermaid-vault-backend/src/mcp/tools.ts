@@ -5,6 +5,8 @@ import { VaultApiError, type VaultApiClient } from "./apiClient.js";
 import type { McpConfig } from "./config.js";
 import { encodeRenderState, encodeShareState } from "./state.js";
 
+import type { Diagram } from "../types/index.js";
+
 const jsonText = (value: unknown): string => JSON.stringify(value, null, 2);
 
 const ok = (text: string): CallToolResult => ({
@@ -12,6 +14,35 @@ const ok = (text: string): CallToolResult => ({
 });
 
 const okJson = (value: unknown): CallToolResult => ok(jsonText(value));
+
+interface CleanDiagramSummary {
+  id: string;
+  title: string;
+  workspace_id?: string | null;
+  created_at?: number;
+  updated_at?: number;
+}
+
+interface CleanDiagram extends CleanDiagramSummary {
+  code: string;
+}
+
+const cleanDiagramSummary = (diagram: Diagram): CleanDiagramSummary => ({
+  id: diagram.id,
+  title: diagram.title,
+  workspace_id: diagram.workspace_id ?? null,
+  created_at: diagram.created_at,
+  updated_at: diagram.updated_at,
+});
+
+const cleanDiagram = (diagram: Diagram): CleanDiagram => ({
+  id: diagram.id,
+  title: diagram.title,
+  code: diagram.code,
+  workspace_id: diagram.workspace_id ?? null,
+  created_at: diagram.created_at,
+  updated_at: diagram.updated_at,
+});
 
 /** Wraps handler failures into isError results agents can read and act on. */
 const withErrors = (run: () => Promise<CallToolResult>): Promise<CallToolResult> =>
@@ -55,12 +86,15 @@ export const registerTools = (
     {
       title: "List saved diagrams",
       description:
-        "List all diagrams saved in the Mermaid Vault. Returns id, title, workspace_id and timestamps for each diagram (mermaid source excluded — call get_diagram for it).",
+        "List all diagrams saved in the Mermaid Vault. Returns id, title, workspace_id and timestamps for each diagram (mermaid source and preview SVG excluded — call get_diagram for code, get_diagram_preview for preview).",
       inputSchema: {},
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async () =>
-      withErrors(async () => okJson(await client.listDiagrams()))
+      withErrors(async () => {
+        const diagrams = await client.listDiagrams();
+        return okJson(diagrams.map(cleanDiagramSummary));
+      })
   );
 
   server.registerTool(
@@ -68,13 +102,14 @@ export const registerTools = (
     {
       title: "Get a saved diagram",
       description:
-        "Fetch one saved diagram by id, including its mermaid source in the `code` field.",
+        "Fetch one saved diagram by id, including its mermaid source in the `code` field (cached SVG preview excluded — call get_diagram_preview for SVG).",
       inputSchema: {
         id: z.string().min(1).describe("Diagram id, as returned by list_diagrams"),
       },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
-    async ({ id }) => withErrors(async () => okJson(await client.getDiagram(id)))
+    async ({ id }) =>
+      withErrors(async () => okJson(cleanDiagram(await client.getDiagram(id))))
   );
 
   server.registerTool(
@@ -96,11 +131,13 @@ export const registerTools = (
     async ({ title, code, workspace_id }) =>
       withErrors(async () =>
         okJson(
-          await client.createDiagram({
-            title,
-            code,
-            workspace_id: workspace_id ?? null,
-          })
+          cleanDiagram(
+            await client.createDiagram({
+              title,
+              code,
+              workspace_id: workspace_id ?? null,
+            })
+          )
         )
       )
   );
@@ -125,7 +162,11 @@ export const registerTools = (
     },
     async ({ id, title, code, workspace_id }) =>
       withErrors(async () =>
-        okJson(await client.updateDiagram(id, { title, code, workspace_id }))
+        okJson(
+          cleanDiagram(
+            await client.updateDiagram(id, { title, code, workspace_id })
+          )
+        )
       )
   );
 

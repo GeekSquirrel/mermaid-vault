@@ -10,7 +10,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN npm install -g pnpm@12.3.4 && \
     pnpm --version
 
-# Install build dependencies for native modules (better-sqlite3) and git
+# Install build dependencies for native modules (better-sqlite3), git and curl
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     make \
@@ -55,13 +55,10 @@ ENV NODE_ENV=production
 ENV PORT=8080
 ENV DATABASE_URL=/app/data/mermaid.db
 ENV DB_PATH=/app/data/mermaid.db
-ENV CHROMIUM_PATH=/usr/bin/chromium
 
-# Install runtime dependencies: curl (health check) and Chromium (diagram rendering)
+# Install runtime dependencies: curl (for container healthcheck)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    chromium \
-    fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 # Create persistent storage directory

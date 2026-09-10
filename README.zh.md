@@ -195,6 +195,15 @@ docker compose pull
 docker compose up -d
 ```
 
+#### 可选：服务端独立渲染服务 (Headless Chromium)
+
+默认情况下，Mermaid Vault 推荐以 **Mermaid 源码 + 客户端浏览器即时渲染 / 分享链接 (`build_diagram_links`)** 作为核心工作流，主应用镜像极致轻量（~150MB），不产生服务端渲染开销。
+
+如果您的业务场景需要服务器端生成并导出静态图片（`/api/render/img`、`/api/render/svg` 或 MCP `render_diagram` 工具）：
+1. 在 `docker-compose.yml` 中，取消注释 `renderer` 服务代码块（使用 `browserless/chrome` 无头浏览器）。
+2. 在 `app` 服务的 `environment` 配置中，取消注释 `CHROMIUM_WS_ENDPOINT=ws://renderer:3000`。
+3. 执行 `docker compose up -d` 即可一键启动独立的渲染服务并完成自动关联。
+
 ---
 
 ## 生产环境变量与配置

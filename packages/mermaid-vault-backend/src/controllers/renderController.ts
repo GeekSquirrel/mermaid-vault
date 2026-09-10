@@ -32,7 +32,7 @@ const decodeState = (state: string): RenderPayload => {
 };
 
 const NO_CHROMIUM_HINT =
-  "Rendering service unavailable: install Chromium in the backend container or set CHROMIUM_PATH.";
+  "Rendering service unavailable: Mermaid Vault uses client-side rendering by default. Set CHROMIUM_WS_ENDPOINT (e.g. ws://renderer:3000) or install Chromium to enable server-side image rendering.";
 
 const sendRenderError = (res: Response, error: unknown): void => {
   const message = error instanceof Error ? error.message : String(error);

@@ -10,13 +10,34 @@ services:
     ports:
       - "${BACKEND_PORT:-8080}:8080"
       - "${DEBUG_PORT:-9229}:9229"
+    env_file:
+      - path: .env.dev
+        required: false
+      - path: .env
+        required: false
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
       - PORT=8080
-      - DATABASE_URL=./data/mermaid.db
-      - DB_PATH=./data/mermaid.db
+      - DATABASE_URL=${DATABASE_URL:-./data/mermaid.db}
+      - DB_PATH=${DB_PATH:-./data/mermaid.db}
+      - BASE_URL=${BASE_URL:-}
       - CORS_ORIGIN=${CORS_ORIGIN:-}
       - MCP_ENABLED=${MCP_ENABLED:-true}
+      - MERMAID_VAULT_URL=${MERMAID_VAULT_URL:-http://127.0.0.1:8080}
+      - MERMAID_VAULT_FRONTEND_URL=${MERMAID_VAULT_FRONTEND_URL:-http://localhost:8081}
+      - RENDER_TIMEOUT_MS=${RENDER_TIMEOUT_MS:-30000}
+      - CHROMIUM_PATH=${CHROMIUM_PATH:-}
+      - CHROMIUM_WS_ENDPOINT=${CHROMIUM_WS_ENDPOINT:-}
+      - AUTH_ENABLED=${AUTH_ENABLED:-true}
+      - AUTH_SESSION_TTL_HOURS=${AUTH_SESSION_TTL_HOURS:-720}
+      - AUTH_INTERNAL_TOKEN=${AUTH_INTERNAL_TOKEN:-}
+      - OIDC_AUTH_ENABLED=${OIDC_AUTH_ENABLED:-false}
+      - OIDC_ISSUER=${OIDC_ISSUER:-}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-}
+      - OIDC_SCOPES=${OIDC_SCOPES:-openid profile email}
+      - OIDC_REDIRECT_URI=${OIDC_REDIRECT_URI:-}
+      - AUTH_JWT_AUDIENCE=${AUTH_JWT_AUDIENCE:-}
 
   frontend:
     build:
@@ -32,11 +53,16 @@ services:
       - frontend-node-modules:/app/packages/mermaid-vault-frontend/node_modules
     ports:
       - "${FRONTEND_PORT:-8081}:3000"
+    env_file:
+      - path: .env.dev
+        required: false
+      - path: .env
+        required: false
     environment:
       # The frontend calls same-origin relative /api and the Vite dev server
       # proxies it to the backend, so LAN devices can open the dev server
       # directly (http://<host-ip>:8081) — no absolute API URL, no CORS.
-      - MERMAID_API_PROXY_TARGET=http://backend:8080
+      - MERMAID_API_PROXY_TARGET=${MERMAID_API_PROXY_TARGET:-http://backend:8080}
     depends_on:
       - backend
 
@@ -48,9 +74,14 @@ services:
     volumes:
       - ./packages/mermaid-vault-backend:/app/packages/mermaid-vault-backend
       - backend-node-modules:/app/packages/mermaid-vault-backend/node_modules
+    env_file:
+      - path: .env.dev
+        required: false
+      - path: .env
+        required: false
     environment:
-      - DATABASE_URL=./data/mermaid.db
-      - DB_PATH=./data/mermaid.db
+      - DATABASE_URL=${DATABASE_URL:-./data/mermaid.db}
+      - DB_PATH=${DB_PATH:-./data/mermaid.db}
     depends_on:
       - backend
     profiles:
