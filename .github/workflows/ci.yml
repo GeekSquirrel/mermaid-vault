@@ -7,7 +7,9 @@ name: CI
 #   plus frontend checks — svelte-check type-check and vitest unit tests —
 #   via `pnpm run test:frontend`).
 # - Builds the full production image on every run so frontend/Dockerfile breakage
-#   is caught before merging.
+#   is caught before merging. The image is then smoke-tested in place (container
+#   boots, /health, static frontend served, API CRUD against real SQLite)
+#   before any publish.
 # - Push events publish it to GHCR (image name lowercased by metadata-action):
 #   push to main → :<short-sha> + rolling :main; push of a v* tag → :<version>
 #   (raw and bare) + rolling :latest.
@@ -102,14 +104,57 @@ jobs:
             type=semver,pattern={{version}}
             type=raw,value=latest
 
-      - name: Build (and publish on push events)
+      - name: Build image (load locally)
         uses: docker/build-push-action@v7
         with:
           context: .
           target: production
           platforms: linux/amd64
-          push: ${{ github.event_name == 'push' }}
+          load: true
+          tags: mermaid-vault-ci:candidate
+          cache-from: type=gha,scope=ci-production-image
+          cache-to: type=gha,mode=max,scope=ci-production-image
+          provenance: false
+
+      - name: Smoke test the image
+        run: |
+          # 18080 on the host avoids clashing with anything already listening
+          docker run -d --name ci-smoke -p 127.0.0.1:18080:8080 mermaid-vault-ci:candidate
+          trap 'docker rm -f ci-smoke >/dev/null 2>&1' EXIT
+
+          # wait for boot
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18080/health >/dev/null 2>&1; then break; fi
+            if [ "$i" = 30 ]; then docker logs ci-smoke; echo "container did not become healthy"; exit 1; fi
+            sleep 2
+          done
+
+          # 1) health endpoint
+          curl -fsS http://127.0.0.1:18080/health >/dev/null
+
+          # 2) frontend static hosting serves the built SvelteKit app
+          curl -fsS http://127.0.0.1:18080/ | grep -q "</html>"
+
+          # 3) API CRUD against real SQLite (exercises boot migrations)
+          CREATE_RES=$(curl -fsS -X POST http://127.0.0.1:18080/api/diagrams \
+            -H 'Content-Type: application/json' \
+            -d '{"title":"CI smoke","code":"graph TD; A[CI] --> B[OK]"}')
+          ID=$(echo "$CREATE_RES" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+          if [ -z "$ID" ]; then echo "create failed: $CREATE_RES"; exit 1; fi
+          curl -fsS "http://127.0.0.1:18080/api/diagrams/$ID" | grep -q '"success":true'
+          curl -fsS -X DELETE "http://127.0.0.1:18080/api/diagrams/$ID" >/dev/null
+          echo "smoke test passed"
+
+      - name: Publish (push events only)
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: production
+          platforms: linux/amd64
+          push: true
           tags: ${{ steps.meta-branch.outputs.tags || steps.meta-tag.outputs.tags }}
           labels: ${{ steps.meta-branch.outputs.labels || steps.meta-tag.outputs.labels }}
           cache-from: type=gha,scope=ci-production-image
           cache-to: type=gha,mode=max,scope=ci-production-image
+          provenance: false

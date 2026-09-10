@@ -62,7 +62,7 @@
 - `CI` workflow（`.github/workflows/ci.yml`）会在每次推送到 `main` 分支以及每个 Pull Request 时自动运行，也可以在 GitHub *Actions* 页面手动触发。
 - `CI` workflow（`.github/workflows/ci.yml`）会在每个 Pull Request、每次推送到 `main` 分支以及推送 `v*` 版本标签时自动运行，也可以在 GitHub *Actions* 页面手动触发。
 - Pull Request 与版本标签会运行完整套件——通过 Docker Compose 执行后端测试与前端检查（`pnpm test` / `pnpm run test:frontend`），随后构建生产 Docker 镜像。推送到 `main` 时跳过测试（已由被合并 PR 的检查验证），直接进入构建与发布。
-- push 事件会将镜像发布到 GHCR：推送到 `main` 产生 `:<short-sha>` 与滚动的 `:main` 标签；推送 `v*` 版本标签产生 `:<version>` 与滚动的 `:latest` 标签。
+- push 事件会将镜像发布到 GHCR——但前提是构建出的镜像通过冒烟测试（容器启动、`/health`、前端静态托管、真实 SQLite 的 API 增删查）：推送到 `main` 产生 `:<short-sha>` 与滚动的 `:main` 标签；推送 `v*` 版本标签产生 `:<version>` 与滚动的 `:latest` 标签。
 - 前端 Playwright e2e 测试（`tests/*.spec.ts`）来自上游官方编辑器，有意未接入 CI：需要 preview 服务器与 Chromium，且部分场景与本 fork 的改动已不匹配。
 - **分支保护**：`main` 分支已启用保护——变更需通过 Pull Request 合入，且 PR 必须通过全部 CI 检查（`Tests (Docker Compose)` 与 `Production image build`）才能合并；强推与删除分支被禁止。如需重建规则，可在 *Settings → Branches → Branch protection rule* 中配置。
 - 推送前可在本地运行相同的检查：`pnpm test`（后端测试）、`pnpm run test:frontend`（前端检查）与 `pnpm run build:image`（生产镜像）。
