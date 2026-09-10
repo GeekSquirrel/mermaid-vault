@@ -47,7 +47,7 @@ timeline
 | **Frontend** | SvelteKit 2 + Svelte 5 + TailwindCSS + Monaco Editor + Vite | `packages/mermaid-vault-frontend/` |
 | **Backend API** | Node.js 22 LTS + Express + TypeScript + better-sqlite3 | `packages/mermaid-vault-backend/` |
 | **Database** | SQLite with WAL mode & auto-migration | `packages/mermaid-vault-backend/data/mermaid.db` |
-| **Monorepo Management** | pnpm 11+ Workspaces | Root `pnpm-workspace.yaml` |
+| **Monorepo Management** | pnpm 12+ Workspaces | Root `pnpm-workspace.yaml` |
 | **Container Orchestration**| Docker Compose (Multi-stage Node.js + Nginx Alpine) | `compose.yaml` |
 | **Testing** | Vitest + Supertest | `packages/mermaid-vault-backend/src/**/*.test.ts` |
 
