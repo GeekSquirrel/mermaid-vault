@@ -224,9 +224,9 @@ BASE_URL=https://mermaid.example.com
 
 ## 持续集成（CI）
 
-项目使用 GitHub Actions 进行持续集成。[CI workflow](.github/workflows/ci.yml) 会在每次推送到 `main` 分支以及每个 Pull Request 时自动运行（也可以在 *Actions* 页面手动触发）：
+项目使用 GitHub Actions 进行持续集成。[CI workflow](.github/workflows/ci.yml) 会在每个 Pull Request、每次推送到 `main` 分支以及推送 `v*` 版本标签时自动运行（也可以在 *Actions* 页面手动触发）：
 
-1. **测试**：后端测试套件通过 Docker Compose 运行（`pnpm test`：冻结锁文件安装依赖、`tsc` 类型检查、Vitest），前端运行 svelte-check 类型检查与 vitest 单元测试套件（`pnpm run test:frontend`），两者均在 Docker 中运行，与本地执行完全一致。
+1. **测试**：后端测试套件通过 Docker Compose 运行（`pnpm test`：冻结锁文件安装依赖、`tsc` 类型检查、Vitest），前端运行 svelte-check 类型检查与 vitest 单元测试套件（`pnpm run test:frontend`），两者均在 Docker 中运行，与本地执行完全一致。测试在 Pull Request 与版本标签上运行；推送到 `main` 时会跳过测试——其内容刚通过被合并 PR 的检查验证。
 2. **生产镜像构建**：每次运行都会完整构建单容器生产镜像，确保前端构建或 Dockerfile 的破坏性变更在合并前就能被发现。push 事件还会将镜像发布到 GHCR（`ghcr.io/geeksquirrel/mermaid-vault`），标签规则如下：
 
 | 触发方式 | 镜像标签 |
