@@ -62,7 +62,7 @@ Whenever you add, modify, or delete sections in any documentation file, you **mu
 - The `CI` workflow (`.github/workflows/ci.yml`) runs automatically on every push to `main` and on every pull request, and can also be triggered manually from the GitHub *Actions* tab.
 - It runs the backend test suite and the frontend checks (svelte-check type-check + vitest unit tests) through Docker Compose (`pnpm test` / `pnpm run test:frontend`), then builds the full production Docker image. Push events publish it to GHCR: pushes to `main` produce `:<short-sha>` plus a rolling `:main` tag, and pushing a `v*` tag produces `:<version>` plus a rolling `:latest` tag.
 - Frontend Playwright e2e tests (`tests/*.spec.ts`) come from the upstream editor and are intentionally not wired into CI: they require a preview server and Chromium, and several scenarios no longer apply to this fork.
-- **Branch protection**: `main` is protected — pull requests cannot merge unless both CI checks (`Tests (Docker Compose)` and `Production image build`) pass. Direct pushes to `main` are still allowed; force pushes and branch deletion are rejected. If the rule ever needs to be re-created, configure it under *Settings → Branches → Branch protection rule*.
+- **Branch protection**: `main` is protected — changes land through pull requests, and a PR cannot merge unless both CI checks (`Tests (Docker Compose)` and `Production image build`) pass. Force pushes and branch deletion are rejected. If the rule ever needs to be re-created, configure it under *Settings → Branches → Branch protection rule*.
 - Run the same checks locally before pushing: `pnpm test` (backend tests), `pnpm run test:frontend` (frontend checks), and `pnpm run build:image` (production image).
 
 
