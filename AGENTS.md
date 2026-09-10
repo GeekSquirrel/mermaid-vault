@@ -19,7 +19,7 @@
 
 ## 工作流程速记（详见 `docs/agent-workflow.md`）
 
-1. **每个任务默认在独立 worktree 中执行：一个任务 = 一个 worktree + 一个分支**。分支 `<type>/<slug>` 对应目录 `../mermaid-vault-<slug>`。
+1. **每个对话同步执行：默认在且仅在一个基于最新 `main` 的独立 worktree 中完成一个任务**（用户另有要求除外）。一个任务 = 一个 worktree + 一个分支，分支 `<type>/<slug>` 对应目录 `../mermaid-vault-<slug>`。
 2. 受理任务先做语义分类：提交遵循 Conventional Commits（`feat` `fix` `docs` `style` `refactor` `perf` `test` `chore` `ci` `build` `revert`；破坏性变更加 `!` 或脚注 `BREAKING CHANGE:`）。
 3. 创建与初始化（子模块不共享，必须手动初始化）：
 
@@ -52,4 +52,4 @@
 - 提交格式 `<type>(<scope>): <subject>`，scope ∈ `backend | frontend | submodule | docs`。
 - 用户可见文档（README / CONTRIBUTING / ROADMAP / docs/mcp）改动必须中英双语同步；面向 Agent 的文档（`AGENTS.md`、`docs/agent-workflow.md`）可仅中文。
 
-**版本**：4.0
+**版本**：4.1
