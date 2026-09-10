@@ -5,6 +5,9 @@ services:
       - "${PORT:-8080}:8080"
     environment:
       - BASE_URL=${BASE_URL:-}
+      # 仅在需要 MCP 服务端导出图片 (render_diagram) 时开启：取消注释下一行及下方的 renderer 服务
+      # Only needed if MCP server-side image export (render_diagram) is required:
+      # - CHROMIUM_WS_ENDPOINT=ws://renderer:3000
     volumes:
       - app-data:/app/data
     healthcheck:
@@ -14,6 +17,14 @@ services:
       retries: 3
       start_period: 5s
     restart: unless-stopped
+
+  # 可选渲染容器：仅在需要 MCP 导出 SVG/PNG 图片功能时开启，日常使用及链接分享无需开启
+  # Optional: Only needed for MCP image rendering (render_diagram), not needed for normal use
+  # renderer:
+  #   image: browserless/chrome:latest
+  #   restart: unless-stopped
+  #   environment:
+  #     - MAX_CONCURRENT_SESSIONS=5
 
 volumes:
   app-data:

@@ -17,6 +17,7 @@ services:
       - DB_PATH=./data/mermaid.db
       - CORS_ORIGIN=${CORS_ORIGIN:-}
       - MCP_ENABLED=${MCP_ENABLED:-true}
+      # - CHROMIUM_WS_ENDPOINT=ws://renderer:3000
 
   frontend:
     build:

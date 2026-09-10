@@ -47,13 +47,19 @@ let browserPromise: Promise<Browser> | undefined;
 const getBrowser = (): Promise<Browser> => {
   if (!browserPromise) {
     browserPromise = (async () => {
+      const puppeteer = await import("puppeteer-core");
+      const wsEndpoint =
+        process.env.CHROMIUM_WS_ENDPOINT || process.env.PUPPETEER_WS_ENDPOINT;
+      if (wsEndpoint) {
+        return puppeteer.connect({ browserWSEndpoint: wsEndpoint });
+      }
+
       const executablePath = findChromiumPath();
       if (!executablePath) {
         throw new Error(
-          "No Chromium executable found. Install Chromium or set CHROMIUM_PATH."
+          "No Chromium executable found. Mermaid Vault uses client-side rendering by default. Set CHROMIUM_WS_ENDPOINT or install Chromium."
         );
       }
-      const puppeteer = await import("puppeteer-core");
       return puppeteer.launch({
         args: ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
         executablePath,
@@ -101,7 +107,13 @@ export const renderWithChromium = async (
       const query = params.size > 0 ? `?${params.toString()}` : "";
       const hash = encodeURIComponent(JSON.stringify(payload));
       const port = process.env.PORT ?? 8080;
-      const url = `http://127.0.0.1:${port}${RENDER_PAGE_ROUTE}${query}#${hash}`;
+      const wsEndpoint =
+        process.env.CHROMIUM_WS_ENDPOINT || process.env.PUPPETEER_WS_ENDPOINT;
+      const defaultHost = wsEndpoint ? "app" : "127.0.0.1";
+      const renderBaseUrl =
+        process.env.RENDER_PAGE_BASE_URL ||
+        `http://${process.env.APP_HOST || defaultHost}:${port}`;
+      const url = `${renderBaseUrl}${RENDER_PAGE_ROUTE}${query}#${hash}`;
       await page.goto(url, { waitUntil: "load", timeout: RENDER_TIMEOUT_MS });
       // Checked as a serialized expression: it runs in the browser context,
       // not in Node.
