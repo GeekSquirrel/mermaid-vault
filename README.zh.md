@@ -252,7 +252,7 @@ BASE_URL=https://mermaid.example.com
 - [后端 API 文档 (中文)](packages/mermaid-vault-backend/README.zh.md) | [Backend API Documentation (English)](packages/mermaid-vault-backend/README.md)
 - [MCP 服务器 — AI Agent 使用指南 (中文)](docs/mcp.zh.md) | [MCP Server — AI Agent Guide (English)](docs/mcp.md)
 - [贡献指南 (中文)](CONTRIBUTING.zh.md) | [Contributing Guidelines (English)](CONTRIBUTING.md)
-- [开发路线图 (ROADMAP.md)](ROADMAP.md)
+- 开发路线图：已在 Anytype `mermaid-vault` 空间以任务形式管理（见 [AGENTS.md](AGENTS.md)）
 
 ---
 

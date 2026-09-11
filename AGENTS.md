@@ -4,20 +4,31 @@
 
 ## 使命
 
-以全栈专家身份推进 Mermaid Live Editor 持久化存储后端（v2）的开发。任务清单、里程碑顺序与完成标准以 `ROADMAP.md` 为唯一来源（完成自测后勾选对应 `[ ]`）。
+以全栈专家身份推进 Mermaid Live Editor 持久化存储后端（v2）的开发。任务清单、里程碑顺序与完成标准以 Anytype `mermaid-vault` 空间的 **Tasks 集合**为唯一来源（完成自测后将对应 Task 的 Status 标记为 `Done`）。
+
+## 信息源 SoT（Anytype）
+
+Anytype MCP 的 `mermaid-vault` 空间是所有项目相关文档的唯一事实来源（SoT），MCP 使用经验见 `.agents/anytype.md`：
+
+| 对象 | 角色 | 说明 |
+| --- | --- | --- |
+| **Wiki** 对象 | 项目开发文档来源 | 架构、技术决策、历史归档等；新开发文档用 `wiki` 类型创建并登记到「Wiki」根对象 |
+| **Tasks** 集合 | RoadMap 来源 | Task 对象用 Status（`To Do` / `In Progress` / `Done`）管理；已完成的里程碑保留 `Done` 作为历史记录 |
+| **General** 频道（chat） | 想法讨论来源 | 新想法先在此讨论，成熟后转入 Tasks 或 Wiki |
 
 ## 文档索引
 
 | 需要了解 | 查看 |
 | --- | --- |
-| 任务清单、里程碑、完成标准 | `ROADMAP.md`（历史归档 `docs/ROADMAP_ARCHIVE.md`） |
+| 任务清单、里程碑、完成标准 | Anytype `mermaid-vault` 空间 Tasks 集合（历史归档在空间 Wiki「Roadmap 历史归档」） |
 | 启动、Docker、环境变量、API | `README.md` |
 | 贡献与协作规范 | `CONTRIBUTING.md` |
 | MCP 服务 | `docs/mcp.md` |
-| **Agent 完整工作流**（分类表、worktree 生命周期、审批模式、子模块细则、排错） | `docs/agent-workflow.md` |
+| **Agent 完整工作流**（分类表、worktree 生命周期、审批模式、子模块细则、排错） | `.agents/workflow.md` |
+| Anytype MCP 使用经验 | `.agents/anytype.md` |
 | 后端专属命令与规范 | `packages/mermaid-vault-backend/AGENTS.md` |
 
-## 工作流程速记（详见 `docs/agent-workflow.md`）
+## 工作流程速记（详见 `.agents/workflow.md`）
 
 1. **每个对话同步执行：默认在且仅在一个基于最新 `main` 的独立 worktree 中完成一个任务**（用户另有要求除外）。一个任务 = 一个 worktree + 一个分支，分支 `<type>/<slug>` 对应目录 `../mermaid-vault-<slug>`。
 2. 受理任务先做语义分类：提交遵循 Conventional Commits（`feat` `fix` `docs` `style` `refactor` `perf` `test` `chore` `ci` `build` `revert`；破坏性变更加 `!` 或脚注 `BREAKING CHANGE:`）。
@@ -50,6 +61,6 @@
 ## 提交信息与文档双语
 
 - 提交格式 `<type>(<scope>): <subject>`，scope ∈ `backend | frontend | submodule | docs`。
-- 用户可见文档（README / CONTRIBUTING / ROADMAP / docs/mcp）改动必须中英双语同步；面向 Agent 的文档（`AGENTS.md`、`docs/agent-workflow.md`）可仅中文。
+- 用户可见文档（README / CONTRIBUTING / docs/mcp）改动必须中英双语同步；面向 Agent 的文档（`AGENTS.md`、`.agents/`）可仅中文。
 
-**版本**：4.1
+**版本**：4.2
