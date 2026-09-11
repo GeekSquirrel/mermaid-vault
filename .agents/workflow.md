@@ -48,5 +48,5 @@
 
 ## 6. 计划与沟通
 
-- 以 Anytype `mermaid-vault` 空间的 Tasks 集合为任务唯一来源（访问方式见 `.agents/anytype.md`），按里程碑顺序推进；完成自测后将对应 Task 的 Status 标记为 `Done`。
+- 以 Anytype `mermaid-vault` 空间的 Tasks 集合为任务唯一来源（访问方式见 `.agents/anytype.md`），按里程碑顺序推进；完成自测后将对应 Task 的 Status 标记为 `Done`，并勾选标题的checkbox。
 - 每完成 1~2 个任务点主动简报进展，展示关键命令输出；遇到模糊需求或技术决策时给出选项请用户选择，不擅自假设。

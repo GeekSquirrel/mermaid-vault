@@ -4,7 +4,7 @@
 
 ## 定位
 
-- 先 `API-list-spaces` 按 `name` 找到 `mermaid-vault` 空间拿 `space_id`，再 `API-list-chats` 拿频道 `chat_id`（空间下目前只有 `General` 一个频道；「空间」和「频道」是两层概念）。
+- 先 `API-list-spaces` 按 `name` 找到 `mermaid-vault` 空间拿 `space_id`。
 - 所有对象/类型/属性/标签的 id 都是 `bafyrei…` 长字符串，一律从 `API-list-*` / `API-get-*` 响应中实时读取后透传，不要凭记忆拼写或硬编码。
 
 ## 读写要点
