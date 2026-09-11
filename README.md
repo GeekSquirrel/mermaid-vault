@@ -257,7 +257,7 @@ To deploy a specific build, set `TAG` in `.env` (e.g. `TAG=1.2.3`, `TAG=main` or
 - [Backend API Documentation (English)](packages/mermaid-vault-backend/README.md) | [后端 API 文档 (中文)](packages/mermaid-vault-backend/README.zh.md)
 - [MCP Server — AI Agent Guide (English)](docs/mcp.md) | [MCP 服务器 — AI Agent 使用指南 (中文)](docs/mcp.zh.md)
 - [Contributing Guidelines (English)](CONTRIBUTING.md) | [贡献指南 (中文)](CONTRIBUTING.zh.md)
-- [Development Roadmap](ROADMAP.md)
+- Development Roadmap: managed as tasks in the Anytype `mermaid-vault` space (see [AGENTS.md](AGENTS.md))
 
 ---
 
